@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-tertiary-fixed":"#3d0702","secondary-container":"#b6d0fd","inverse-on-surface":"#f0f1f3","surface-container-lowest":"#ffffff","outline-variant":"#bdc9c4","on-surface":"#191c1e","on-secondary-fixed":"#001c3b","on-secondary":"#ffffff","surface-container-high":"#e7e8ea","on-secondary-fixed-variant":"#2d476d","secondary-fixed":"#d5e3ff","surface-variant":"#e1e2e4","on-error":"#ffffff","outline":"#6e7a75","on-error-container":"#93000a","tertiary-container":"#a75748","surface-dim":"#d9dadc","on-tertiary-fixed-variant":"#763125","on-tertiary":"#ffffff","primary":"#00614f","inverse-surface":"#2e3132","primary-fixed-dim":"#7bd7bd","background":"#f8f9fb","error":"#ba1a1a","surface-tint":"#006b57","error-container":"#ffdad6","primary-fixed":"#97f4d9","on-primary-fixed-variant":"#005141","tertiary-fixed":"#ffdad3","tertiary-fixed-dim":"#ffb4a6","tertiary":"#894032","on-background":"#191c1e","on-primary-fixed":"#002019","on-tertiary-container":"#ffeeea","on-surface-variant":"#3e4945","surface-container":"#edeef0","on-primary":"#ffffff","inverse-primary":"#7bd7bd","on-secondary-container":"#3f5980","secondary":"#465f86","surface":"#f8f9fb","primary-container":"#0e7c66","secondary-fixed-dim":"#aec8f4","surface-bright":"#f8f9fb","on-primary-container":"#bcffe9","surface-container-low":"#f2f4f6","surface-container-highest":"#e1e2e4"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"2rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2rem","space-sm":"0.5rem","gutter":"1.5rem","gutter-mobile":"1rem","margin-mobile":"1rem"},"fontFamily":{"display-lg":["Manrope"],"data-tabular-lg":["Manrope"],"headline-md":["Manrope"],"title-sm":["Inter"],"body-lg":["Inter"],"headline-lg":["Manrope"],"headline-xl":["Manrope"],"body-md":["Inter"],"data-mono-sm":["JetBrains Mono"],"body-sm":["Inter"],"display-lg-mobile":["Manrope"],"data-mono-xs":["JetBrains Mono"]},"fontSize":{"display-lg":["3rem",{"lineHeight":"3.5rem","letterSpacing":"-0.02em","fontWeight":"700"}],"data-tabular-lg":["1.5rem",{"lineHeight":"2rem","fontWeight":"700"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","fontWeight":"600"}],"title-sm":["1rem",{"lineHeight":"1.5rem","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.5rem","fontWeight":"400"}],"headline-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-xl":["2.25rem",{"lineHeight":"2.75rem","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"data-mono-sm":["0.8125rem",{"lineHeight":"1.125rem","fontWeight":"500"}],"body-sm":["0.75rem",{"lineHeight":"1rem","fontWeight":"400"}],"display-lg-mobile":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.01em","fontWeight":"700"}],"data-mono-xs":["0.6875rem",{"lineHeight":"0.875rem","fontWeight":"500"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-fixed"><aside class="fixed left-0 top-0 h-full w-[264px] bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none"><div class="flex flex-col h-full overflow-hidden"><div class="h-16 px-space-md flex items-center justify-between bg-surface-container-lowest"><div class="flex items-center gap-space-sm min-w-0"><img alt="Apex Bank Management System Logo" class="h-8 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/ALJJyrDetKHFp9dfd5sWxDUkGoAPPKWVfxFgd9yRTal9tmMA1YT31rYZs24grxmNGj7a3WtuPfUxX1_Yrq2ufnDy-RUewCqTFiCftsbas2GRaaSCp0Jufs84aQ8tcQ-WcPebIrxyHuTcVO2pG2OFJ1FFHApusbtnTA39V1PTZEAoOUcTE22VV9E7erm_iM-F8DTyMtEauFZ8KRZAGG6ttz-ekLgxsEdEsNxmvzOlmfhkihQ"/><div class="flex flex-col min-w-0"><span class="font-title-sm text-title-sm text-on-surface tracking-tight truncate">Apex Core</span><span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant truncate">Fiduciary Node #01</span></div></div><span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-data-mono-xs text-data-mono-xs tracking-wider flex-shrink-0">PROD</span></div><div class="px-space-md py-space-xs bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant"><span class="font-data-mono-xs text-data-mono-xs font-semibold tracking-wide">CORE BANKING</span><span class="font-data-mono-xs text-data-mono-xs text-primary font-semibold">v2.4</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-semibold shadow-sm"><div class="px-space-sm pb-1"><span class="font-body-sm text-body-sm font-semibold tracking-wider text-on-surface-variant uppercase">Overview</span></div><a aria-current="page" class="flex items-center justify-between px-space-sm py-2 rounded transition-colors bg-primary text-on-primary font-semibold shadow-sm" data-path="central-command" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Central Command</span></div><span class="w-1.5 h-1.5 rounded-full bg-primary"></span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="analytics-reports" href="#"><span class="material-symbols-outlined text-[18px]">monitoring</span><span class="font-body-md text-body-md">Analytics &amp; Reports</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-semibold shadow-sm"><div class="px-space-sm pb-1"><span class="font-body-sm text-body-sm font-semibold tracking-wider text-on-surface-variant uppercase">Bank Operations</span></div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="customer-directory" href="#"><span class="material-symbols-outlined text-[18px]">contacts</span><span class="font-body-md text-body-md">Customer Directory</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="bank-accounts" href="#"><span class="material-symbols-outlined text-[18px]">account_balance</span><span class="font-body-md text-body-md">Bank Accounts</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="fund-transfers" href="#"><span class="material-symbols-outlined text-[18px]">sync_alt</span><span class="font-body-md text-body-md">Fund Transfers</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="deposits-withdrawals" href="#"><span class="material-symbols-outlined text-[18px]">payments</span><span class="font-body-md text-body-md">Deposits &amp; Withdrawals</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-semibold shadow-sm"><div class="px-space-sm pb-1"><span class="font-body-sm text-body-sm font-semibold tracking-wider text-on-surface-variant uppercase">Credit &amp; Risk</span></div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="loan-applications" href="#"><span class="material-symbols-outlined text-[18px]">real_estate_agent</span><span class="font-body-md text-body-md">Loan Applications</span></a><a class="flex items-center justify-between px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="suspicious-activity" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px] text-error">policy</span><span class="font-body-md text-body-md">Suspicious Activity</span></div><span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-data-mono-xs text-data-mono-xs font-semibold">4</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="audit-trails" href="#"><span class="material-symbols-outlined text-[18px]">receipt_long</span><span class="font-body-md text-body-md">Audit Trails</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-semibold shadow-sm"><div class="px-space-sm pb-1"><span class="font-body-sm text-body-sm font-semibold tracking-wider text-on-surface-variant uppercase">System</span></div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="role-permissions" href="#"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span class="font-body-md text-body-md">Role Permissions</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="treasury-limits" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Treasury Limits</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">settings</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-low"><div class="p-space-sm rounded bg-surface-container-lowest space-y-space-xs"><div class="flex items-center justify-between"><span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary"></span>Database Sync</span><span class="font-data-mono-xs text-data-mono-xs font-semibold text-primary">99.98%</span></div><div class="flex items-center justify-between"><span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span>Redux RTK Engine</span><span class="font-data-mono-xs text-data-mono-xs text-secondary font-semibold">Active</span></div></div><div class="mt-space-xs pt-space-xs flex items-center justify-between"><span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">SESSION: #8492-EXP</span><button class="flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">logout</span><span class="font-body-sm text-body-sm font-semibold">Logout</span></button></div></div></div></aside><div class="pl-[264px]"><header class="fixed top-0 left-[264px] right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-lg flex-1 max-w-2xl"><div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm"><span class="hover:text-on-surface cursor-pointer">Apex Central</span><span class="material-symbols-outlined text-[14px]">chevron_right</span><span class="hover:text-on-surface cursor-pointer">Admin Overview</span><span class="material-symbols-outlined text-[14px]">chevron_right</span><span class="text-on-surface font-semibold">Central Command</span></div><div class="relative flex-1 max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-12 rounded bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary" placeholder="Search transaction ID, account, or customer name..." type="text"/><kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-data-mono-xs text-data-mono-xs">⌘K</kbd></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-data-mono-xs text-data-mono-xs font-semibold text-on-surface">BDT (৳) Core Clearing</span></div><button aria-label="Notifications" class="relative p-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary-container text-on-tertiary-container font-data-mono-xs text-[10px] font-bold flex items-center justify-center">7</span></button><button aria-label="Toggle Theme" class="p-2 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">light_mode</span></button><div class="h-5 w-px bg-surface-container-highest"></div><div class="flex items-center gap-space-sm pl-1"><span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-data-mono-xs font-semibold">Super Admin (Level 4)</span><div class="flex items-center gap-2 pl-2"><img alt="Profile" class="w-8 h-8 rounded-full object-cover flex-shrink-0 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdCgOrTgnk6HLx6oZBGu45D9ACUPz5C6aGsenWvGf-LKKd1LdJvbRaSoQF1ALpxg_CoGr4Hptv51uaDLj5JzJJrcsdSTseL9IqzCk2sWQ2XZkN4Njpzc2OLQqQ47xx4rEKyuByhXUNlsol5Ze7h4OVfyy1_3QqrNcjEyIIbZu2r_08u278CkvvGweYsB6az_SmHjt_nAKL0a8WnRsShyiOweMCgdi3kmm0BcvEDtI"/><div class="flex flex-col text-left"><span class="font-title-sm text-body-sm font-semibold text-on-surface leading-tight">Dr. Tariqul Islam</span><span class="font-body-sm text-[11px] text-on-surface-variant leading-tight">Head of Banking Ops</span></div></div></div></div></header><main class="relative pt-16 w-full min-h-screen bg-surface px-space-lg py-space-lg"><div class="flex flex-col w-full space-y-space-lg">
+<!-- ========================================================================= -->
+<!-- 1. EXECUTIVE PAGE HEADER & ACTION CONTROLS                                -->
+<!-- ========================================================================= -->
+<section class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-space-sm">
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-data-mono-xs font-semibold tracking-wider uppercase">Fiduciary Node #01</span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-data-mono-xs text-data-mono-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Live feed • updated 12s ago
+        </span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Central Command &amp; Banking Liquidity</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+        Real-time settlement status, automated clearing house (ACH/BEFTN) protocols, reserve liquidity ratios, and AML fiduciary risk oversight.
+      </p>
+</div>
+<!-- Action Toolbar -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Date Selector Dropdown -->
+<div class="relative">
+<button class="flex items-center gap-2 h-10 px-3 rounded bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low transition-colors" id="datePickerBtn" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">calendar_today</span>
+<span class="font-body-sm text-body-sm font-semibold">Today (24 Oct 2024)</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+</button>
+</div>
+<!-- Export Button -->
+<button class="flex items-center gap-1.5 h-10 px-3.5 rounded bg-surface-container-lowest text-secondary shadow-sm hover:bg-surface-container-low transition-colors font-body-sm text-body-sm font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+<span>Consolidated Report (PDF/CSV)</span>
+</button>
+<!-- Reconcile Primary Action -->
+<button class="flex items-center gap-2 h-10 px-4 rounded bg-primary text-on-primary shadow-sm hover:bg-primary-container transition-all active:scale-[0.99] font-body-sm text-body-sm font-semibold" onclick="document.getElementById('reconcileModal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">lock_reset</span>
+<span>Reconcile Clearing Ledger</span>
+</button>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 2. 7 PRIMARY BANKING KPI METRIC CARDS                                     -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1: Registered Customers -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Total Customers</span>
+<div class="mt-1 font-display-lg text-headline-xl text-on-surface font-semibold tracking-tight">48,290</div>
+</div>
+<div class="w-10 h-10 rounded bg-primary-fixed/40 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">group</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-body-sm">
+<span class="inline-flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> +4.2%
+        </span>
+<span class="text-on-surface-variant text-[11px] font-body-sm">+142 onboarded this week</span>
+</div>
+</div>
+<!-- Card 2: Total Bank Accounts -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Active Accounts</span>
+<div class="mt-1 font-display-lg text-headline-xl text-on-surface font-semibold tracking-tight">62,845</div>
+</div>
+<div class="w-10 h-10 rounded bg-secondary-fixed/50 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+</div>
+</div>
+<div class="mt-space-xs">
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-surface-container">
+<div class="bg-primary w-[65%]" title="Savings"></div>
+<div class="bg-secondary w-[24%]" title="Current"></div>
+<div class="bg-primary-fixed-dim w-[11%]" title="Business"></div>
+</div>
+<div class="mt-1.5 flex items-center justify-between text-[11px] font-data-mono-xs text-on-surface-variant">
+<span>SAV: 41.2k</span>
+<span>CUR: 14.8k</span>
+<span>BIZ: 6.8k</span>
+</div>
+</div>
+<div class="mt-space-xs pt-1 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span class="text-primary font-semibold">+380 net new</span>
+<span>98.8% Active Ratio</span>
+</div>
+</div>
+<!-- Card 3: Total Bank Balance (Primary Liquidity Highlight) -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between md:col-span-2 bg-gradient-to-br from-surface-container-lowest via-surface-container-lowest to-primary-fixed/10">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm font-semibold text-primary uppercase tracking-wider">Treasury Vault &amp; Net Liquidity</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-data-mono-xs text-data-mono-xs font-bold">SLR: 100% OK</span>
+</div>
+<div class="mt-1 flex items-baseline gap-2">
+<span class="font-headline-xl text-display-lg text-on-surface font-bold tracking-tight">৳ 1,482,950,420</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">BDT Core</span>
+</div>
+</div>
+<div class="w-11 h-11 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]">account_balance</span>
+</div>
+</div>
+<div class="mt-space-md grid grid-cols-2 sm:grid-cols-3 gap-space-sm pt-space-xs">
+<div class="p-2 rounded bg-surface-container-low">
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant block">Available Reserve</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">৳ 924.50M</span>
+</div>
+<div class="p-2 rounded bg-surface-container-low">
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant block">Statutory CRR Base</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">৳ 240.00M</span>
+</div>
+<div class="p-2 rounded bg-surface-container-low col-span-2 sm:col-span-1">
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant block">24h Net Inflow</span>
+<span class="font-body-sm text-body-sm font-semibold text-primary">+৳ 32.40M</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Secondary Metric Row (Cards 4, 5, 6, 7) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 4: Total Deposits (MTD) -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Total Deposits (MTD)</span>
+<div class="mt-1 font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">৳ 318,450,200</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-primary">savings</span>
+</div>
+<div class="mt-space-sm flex items-center justify-between text-[11px] font-body-sm">
+<span class="text-primary font-semibold inline-flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">trending_up</span> +8.6% MoM
+        </span>
+<span class="text-on-surface-variant font-data-mono-xs">14,210 batches</span>
+</div>
+</div>
+<!-- Card 5: Total Withdrawals (MTD) -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Total Withdrawals (MTD)</span>
+<div class="mt-1 font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">৳ 194,820,110</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-secondary">output</span>
+</div>
+<div class="mt-space-sm flex items-center justify-between text-[11px] font-body-sm">
+<span class="text-secondary font-semibold inline-flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">check</span> Normalized
+        </span>
+<span class="text-on-surface-variant font-data-mono-xs">RTGS &amp; ATMs</span>
+</div>
+</div>
+<!-- Card 6: Total Transactions (Today) -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Settled Today</span>
+<div class="mt-1 font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">18,492</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-primary">swap_horizontal_circle</span>
+</div>
+<div class="mt-space-sm flex items-center justify-between text-[11px] font-body-sm">
+<span class="text-primary font-semibold">99.94% Cleared</span>
+<span class="text-on-surface-variant font-data-mono-xs">৳ 89.45M Vol</span>
+</div>
+</div>
+<!-- Card 7: Pending Loan Applications -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Loan Pipeline</span>
+<div class="mt-1 font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">38 <span class="text-body-sm font-body-sm font-normal text-on-surface-variant">pending</span></div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-tertiary">real_estate_agent</span>
+</div>
+<div class="mt-space-sm flex items-center justify-between text-[11px] font-body-sm">
+<span class="px-1.5 py-0.5 rounded bg-tertiary-container/30 text-on-tertiary-fixed font-semibold">12 Urgent SLA</span>
+<span class="text-on-surface-variant font-data-mono-xs">৳ 42.8M Req</span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. DATA VISUALIZATION SUITE (5 High-Density Charts)                       -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Chart 1: Monthly Transaction Volume (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Monthly Transaction Volume &amp; Value</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Total automated clearing switch throughput (Jan - Oct 2024)</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 font-data-mono-xs text-data-mono-xs text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded bg-primary"></span> Vol (k)
+          </span>
+<span class="flex items-center gap-1 font-data-mono-xs text-data-mono-xs text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded bg-secondary"></span> Clearing ৳M
+          </span>
+</div>
+</div>
+<!-- SVG Bar Chart -->
+<div class="w-full pt-4 pb-2">
+<div class="relative h-56 flex items-end justify-between gap-2 px-2">
+<!-- Horizontal reference guide lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+</div>
+<!-- Jan -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 48%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 40%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Jan</span>
+</div>
+<!-- Feb -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 54%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 45%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Feb</span>
+</div>
+<!-- Mar -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 62%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 52%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Mar</span>
+</div>
+<!-- Apr -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 58%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 50%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Apr</span>
+</div>
+<!-- May -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 68%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 61%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">May</span>
+</div>
+<!-- Jun -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 72%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 65%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Jun</span>
+</div>
+<!-- Jul -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 78%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 70%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Jul</span>
+</div>
+<!-- Aug -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 84%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 76%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Aug</span>
+</div>
+<!-- Sep -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary/75 group-hover:bg-primary transition-all rounded-t-sm" style="height: 90%"></div>
+<div class="w-3.5 bg-secondary/60 group-hover:bg-secondary transition-all rounded-t-sm" style="height: 82%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Sep</span>
+</div>
+<!-- Oct (Current) -->
+<div class="flex-1 flex flex-col items-center gap-1 z-10 group">
+<div class="w-full flex items-end justify-center gap-1 h-44">
+<div class="w-3.5 bg-primary shadow-sm rounded-t-sm relative" style="height: 96%">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 px-1 py-0.5 rounded bg-on-surface text-surface-container-lowest font-data-mono-xs text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">94k</span>
+</div>
+<div class="w-3.5 bg-secondary rounded-t-sm" style="height: 88%"></div>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-primary">Oct</span>
+</div>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between text-body-sm text-on-surface-variant">
+<span class="font-data-mono-xs text-data-mono-xs">Quarterly Growth: <span class="text-primary font-bold">+18.4% YoY</span></span>
+<span class="font-data-mono-xs text-data-mono-xs">Peak Settlement: ৳ 98.2M/day</span>
+</div>
+</div>
+<!-- Chart 2: Comparative Liquidity Flow (Deposit vs Withdrawal) (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Weekly Liquidity Flow</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deposits vs Outflows (৳ Millions)</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-data-mono-xs font-semibold">+৳ 58.2M Net</span>
+</div>
+<!-- Weekly Progress Metric Visualizer -->
+<div class="space-y-3 pt-2">
+<!-- Week 1 -->
+<div>
+<div class="flex justify-between text-[11px] font-data-mono-xs text-on-surface-variant mb-1">
+<span class="font-semibold text-on-surface">Week 41 (01-07 Oct)</span>
+<span>In: ৳ 68.4M | Out: ৳ 42.1M</span>
+</div>
+<div class="flex h-3 rounded-full overflow-hidden bg-surface-container">
+<div class="bg-primary h-full" style="width: 62%" title="Deposit Inflow"></div>
+<div class="bg-secondary-container h-full" style="width: 38%" title="Withdrawal Outflow"></div>
+</div>
+</div>
+<!-- Week 2 -->
+<div>
+<div class="flex justify-between text-[11px] font-data-mono-xs text-on-surface-variant mb-1">
+<span class="font-semibold text-on-surface">Week 42 (08-14 Oct)</span>
+<span>In: ৳ 81.2M | Out: ৳ 50.4M</span>
+</div>
+<div class="flex h-3 rounded-full overflow-hidden bg-surface-container">
+<div class="bg-primary h-full" style="width: 61%" title="Deposit Inflow"></div>
+<div class="bg-secondary-container h-full" style="width: 39%" title="Withdrawal Outflow"></div>
+</div>
+</div>
+<!-- Week 3 -->
+<div>
+<div class="flex justify-between text-[11px] font-data-mono-xs text-on-surface-variant mb-1">
+<span class="font-semibold text-on-surface">Week 43 (15-21 Oct)</span>
+<span>In: ৳ 94.6M | Out: ৳ 58.0M</span>
+</div>
+<div class="flex h-3 rounded-full overflow-hidden bg-surface-container">
+<div class="bg-primary h-full" style="width: 63%" title="Deposit Inflow"></div>
+<div class="bg-secondary-container h-full" style="width: 37%" title="Withdrawal Outflow"></div>
+</div>
+</div>
+<!-- Week 4 -->
+<div>
+<div class="flex justify-between text-[11px] font-data-mono-xs text-on-surface-variant mb-1">
+<span class="font-semibold text-on-surface">Week 44 (Current)</span>
+<span>In: ৳ 74.2M | Out: ৳ 44.3M</span>
+</div>
+<div class="flex h-3 rounded-full overflow-hidden bg-surface-container">
+<div class="bg-primary h-full" style="width: 64%" title="Deposit Inflow"></div>
+<div class="bg-secondary-container h-full" style="width: 36%" title="Withdrawal Outflow"></div>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 font-data-mono-xs text-[11px]">
+<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Inflow Ratio 63%</span>
+<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span> Outflow Ratio 37%</span>
+</div>
+<span class="font-body-sm text-[11px] text-primary font-semibold">Surplus Steady</span>
+</div>
+</div>
+</section>
+<!-- Secondary Charts Grid (Charts 3, 4, 5) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Chart 3: Account Distribution Donut Representation -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold">Deposit Portfolio Mix</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">donut_small</span>
+</div>
+<div class="my-4 flex items-center justify-center">
+<div class="relative w-36 h-36 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background circle -->
+<circle class="text-surface-container" cx="18" cy="18" fill="none" r="15.915" stroke="currentColor" stroke-width="4.2"></circle>
+<!-- Savings (65%) -->
+<circle class="text-primary" cx="18" cy="18" fill="none" r="15.915" stroke="currentColor" stroke-dasharray="65 35" stroke-dashoffset="0" stroke-width="4.2"></circle>
+<!-- Current (24%) -->
+<circle class="text-secondary" cx="18" cy="18" fill="none" r="15.915" stroke="currentColor" stroke-dasharray="24 76" stroke-dashoffset="-65" stroke-width="4.2"></circle>
+<!-- Business (11%) -->
+<circle class="text-primary-fixed-dim" cx="18" cy="18" fill="none" r="15.915" stroke="currentColor" stroke-dasharray="11 89" stroke-dashoffset="-89" stroke-width="4.2"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">62.8k</span>
+<span class="font-data-mono-xs text-[10px] text-on-surface-variant">ACCOUNTS</span>
+</div>
+</div>
+</div>
+<div class="space-y-1.5 pt-1">
+<div class="flex items-center justify-between text-[11px] font-body-sm">
+<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Savings Accounts</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">65.0% (৳ 963.9M)</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-body-sm">
+<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Current Checking</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">24.0% (৳ 355.9M)</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-body-sm">
+<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary-fixed-dim"></span> Institutional / Corp</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">11.0% (৳ 163.1M)</span>
+</div>
+</div>
+</div>
+<!-- Chart 4: Loan Underwriting Conversion -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold">Credit Underwriting Health</h3>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-data-mono-xs text-data-mono-xs">YTD</span>
+</div>
+<div class="my-3 space-y-3">
+<!-- Approved -->
+<div>
+<div class="flex items-center justify-between text-body-sm mb-1">
+<span class="font-body-sm text-[12px] font-medium text-on-surface">Approved &amp; Disbursed</span>
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-primary">72% (412)</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 72%"></div>
+</div>
+</div>
+<!-- Under Review -->
+<div>
+<div class="flex items-center justify-between text-body-sm mb-1">
+<span class="font-body-sm text-[12px] font-medium text-on-surface">In Committee Review</span>
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-secondary">18% (104)</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 18%"></div>
+</div>
+</div>
+<!-- Rejected -->
+<div>
+<div class="flex items-center justify-between text-body-sm mb-1">
+<span class="font-body-sm text-[12px] font-medium text-on-surface">Risk Threshold Rejected</span>
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-tertiary">10% (58)</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 10%"></div>
+</div>
+</div>
+</div>
+<div class="pt-2 p-2.5 rounded bg-surface-container-low flex items-center justify-between text-[11px] font-body-sm">
+<span class="text-on-surface-variant">Average Turnaround SLA</span>
+<span class="font-data-mono-xs font-semibold text-primary">4.2 Hours</span>
+</div>
+</div>
+<!-- Chart 5: Peak Banking Hours & Activity Area Chart -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold">Peak Settlement Hourly Load</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Clearing engine transactions/sec</p>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+</div>
+<!-- Inline Area SVG Wave -->
+<div class="my-2 h-28 w-full relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 240 80">
+<defs>
+<lineargradient id="peakGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00614f" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#00614f" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Area fill -->
+<path d="M 0,70 Q 30,68 50,55 T 90,32 T 130,12 T 170,30 T 210,18 L 240,40 L 240,80 L 0,80 Z" fill="url(#peakGradient)"></path>
+<!-- Line stroke -->
+<path d="M 0,70 Q 30,68 50,55 T 90,32 T 130,12 T 170,30 T 210,18 L 240,40" fill="none" stroke="#00614f" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Highlight marker on peak (130, 12) -->
+<circle class="shadow-sm" cx="130" cy="12" fill="#00614f" r="4"></circle>
+<circle cx="130" cy="12" fill="#00614f" fill-opacity="0.2" r="7"></circle>
+</svg>
+</div>
+<div class="flex items-center justify-between text-[11px] font-data-mono-xs text-on-surface-variant pt-1">
+<span>08:00 (Open)</span>
+<span class="text-primary font-bold">14:00 (Peak: 4.8k/min)</span>
+<span>20:00 (Close)</span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. OPERATIONAL PANELS: SUSPICIOUS QUEUE (AML) + LOAN APPROVAL QUEUE       -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left Panel (AML / Suspicious Activity): 7 Cols -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">policy</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Suspicious Activity Flags</h2>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-data-mono-xs text-data-mono-xs font-bold">4 High Priority</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Automated Anti-Money Laundering (AML) &amp; Velocity Detection Rules</p>
+</div>
+</div>
+<a class="font-body-sm text-body-sm font-semibold text-primary hover:underline flex items-center gap-0.5" href="#">
+          View All (14) <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- AML Items List -->
+<div class="space-y-space-sm mt-space-xs">
+<!-- Item 1: Rapid Velocity -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-data-mono-sm text-data-mono-sm font-bold text-on-surface">TXN-8942-019</span>
+<span class="px-1.5 py-0.5 rounded bg-error text-on-error font-data-mono-xs text-data-mono-xs font-semibold">Critical (94/100)</span>
+</div>
+<span class="font-data-tabular-lg text-title-sm font-bold text-tertiary">৳ 1,250,000</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+            Rapid velocity fund burst from dormant account <span class="font-data-mono-xs text-on-surface font-semibold">#0192-8821</span> to 6 unverified external BKash/Nagad endpoints within 4 minutes.
+          </p>
+<div class="mt-2.5 flex items-center justify-between flex-wrap gap-2">
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Trigger: Rule AML-VEL-9 • 6m ago</span>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded bg-error text-on-error hover:bg-on-error-container text-body-sm text-[12px] font-semibold transition-colors flex items-center gap-1" onclick="document.getElementById('freezeModal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[14px]">lock</span> Freeze Account
+              </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high text-body-sm text-[12px] font-medium transition-colors" type="button">
+                Inspect Dossier
+              </button>
+<button class="px-2 py-1 rounded text-on-surface-variant hover:text-on-surface text-body-sm text-[12px]" type="button">
+                Dismiss
+              </button>
+</div>
+</div>
+</div>
+<!-- Item 2: Off-hours ATM -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-data-mono-sm text-data-mono-sm font-bold text-on-surface">TXN-8939-112</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary-container text-on-tertiary-container font-data-mono-xs text-data-mono-xs font-semibold">High (81/100)</span>
+</div>
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 980,000</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+            Off-hours rapid consecutive ATM maximum cash dispensation attempts at Booth #04 Khulna Regional Circle.
+          </p>
+<div class="mt-2.5 flex items-center justify-between flex-wrap gap-2">
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Trigger: Rule GEO-TIME-04 • 19m ago</span>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-tertiary hover:bg-error-container text-body-sm text-[12px] font-semibold transition-colors" type="button">
+                Hold Funds
+              </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high text-body-sm text-[12px] font-medium transition-colors" type="button">
+                Contact Customer
+              </button>
+</div>
+</div>
+</div>
+<!-- Item 3: Daily Limit Exceeded -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-data-mono-sm text-data-mono-sm font-bold text-on-surface">TXN-8924-405</span>
+<span class="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-data-mono-xs text-data-mono-xs font-semibold">Threshold Breach</span>
+</div>
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 2,500,000</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+            Transfer exceeds statutory standard daily cap (৳ 1,000,000) for Commercial Checking <span class="font-data-mono-xs text-on-surface font-semibold">#0482-9901</span> without secondary board approval note.
+          </p>
+<div class="mt-2.5 flex items-center justify-between">
+<span class="font-data-mono-xs text-data-mono-xs text-secondary font-semibold">Status: Paused in Escrow Queue</span>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-primary hover:bg-primary/10 text-body-sm text-[12px] font-semibold transition-colors" type="button">
+              Authorize Clearance
+            </button>
+</div>
+</div>
+<!-- Item 4: PIN Brute Force -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+<div class="flex items-center gap-2">
+<span class="font-data-mono-sm text-data-mono-sm font-bold text-on-surface">TXN-8911-883</span>
+<span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-data-mono-xs text-data-mono-xs font-bold">Auto-Locked</span>
+</div>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Account: #0921-3312</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            3 consecutive failed biometric &amp; 2FA challenges followed by swift automated outbound sweeps. Account locked by Security Sentinel daemon.
+          </p>
+</div>
+</div>
+</div>
+<!-- Right Panel (Credit Underwriting & Loan Queue): 5 Cols -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-primary-fixed/50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">approval</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Credit Underwriting</h2>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-data-mono-xs text-data-mono-xs font-bold">38 Queue</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Commercial &amp; Retail Credit Applications</p>
+</div>
+</div>
+<a class="font-body-sm text-body-sm font-semibold text-primary hover:underline flex items-center gap-0.5" href="#">
+          Desk <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- Loan Applications List -->
+<div class="space-y-space-sm mt-space-xs">
+<!-- Loan 1 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-primary">APX-LN-2024-884</span>
+<span class="font-data-mono-xs text-data-mono-xs px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold">Score: 785 (Prime)</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-title-sm text-title-sm font-semibold text-on-surface">Farhan Rahman (Green Agro)</span>
+<span class="font-title-sm text-title-sm font-bold text-primary">৳ 1,500,000</span>
+</div>
+<div class="mt-1 flex items-center gap-2 text-[11px] font-body-sm text-on-surface-variant">
+<span>SME Working Capital</span>
+<span>•</span>
+<span>24 Months</span>
+<span>•</span>
+<span>Monthly Inc: ৳ 240k</span>
+</div>
+<div class="mt-2.5 pt-2 flex items-center justify-end gap-2">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high text-[11px] font-medium" type="button">Audit</button>
+<button class="px-2.5 py-1 rounded bg-error-container text-on-error-container hover:bg-error hover:text-on-error text-[11px] font-semibold transition-colors" type="button">Reject</button>
+<button class="px-3 py-1 rounded bg-primary text-on-primary hover:bg-primary-container text-[11px] font-semibold shadow-sm transition-colors" type="button">Approve</button>
+</div>
+</div>
+<!-- Loan 2 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-primary">APX-LN-2024-882</span>
+<span class="font-data-mono-xs text-data-mono-xs px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold">Score: 810 (Excellent)</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-title-sm text-title-sm font-semibold text-on-surface">Nusrat Jahan (Architect)</span>
+<span class="font-title-sm text-title-sm font-bold text-primary">৳ 500,000</span>
+</div>
+<div class="mt-1 flex items-center gap-2 text-[11px] font-body-sm text-on-surface-variant">
+<span>Personal Executive Loan</span>
+<span>•</span>
+<span>12 Months</span>
+<span>•</span>
+<span>Monthly Inc: ৳ 160k</span>
+</div>
+<div class="mt-2.5 pt-2 flex items-center justify-end gap-2">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high text-[11px] font-medium" type="button">Audit</button>
+<button class="px-2.5 py-1 rounded bg-error-container text-on-error-container hover:bg-error hover:text-on-error text-[11px] font-semibold transition-colors" type="button">Reject</button>
+<button class="px-3 py-1 rounded bg-primary text-on-primary hover:bg-primary-container text-[11px] font-semibold shadow-sm transition-colors" type="button">Approve</button>
+</div>
+</div>
+<!-- Loan 3 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-secondary">APX-LN-2024-879</span>
+<span class="font-data-mono-xs text-data-mono-xs px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold">Score: 740</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-title-sm text-title-sm font-semibold text-on-surface">Rahim Textile Mills Ltd</span>
+<span class="font-title-sm text-title-sm font-bold text-on-surface">৳ 3,200,000</span>
+</div>
+<div class="mt-1 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Commercial Equipment Lease (36 Mo)</span>
+<span class="text-secondary font-medium">In Committee Review</span>
+</div>
+</div>
+<!-- Loan 4 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-xs text-data-mono-xs font-bold text-on-surface-variant">APX-LN-2024-871</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Fwd by Staff Kamal</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<span class="font-title-sm text-title-sm font-semibold text-on-surface">Tanvir Hossain</span>
+<span class="font-title-sm text-title-sm font-bold text-on-surface">৳ 800,000</span>
+</div>
+<div class="mt-1 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Home Renovation Loan (36 Mo)</span>
+<span>Documentation Pending</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. MASTER TRANSACTIONS TABLE & ADVANCED CONTROLS                          -->
+<!-- ========================================================================= -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Table Header & Controls Bar -->
+<div class="p-space-md space-y-space-sm bg-surface-container-lowest">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Master Clearing &amp; Transactions Journal</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Audited real-time ledger entries across RTGS, NPSB, BEFTN, and internal transfers</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Export Table (CSV)</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Reload Ledger" type="button">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Advanced Filter Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-space-sm pt-space-xs">
+<!-- Search Input -->
+<div class="relative md:col-span-2">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest" placeholder="Filter by TXN ID, account #, sender name..." type="text"/>
+</div>
+<!-- Filter by Type -->
+<div>
+<select class="w-full h-9 px-3 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+<option>All Types</option>
+<option>Fund Transfer</option>
+<option>Cash Deposit</option>
+<option>Withdrawal</option>
+<option>Loan Disbursement</option>
+<option>Loan Repayment</option>
+</select>
+</div>
+<!-- Filter by Status -->
+<div>
+<select class="w-full h-9 px-3 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+<option>All Statuses</option>
+<option>Completed</option>
+<option>Pending</option>
+<option>Failed</option>
+<option>Reversed</option>
+</select>
+</div>
+<!-- Date Range Filter -->
+<div class="flex items-center gap-1">
+<select class="w-full h-9 px-2 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+<option>Last 7 Days (18-24 Oct)</option>
+<option>Today Only</option>
+<option>Month to Date</option>
+<option>Custom Window...</option>
+</select>
+<button class="h-9 px-2 rounded bg-surface-container text-on-surface-variant hover:text-on-surface" title="Reset Filters" type="button">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Responsive Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm uppercase tracking-wider font-semibold text-[11px]">
+<th class="py-3 px-4">TXN Identifier</th>
+<th class="py-3 px-4">Timestamp</th>
+<th class="py-3 px-4">Origin / Debited</th>
+<th class="py-3 px-4">Beneficiary / Branch</th>
+<th class="py-3 px-4">Type</th>
+<th class="py-3 px-4 text-right">Amount (৳ BDT)</th>
+<th class="py-3 px-4 text-right">Fee</th>
+<th class="py-3 px-4 text-center">Status</th>
+<th class="py-3 px-4 text-center">Audit</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: Large Corporate Transfer -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4421</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 14:38:12
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Summit Power Ltd</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#0482-9901 (Corp)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">Standard Chartered BEFTN</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Routing #020261</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-data-mono-xs font-medium">Fund Transfer</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 4,500,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 15.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Completed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="document.getElementById('receiptModal').classList.remove('hidden')" title="View Audit Receipt" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Customer Salary Deposit (Inflow) -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4420</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 14:35:50
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Apex Core Payroll Bulk</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Treasury Clearing #001</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">Shakil Ahmed</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#8812-4029 (Savings)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-data-mono-xs font-medium">Cash Deposit</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-primary">+৳ 85,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 0.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Completed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="document.getElementById('receiptModal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Loan Disbursement -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4418</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 14:22:04
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Apex Commercial Loan Desk</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Pool #LN-CRED-09</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">Rahman &amp; Brothers Enterprise</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#5519-0021 (Current)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-data-mono-xs text-data-mono-xs font-semibold">Loan Disbursement</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 1,200,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 120.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Completed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: ATM Cash Outflow -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4415</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 14:19:41
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Mahmudul Hasan</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#2201-9983 (Savings)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">ATM Booth #12 Banani Circle</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Terminal ID #BN-04</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed-dim/40 text-on-secondary-fixed-variant font-data-mono-xs text-data-mono-xs font-medium">Withdrawal</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 40,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 0.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Completed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Pending ACH Interbank Clearance -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4411</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 14:12:18
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Anisul Hoque</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#7730-2210 (Current)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">City Bank Ltd Gulshan</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">NPSB Direct Gateway</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-data-mono-xs font-medium">Fund Transfer</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 350,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 10.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span> Pending
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Failed Insufficient Escrow -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4398</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 13:58:30
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Kamrul Islam</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#1029-4458 (Savings)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">BRAC Bank BDT Clearing</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">RTGS Gateway #01</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-data-mono-xs font-medium">Fund Transfer</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 180,000.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 0.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Failed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Monthly Loan Repayment -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4395</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 13:45:11
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Dr. Sadia Afrin</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#3910-1120 (Savings)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">Auto-Debit Escrow Vault</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Loan #APX-LN-2023-11</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-data-mono-xs text-data-mono-xs font-semibold">Loan Repayment</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-on-surface">৳ 45,800.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 0.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Completed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+<!-- Row 8: Reversed Dispute Transaction -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3.5 px-4">
+<span class="font-data-mono-xs text-data-mono-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface">#TXN-9028-4390</span>
+</td>
+<td class="py-3.5 px-4 font-data-mono-xs text-data-mono-xs text-on-surface-variant whitespace-nowrap">
+              24 Oct 13:30:22
+            </td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm font-semibold text-on-surface">Apex Merchant Settlement</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Dispute Node #D-409</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col">
+<span class="font-body-sm font-medium text-on-surface">Tanvir Ahmed</span>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">#6621-0081 (Savings)</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-xs text-data-mono-xs font-medium">Fund Transfer</span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-data-tabular-lg text-title-sm font-bold text-tertiary">৳ 12,450.00</span>
+</td>
+<td class="py-3.5 px-4 text-right font-data-mono-xs text-data-mono-xs text-on-surface-variant">৳ 0.00</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Reversed
+              </span>
+</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-3 text-body-sm text-on-surface-variant">
+<span>Showing <strong class="text-on-surface font-semibold">1 to 8</strong> of <strong class="text-on-surface font-semibold">18,492</strong> transactions</span>
+<span>•</span>
+<div class="flex items-center gap-1.5 font-data-mono-xs text-data-mono-xs">
+<span>Per page:</span>
+<select class="h-7 px-2 rounded bg-surface-container-lowest text-on-surface border-none text-[11px]">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+<option>100</option>
+</select>
+</div>
+</div>
+<!-- Pagination Buttons -->
+<div class="flex items-center gap-1">
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center justify-center disabled:opacity-40" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="h-8 w-8 rounded bg-primary text-on-primary font-data-mono-xs text-data-mono-xs font-semibold flex items-center justify-center" type="button">1</button>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-data-mono-xs text-data-mono-xs flex items-center justify-center" type="button">2</button>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-data-mono-xs text-data-mono-xs flex items-center justify-center" type="button">3</button>
+<span class="px-1 text-on-surface-variant font-data-mono-xs">...</span>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-data-mono-xs text-data-mono-xs flex items-center justify-center" type="button">231</button>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 6. INTERACTIVE MODAL / SECURITY CONFIRMATION OVERLAYS                      -->
+<!-- ========================================================================= -->
+<!-- Freeze Account Maker-Checker Modal -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="freezeModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-xl space-y-space-md animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Authorize Fiduciary Freeze</h3>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Account: #0192-8821 • Flag: AML-VEL-9</span>
+</div>
+</div>
+<button class="p-1 text-on-surface-variant hover:text-on-surface rounded" onclick="document.getElementById('freezeModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="p-3 rounded bg-error-container/30 text-on-error-container text-body-sm font-body-sm">
+<strong>CRITICAL ACTION:</strong> This will instantly suspend all debit privileges, card operations, scheduledStanding instructions, and external ACH/RTGS gateways for this account across Bangladesh Bank clearing switches.
+      </div>
+<div class="space-y-space-sm">
+<div>
+<label class="block font-body-sm text-body-sm font-medium text-on-surface mb-1">Reason for Administrative Intervention</label>
+<textarea class="w-full p-2.5 rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Enter regulatory justification note for Central Bank audit trail..." rows="2"></textarea>
+</div>
+<div>
+<label class="block font-body-sm text-body-sm font-medium text-on-surface mb-1">Super Admin Security Clearance PIN</label>
+<input class="w-full h-10 px-3 tracking-widest font-data-mono-sm rounded bg-surface-container-low text-on-surface text-center focus:outline-none focus:ring-1 focus:ring-primary" maxlength="6" placeholder="••••••" type="password"/>
+<span class="text-[11px] font-data-mono-xs text-on-surface-variant mt-1 block">Requires Level 4 Dual-Custody Approval</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-4 py-2 rounded bg-surface-container-low text-on-surface hover:bg-surface-container font-body-sm text-body-sm font-semibold transition-colors" onclick="document.getElementById('freezeModal').classList.add('hidden')" type="button">
+          Cancel
+        </button>
+<button class="px-4 py-2 rounded bg-error text-on-error hover:bg-on-error-container font-body-sm text-body-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5" onclick="document.getElementById('freezeModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>Execute Freeze Order</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Reconcile Clearing Ledger Modal -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="reconcileModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-xl space-y-space-md animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded bg-primary-fixed text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">sync_saved_locally</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Reconcile Core Ledger</h3>
+<span class="font-data-mono-xs text-data-mono-xs text-on-surface-variant">Batch Reconciliation Sequence #BRS-8821</span>
+</div>
+</div>
+<button class="p-1 text-on-surface-variant hover:text-on-surface rounded" onclick="document.getElementById('reconcileModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="space-y-2 text-body-sm font-body-sm text-on-surface-variant">
+<p>This routine matches internal balance registries with Bangladesh Bank National Payment Switch (NPSB) and BACH 2 settlement files.</p>
+<div class="p-3 rounded bg-surface-container-low space-y-1.5 font-data-mono-xs text-data-mono-xs text-on-surface">
+<div class="flex justify-between">
+<span>Pending External Batches:</span>
+<span class="font-bold">4 batches (৳ 18,400,000)</span>
+</div>
+<div class="flex justify-between">
+<span>Unmatched Discrepancy Margin:</span>
+<span class="font-bold text-primary">৳ 0.00 (Zero Drift)</span>
+</div>
+<div class="flex justify-between">
+<span>Ledger Timestamp Hash:</span>
+<span class="font-bold">0x7F9A...B32C</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-4 py-2 rounded bg-surface-container-low text-on-surface hover:bg-surface-container font-body-sm text-body-sm font-semibold transition-colors" onclick="document.getElementById('reconcileModal').classList.add('hidden')" type="button">
+          Abort
+        </button>
+<button class="px-4 py-2 rounded bg-primary text-on-primary hover:bg-primary-container font-body-sm text-body-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5" onclick="document.getElementById('reconcileModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+<span>Commit Reconciliation</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Transaction Receipt Audit Modal -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm p-4" id="receiptModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-md w-full p-space-lg shadow-xl space-y-space-md animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-data-mono-xs text-data-mono-xs text-primary font-bold uppercase tracking-wider">Settlement Receipt</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">TXN-9028-4421</h3>
+</div>
+<button class="p-1 text-on-surface-variant hover:text-on-surface rounded" onclick="document.getElementById('receiptModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="p-4 rounded-lg bg-surface-container-low text-center">
+<span class="font-body-sm text-[11px] text-on-surface-variant uppercase tracking-wider">Total Dispatched Amount</span>
+<div class="font-headline-xl text-headline-xl font-bold text-on-surface mt-1">৳ 4,500,000.00</div>
+<span class="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-xs text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Settled on BACH-2 Engine
+        </span>
+</div>
+<div class="space-y-2 text-[12px] font-body-sm divide-y divide-surface-container">
+<div class="pt-2 flex justify-between">
+<span class="text-on-surface-variant">Debited Account</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">#0482-9901 (Summit Power)</span>
+</div>
+<div class="pt-2 flex justify-between">
+<span class="text-on-surface-variant">Credited Entity</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">Standard Chartered BEFTN</span>
+</div>
+<div class="pt-2 flex justify-between">
+<span class="text-on-surface-variant">Execution Timestamp</span>
+<span class="font-data-mono-xs text-on-surface">2024-10-24 14:38:12 UTC+6</span>
+</div>
+<div class="pt-2 flex justify-between">
+<span class="text-on-surface-variant">Fiduciary Regulatory Fee</span>
+<span class="font-data-mono-xs font-semibold text-on-surface">৳ 15.00</span>
+</div>
+<div class="pt-2 flex justify-between">
+<span class="text-on-surface-variant">Audit Verification SHA-256</span>
+<span class="font-data-mono-xs text-on-surface-variant truncate max-w-[200px]">e4b2a88190c74f0...d29a</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="w-full py-2 rounded bg-surface-container text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm font-semibold transition-colors" onclick="document.getElementById('receiptModal').classList.add('hidden')" type="button">
+          Close Dossier
+        </button>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

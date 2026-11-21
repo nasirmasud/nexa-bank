@@ -1,0 +1,429 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum AccountType {
+  SAVINGS
+  CURRENT
+  BUSINESS
+  SYSTEM
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum TxType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  LOAN_DISBURSEMENT
+  LOAN_REPAYMENT
+}
+
+enum TxStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum RequestType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LoanType {
+  PERSONAL
+  HOME
+  AUTO
+  EDUCATION
+  BUSINESS
+}
+
+enum EmploymentStatus {
+  EMPLOYED
+  SELF_EMPLOYED
+  BUSINESS_OWNER
+  STUDENT
+  UNEMPLOYED
+  RETIRED
+}
+
+enum LoanStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ACTIVE
+  COMPLETED
+}
+
+enum InstallmentStatus {
+  UPCOMING
+  PAID
+  OVERDUE
+}
+
+enum EntryDirection {
+  DEBIT
+  CREDIT
+}
+
+enum FlagSource {
+  STAFF
+  ADMIN
+  SYSTEM
+}
+
+enum FlagStatus {
+  OPEN
+  DISMISSED
+  ESCALATED
+}
+
+enum NotificationType {
+  MONEY_RECEIVED
+  TRANSFER_COMPLETED
+  DEPOSIT_APPROVED
+  DEPOSIT_REJECTED
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_REJECTED
+  LOAN_APPROVED
+  LOAN_REJECTED
+  LOAN_UNDER_REVIEW
+  ACCOUNT_FROZEN
+  ACCOUNT_STATUS
+  SYSTEM
+}
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  passwordHash     String
+  name             String
+  phone            String?
+  role             Role
+  status           UserStatus @default(ACTIVE)
+  sessionVersion   Int        @default(0)
+  failedLogins     Int        @default(0)
+  lockedUntil      DateTime?
+  pinHash          String?
+  pinFailedCount   Int        @default(0)
+  pinLockedUntil   DateTime?
+  twoFactorEnabled Boolean    @default(false)
+  theme            String     @default("system")
+  createdById      String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  profile        CustomerProfile?
+  accounts       Account[]
+  requests       DepositWithdrawRequest[] @relation("RequestRequester")
+  reviewedReqs   DepositWithdrawRequest[] @relation("RequestReviewer")
+  loans          Loan[]                   @relation("LoanApplicant")
+  reviewedLoans  Loan[]                   @relation("LoanReviewer")
+  loanNotes      LoanNote[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  idempotency    IdempotencyKey[]
+  flagsRaised    SuspiciousFlag[]         @relation("FlagRaisedBy")
+  flagsResolved  SuspiciousFlag[]         @relation("FlagResolvedBy")
+
+  @@index([role, status])
+}
+
+model CustomerProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerNo       String    @unique
+  nid              String    @unique
+  dateOfBirth      DateTime
+  fatherName       String?
+  motherName       String?
+  occupation       String?
+  presentAddress   String
+  permanentAddress String?
+  kycStatus        KycStatus @default(PENDING)
+  kycNote          String?
+  verifiedById     String?
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Account {
+  id                 String        @id @default(cuid())
+  accountNumber      String        @unique
+  ownerId            String?
+  owner              User?         @relation(fields: [ownerId], references: [id])
+  type               AccountType
+  status             AccountStatus @default(ACTIVE)
+  currency           String        @default("BDT")
+  balance            Decimal       @default(0) @db.Decimal(18, 2)
+  dailyTransferLimit Decimal?      @db.Decimal(18, 2)
+  perTxLimit         Decimal?      @db.Decimal(18, 2)
+  minBalance         Decimal?      @db.Decimal(18, 2)
+  nickname           String?
+  freezeReason       String?
+  openedAt           DateTime      @default(now())
+  createdById        String?
+  updatedAt          DateTime      @updatedAt
+
+  sentTx           Transaction[]            @relation("TxFrom")
+  receivedTx       Transaction[]            @relation("TxTo")
+  ledger           LedgerEntry[]
+  requests         DepositWithdrawRequest[]
+  loansDisbursedTo Loan[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model Transaction {
+  id            String     @id @default(cuid())
+  reference     String     @unique
+  type          TxType
+  status        TxStatus   @default(PENDING)
+  fromAccountId String?
+  toAccountId   String?
+  fromAccount   Account?   @relation("TxFrom", fields: [fromAccountId], references: [id])
+  toAccount     Account?   @relation("TxTo", fields: [toAccountId], references: [id])
+  amount        Decimal    @db.Decimal(18, 2)
+  fee           Decimal    @default(0) @db.Decimal(18, 2)
+  currency      String     @default("BDT")
+  description   String?
+  failureReason String?
+  reversalOfId  String?    @unique
+  reversalOf    Transaction? @relation("Reversal", fields: [reversalOfId], references: [id])
+  reversedBy    Transaction? @relation("Reversal")
+  initiatedById String?
+  requestId     String?    @unique
+  request       DepositWithdrawRequest? @relation(fields: [requestId], references: [id])
+  createdAt     DateTime   @default(now())
+  completedAt   DateTime?
+
+  ledger        LedgerEntry[]
+  flags         SuspiciousFlag[]
+  loanDisbursed Loan?
+  installment   LoanInstallment?
+
+  @@index([fromAccountId, createdAt])
+  @@index([toAccountId, createdAt])
+  @@index([type, status, createdAt])
+  @@index([createdAt])
+}
+
+model LedgerEntry {
+  id            String         @id @default(cuid())
+  transactionId String
+  transaction   Transaction    @relation(fields: [transactionId], references: [id])
+  accountId     String
+  account       Account        @relation(fields: [accountId], references: [id])
+  direction     EntryDirection
+  amount        Decimal        @db.Decimal(18, 2)
+  balanceAfter  Decimal        @db.Decimal(18, 2)
+  createdAt     DateTime       @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([transactionId])
+}
+
+model IdempotencyKey {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  key          String
+  endpoint     String
+  responseJson Json?
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, key])
+}
+
+model DepositWithdrawRequest {
+  id              String        @id @default(cuid())
+  type            RequestType
+  status          RequestStatus @default(PENDING)
+  accountId       String
+  account         Account       @relation(fields: [accountId], references: [id])
+  requesterId     String
+  requester       User          @relation("RequestRequester", fields: [requesterId], references: [id])
+  amount          Decimal       @db.Decimal(18, 2)
+  description     String?
+  requestedAt     DateTime      @default(now())
+  reviewedById    String?
+  reviewer        User?         @relation("RequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  rejectionReason String?
+  transaction     Transaction?
+
+  @@index([status, requestedAt])
+  @@index([requesterId])
+  @@index([accountId])
+}
+
+model Loan {
+  id                    String           @id @default(cuid())
+  loanNo                String           @unique
+  applicantId           String
+  applicant             User             @relation("LoanApplicant", fields: [applicantId], references: [id])
+  type                  LoanType
+  requestedAmount       Decimal          @db.Decimal(18, 2)
+  approvedAmount        Decimal?         @db.Decimal(18, 2)
+  durationMonths        Int
+  interestRate          Decimal          @db.Decimal(5, 2)
+  emiAmount             Decimal?         @db.Decimal(18, 2)
+  monthlyIncome         Decimal          @db.Decimal(18, 2)
+  employmentStatus      EmploymentStatus
+  description           String?
+  status                LoanStatus       @default(PENDING)
+  disbursementAccountId String?
+  disbursementAccount   Account?         @relation(fields: [disbursementAccountId], references: [id])
+  disbursementTxId      String?          @unique
+  disbursementTx        Transaction?     @relation(fields: [disbursementTxId], references: [id])
+  totalPayable          Decimal?         @db.Decimal(18, 2)
+  remainingBalance      Decimal?         @db.Decimal(18, 2)
+  forwardedById         String?
+  reviewedById          String?
+  reviewer              User?            @relation("LoanReviewer", fields: [reviewedById], references: [id])
+  reviewedAt            DateTime?
+  rejectionReason       String?
+  appliedAt             DateTime         @default(now())
+  disbursedAt           DateTime?
+  completedAt           DateTime?
+
+  installments LoanInstallment[]
+  notes        LoanNote[]
+
+  @@index([applicantId, status])
+  @@index([status, appliedAt])
+}
+
+model LoanInstallment {
+  id          String            @id @default(cuid())
+  loanId      String
+  loan        Loan              @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  number      Int
+  dueDate     DateTime
+  principal   Decimal           @db.Decimal(18, 2)
+  interest    Decimal           @db.Decimal(18, 2)
+  amount      Decimal           @db.Decimal(18, 2)
+  status      InstallmentStatus @default(UPCOMING)
+  paidAt      DateTime?
+  paymentTxId String?           @unique
+  paymentTx   Transaction?      @relation(fields: [paymentTxId], references: [id])
+
+  @@unique([loanId, number])
+  @@index([dueDate, status])
+}
+
+model LoanNote {
+  id        String   @id @default(cuid())
+  loanId    String
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  internal  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([loanId, createdAt])
+}
+
+model SuspiciousFlag {
+  id             String     @id @default(cuid())
+  transactionId  String
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  source         FlagSource
+  ruleCode       String?
+  reason         String
+  status         FlagStatus @default(OPEN)
+  raisedById     String?
+  raisedBy       User?      @relation("FlagRaisedBy", fields: [raisedById], references: [id])
+  resolvedById   String?
+  resolvedBy     User?      @relation("FlagResolvedBy", fields: [resolvedById], references: [id])
+  resolutionNote String?
+  createdAt      DateTime   @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([transactionId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model Settings {
+  id                   Int      @id @default(1)
+  dailyTransferLimit   Decimal  @default(200000) @db.Decimal(18, 2)
+  maxSingleTransaction Decimal  @default(100000) @db.Decimal(18, 2)
+  minAccountBalance    Decimal  @default(0) @db.Decimal(18, 2)
+  transferFeePercent   Decimal  @default(0.50) @db.Decimal(5, 2)
+  minTransferFee       Decimal  @default(5) @db.Decimal(18, 2)
+  loanIncomeMultiplier Int      @default(20)
+  loanInterestRates    Json
+  updatedById          String?
+  updatedAt            DateTime @updatedAt
+}
