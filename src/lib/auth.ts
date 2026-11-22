@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import type { Role } from "@prisma/client";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,31 +39,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
         if (user.status !== "ACTIVE") return null;
-        await prisma.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil: null } });
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLogins: 0, lockedUntil: null },
+        });
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
           sessionVersion: user.sessionVersion,
-        } as any;
+        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = (user as any).id;
-        token.role = (user as any).role;
-        token.sessionVersion = (user as any).sessionVersion;
+        token.id = user.id;
+        token.role = user.role;
+        token.sessionVersion = user.sessionVersion;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).sessionVersion = token.sessionVersion;
+      if (session.user && token.id && token.role && token.sessionVersion !== undefined) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as Role;
+        session.user.sessionVersion = token.sessionVersion as number;
       }
       return session;
     },
