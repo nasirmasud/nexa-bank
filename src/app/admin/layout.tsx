@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/guards";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { adminNav } from "@/components/shared/dashboard-nav";
 
+export const instant = false;
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await connection();
   const user = await requireRole("ADMIN");
