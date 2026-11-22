@@ -53,7 +53,45 @@ export const customersApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: { kycStatus },
       }),
-      invalidatesTags: [{ type: "Customer", id: "LIST" }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Customer", id: "LIST" },
+        { type: "Customer", id },
+      ],
+    }),
+    updateCustomerStatus: build.mutation<
+      { data: Customer },
+      { id: string; status: "ACTIVE" | "INACTIVE" | "BLOCKED" }
+    >({
+      query: ({ id, status }) => ({
+        url: `/customers/${id}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Customer", id: "LIST" },
+        { type: "Customer", id },
+      ],
+    }),
+    getCustomerTransactions: build.query<
+      {
+        data: {
+          id: string;
+          reference: string;
+          type: string;
+          status: string;
+          amount: string;
+          fee: string;
+          currency: string;
+          createdAt: string;
+          fromAccount: { accountNumber: string } | null;
+          toAccount: { accountNumber: string } | null;
+        }[];
+        pagination: { page: number; pageSize: number; total: number; totalPages: number };
+      },
+      { id: string; page?: number; pageSize?: number }
+    >({
+      query: ({ id, ...params }) => ({ url: `/customers/${id}/transactions`, params }),
+      providesTags: (_r, _e, { id }) => [{ type: "Customer", id: `${id}-tx` }],
     }),
   }),
 });
@@ -63,4 +101,6 @@ export const {
   useGetCustomerQuery,
   useCreateCustomerMutation,
   useUpdateCustomerKycMutation,
+  useUpdateCustomerStatusMutation,
+  useGetCustomerTransactionsQuery,
 } = customersApi;
