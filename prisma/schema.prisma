@@ -150,18 +150,18 @@ model User {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  profile        CustomerProfile?
-  accounts       Account[]
-  requests       DepositWithdrawRequest[] @relation("RequestRequester")
-  reviewedReqs   DepositWithdrawRequest[] @relation("RequestReviewer")
-  loans          Loan[]                   @relation("LoanApplicant")
-  reviewedLoans  Loan[]                   @relation("LoanReviewer")
-  loanNotes      LoanNote[]
-  notifications  Notification[]
-  auditLogs      AuditLog[]
-  idempotency    IdempotencyKey[]
-  flagsRaised    SuspiciousFlag[]         @relation("FlagRaisedBy")
-  flagsResolved  SuspiciousFlag[]         @relation("FlagResolvedBy")
+  profile       CustomerProfile?
+  accounts      Account[]
+  requests      DepositWithdrawRequest[] @relation("RequestRequester")
+  reviewedReqs  DepositWithdrawRequest[] @relation("RequestReviewer")
+  loans         Loan[]                   @relation("LoanApplicant")
+  reviewedLoans Loan[]                   @relation("LoanReviewer")
+  loanNotes     LoanNote[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  idempotency   IdempotencyKey[]
+  flagsRaised   SuspiciousFlag[]         @relation("FlagRaisedBy")
+  flagsResolved SuspiciousFlag[]         @relation("FlagResolvedBy")
 
   @@index([role, status])
 }
@@ -215,26 +215,26 @@ model Account {
 }
 
 model Transaction {
-  id            String     @id @default(cuid())
-  reference     String     @unique
+  id            String                  @id @default(cuid())
+  reference     String                  @unique
   type          TxType
-  status        TxStatus   @default(PENDING)
+  status        TxStatus                @default(PENDING)
   fromAccountId String?
   toAccountId   String?
-  fromAccount   Account?   @relation("TxFrom", fields: [fromAccountId], references: [id])
-  toAccount     Account?   @relation("TxTo", fields: [toAccountId], references: [id])
-  amount        Decimal    @db.Decimal(18, 2)
-  fee           Decimal    @default(0) @db.Decimal(18, 2)
-  currency      String     @default("BDT")
+  fromAccount   Account?                @relation("TxFrom", fields: [fromAccountId], references: [id])
+  toAccount     Account?                @relation("TxTo", fields: [toAccountId], references: [id])
+  amount        Decimal                 @db.Decimal(18, 2)
+  fee           Decimal                 @default(0) @db.Decimal(18, 2)
+  currency      String                  @default("BDT")
   description   String?
   failureReason String?
-  reversalOfId  String?    @unique
-  reversalOf    Transaction? @relation("Reversal", fields: [reversalOfId], references: [id])
-  reversedBy    Transaction? @relation("Reversal")
+  reversalOfId  String?                 @unique
+  reversalOf    Transaction?            @relation("Reversal", fields: [reversalOfId], references: [id])
+  reversedBy    Transaction?            @relation("Reversal")
   initiatedById String?
-  requestId     String?    @unique
+  requestId     String?                 @unique
   request       DepositWithdrawRequest? @relation(fields: [requestId], references: [id])
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime                @default(now())
   completedAt   DateTime?
 
   ledger        LedgerEntry[]
@@ -366,19 +366,19 @@ model LoanNote {
 }
 
 model SuspiciousFlag {
-  id             String     @id @default(cuid())
+  id             String      @id @default(cuid())
   transactionId  String
   transaction    Transaction @relation(fields: [transactionId], references: [id])
   source         FlagSource
   ruleCode       String?
   reason         String
-  status         FlagStatus @default(OPEN)
+  status         FlagStatus  @default(OPEN)
   raisedById     String?
-  raisedBy       User?      @relation("FlagRaisedBy", fields: [raisedById], references: [id])
+  raisedBy       User?       @relation("FlagRaisedBy", fields: [raisedById], references: [id])
   resolvedById   String?
-  resolvedBy     User?      @relation("FlagResolvedBy", fields: [resolvedById], references: [id])
+  resolvedBy     User?       @relation("FlagResolvedBy", fields: [resolvedById], references: [id])
   resolutionNote String?
-  createdAt      DateTime   @default(now())
+  createdAt      DateTime    @default(now())
   resolvedAt     DateTime?
 
   @@index([status, createdAt])
