@@ -26,6 +26,6 @@ export async function assertAccountOwner(user: SessionUser, accountId: string) {
   if (!account || account.ownerId !== user.id) throw new AppError("NOT_FOUND", "Account not found", 404);
 }
 
-export function assertNotSelf(user: SessionUser, targetUserId: string) {
+export function assertNotSelf(user: Pick<SessionUser, "id">, targetUserId: string) {
   if (user.id === targetUserId) throw new AppError("FORBIDDEN", "Cannot approve your own request", 403);
 }
