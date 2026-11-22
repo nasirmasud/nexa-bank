@@ -13,4 +13,10 @@ export const transactionListSchema = paginationSchema
   })
   .strict();
 
+export const flagTransactionSchema = z
+  .object({
+    reason: z.string().trim().min(3).max(500),
+  })
+  .strict();
+
 export type TransactionListInput = z.infer<typeof transactionListSchema>;
