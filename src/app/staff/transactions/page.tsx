@@ -85,7 +85,7 @@ export default function StaffTransactionsPage() {
               }}
             />
             <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value);
@@ -112,23 +112,25 @@ export default function StaffTransactionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Reference</TableHead>
+                    <TableHead className="whitespace-nowrap">Reference</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {txs.map((t) => (
                     <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.reference}</TableCell>
-                      <TableCell>{t.type}</TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">{t.reference}</TableCell>
+                      <TableCell className="whitespace-nowrap">{t.type}</TableCell>
                       <TableCell>
                         <StatusBadge variant={statusVariant(t.status)}>{t.status}</StatusBadge>
                       </TableCell>
-                      <TableCell className="text-right">{formatBDT(t.amount)}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right whitespace-nowrap">
+                        {formatBDT(t.amount)}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
                         <Button
                           size="sm"
                           variant="outline"
