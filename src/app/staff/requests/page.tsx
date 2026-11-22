@@ -79,6 +79,7 @@ export default function StaffRequestsPage() {
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Requests</CardTitle>
           <select
+            aria-label="Filter by status"
             className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
