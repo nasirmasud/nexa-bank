@@ -2,7 +2,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Role, UserStatus } from "@prisma/client";
 import { createTestPrisma, resetDb } from "../helpers/db";
 import { AppError } from "@/lib/errors";
-import { createCustomer, getCustomerById, listCustomers } from "@/lib/services/customerService";
+import {
+  createCustomer,
+  getCustomerById,
+  listCustomers,
+  updateCustomerStatus,
+} from "@/lib/services/customerService";
 
 const prisma = createTestPrisma();
 
@@ -92,5 +97,70 @@ describe("customerService", () => {
         { ...input, email: "other@test.com" },
       ),
     ).rejects.toSatisfy((e: unknown) => e instanceof AppError && e.status === 422);
+  });
+
+  it("admin can block customer and bumps sessionVersion", async () => {
+    const staff = await createStaff();
+    const admin = await prisma.user.create({
+      data: {
+        email: "admin@test.com",
+        name: "Admin",
+        passwordHash: "hash",
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+      },
+    });
+    const created = await createCustomer(
+      prisma,
+      { id: staff.id, role: Role.STAFF },
+      {
+        name: "John Doe",
+        email: "john@test.com",
+        nid: "1234567890",
+        dateOfBirth: new Date("1990-01-01"),
+        presentAddress: "Dhaka",
+      },
+    );
+    const before = await prisma.user.findUniqueOrThrow({
+      where: { id: created.customer.id },
+      select: { sessionVersion: true },
+    });
+
+    const updated = await updateCustomerStatus(
+      prisma,
+      { id: admin.id, role: Role.ADMIN },
+      created.customer.id,
+      UserStatus.BLOCKED,
+    );
+    expect(updated.status).toBe(UserStatus.BLOCKED);
+
+    const after = await prisma.user.findUniqueOrThrow({
+      where: { id: created.customer.id },
+      select: { sessionVersion: true },
+    });
+    expect(after.sessionVersion).toBe(before.sessionVersion + 1);
+  });
+
+  it("staff cannot update customer status", async () => {
+    const staff = await createStaff();
+    const created = await createCustomer(
+      prisma,
+      { id: staff.id, role: Role.STAFF },
+      {
+        name: "John Doe",
+        email: "john@test.com",
+        nid: "1234567890",
+        dateOfBirth: new Date("1990-01-01"),
+        presentAddress: "Dhaka",
+      },
+    );
+    await expect(
+      updateCustomerStatus(
+        prisma,
+        { id: staff.id, role: Role.STAFF },
+        created.customer.id,
+        UserStatus.BLOCKED,
+      ),
+    ).rejects.toMatchObject({ status: 403 });
   });
 });
