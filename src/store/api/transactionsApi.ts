@@ -23,6 +23,17 @@ export type Transaction = {
   toAccount: TxAccountRef;
 };
 
+export type LedgerEntry = {
+  id: string;
+  accountId: string;
+  direction: "DEBIT" | "CREDIT";
+  amount: string;
+  balanceAfter: string;
+  createdAt: string;
+};
+
+export type TransactionDetail = Transaction & { ledger: LedgerEntry[] };
+
 type ListResponse<T> = {
   data: T[];
   pagination: { page: number; pageSize: number; total: number; totalPages: number };
@@ -51,7 +62,11 @@ export const transactionsApi = baseApi.injectEndpoints({
             ]
           : [{ type: "Transaction", id: "LIST" }],
     }),
+    getTransaction: build.query<{ data: TransactionDetail }, string>({
+      query: (id) => `/transactions/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "Transaction", id }],
+    }),
   }),
 });
 
-export const { useListTransactionsQuery } = transactionsApi;
+export const { useListTransactionsQuery, useGetTransactionQuery } = transactionsApi;
