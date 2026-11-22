@@ -25,7 +25,10 @@ function LoginForm() {
     setError("");
     const res = await signIn("credentials", { email, password, redirect: false, callbackUrl });
     setLoading(false);
-    if (res?.error) { setError("Invalid credentials or account disabled."); return; }
+    if (res?.error) {
+      setError("Invalid credentials or account disabled.");
+      return;
+    }
     router.push(res?.url || "/");
     router.refresh();
   }
@@ -39,16 +42,39 @@ function LoginForm() {
           <p className="mt-2 text-sm text-slate-400">Secure access to your banking workspace.</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
-          <label className="block">
+          <label className="block" htmlFor="login-email">
             <span className="text-sm text-slate-300">Email</span>
-            <input className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              id="login-email"
+              className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </label>
-          <label className="block">
+          <label className="block" htmlFor="login-password">
             <span className="text-sm text-slate-300">Password</span>
-            <input className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              id="login-password"
+              className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </label>
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <button disabled={loading} className="w-full rounded-lg bg-teal-600 hover:bg-teal-500 disabled:opacity-60 px-4 py-2 font-medium">
+          {error && (
+            <p className="text-sm text-red-400" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            disabled={loading}
+            className="w-full rounded-lg bg-teal-600 hover:bg-teal-500 disabled:opacity-60 px-4 py-2 font-medium"
+          >
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
@@ -56,7 +82,15 @@ function LoginForm() {
           <p className="text-xs text-slate-400 mb-2">Demo accounts</p>
           <div className="flex gap-2 flex-wrap">
             {demos.map((d) => (
-              <button key={d.label} type="button" onClick={() => { setEmail(d.email); setPassword(d.password); }} className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-teal-500 text-slate-300">
+              <button
+                key={d.label}
+                type="button"
+                onClick={() => {
+                  setEmail(d.email);
+                  setPassword(d.password);
+                }}
+                className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-teal-500 text-slate-300"
+              >
                 {d.label}
               </button>
             ))}
