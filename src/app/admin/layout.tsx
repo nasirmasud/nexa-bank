@@ -2,6 +2,8 @@ import { requireRole } from "@/lib/guards";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { adminNav } from "@/components/shared/dashboard-nav";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("ADMIN");
 
