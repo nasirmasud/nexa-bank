@@ -55,6 +55,7 @@ export const baseApi = createApi({
     "Settings",
     "Profile",
     "SuspiciousFlag",
+    "AuditLog",
   ],
   endpoints: () => ({}),
 });
