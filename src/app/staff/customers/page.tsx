@@ -133,6 +133,7 @@ export default function StaffCustomersPage() {
                           {c.profile?.kycStatus ?? "—"}
                         </StatusBadge>
                         <select
+                          aria-label={`KYC status for ${c.name}`}
                           className="h-8 rounded-md border bg-background px-2 text-xs"
                           value={c.profile?.kycStatus ?? "PENDING"}
                           onChange={(e) =>
