@@ -1,7 +1,4 @@
-import { requireRole } from "@/lib/guards";
-
-export default async function StaffDashboard() {
-  await requireRole("STAFF", "ADMIN");
+export default function StaffDashboard() {
   return (
     <div className="space-y-6">
       <div>
