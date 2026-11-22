@@ -28,7 +28,19 @@ export const requestsApi = baseApi.injectEndpoints({
       query: (params) => ({ url: "/requests", params: params ?? undefined }),
       providesTags: [{ type: "Request", id: "LIST" }],
     }),
+    createRequest: build.mutation<
+      { data: MoneyRequest },
+      { type: "DEPOSIT" | "WITHDRAWAL"; accountId: string; amount: string; description?: string }
+    >({
+      query: (body) => ({ url: "/requests", method: "POST", body }),
+      invalidatesTags: [{ type: "Request", id: "LIST" }],
+    }),
+    cancelRequest: build.mutation<{ data: MoneyRequest }, string>({
+      query: (id) => ({ url: `/requests/${id}/cancel`, method: "POST" }),
+      invalidatesTags: [{ type: "Request", id: "LIST" }],
+    }),
   }),
 });
 
-export const { useListRequestsQuery } = requestsApi;
+export const { useListRequestsQuery, useCreateRequestMutation, useCancelRequestMutation } =
+  requestsApi;
