@@ -12,9 +12,10 @@ export async function withSerializableRetry<T>(
   fn: (tx: TxClient) => Promise<T>,
   retriesOrOptions: number | RetryOptions = 3,
 ): Promise<T> {
-  const options = typeof retriesOrOptions === "number" ? { retries: retriesOrOptions } : retriesOrOptions;
+  const options =
+    typeof retriesOrOptions === "number" ? { retries: retriesOrOptions } : retriesOrOptions;
   const retries = options.retries ?? 3;
-  const timeout = options.timeout ?? 10_000;
+  const timeout = options.timeout ?? 20_000;
 
   let attempt = 0;
   while (true) {
