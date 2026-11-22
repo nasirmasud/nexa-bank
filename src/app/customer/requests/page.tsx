@@ -135,10 +135,10 @@ export default function CustomerRequestsPage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>My Requests</CardTitle>
             <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -175,9 +175,7 @@ export default function CustomerRequestsPage() {
                       <TableCell>{r.type}</TableCell>
                       <TableCell>{formatBDT(r.amount)}</TableCell>
                       <TableCell>
-                        <StatusBadge variant={statusVariant(r.status)}>
-                          {r.status}
-                        </StatusBadge>
+                        <StatusBadge variant={statusVariant(r.status)}>{r.status}</StatusBadge>
                       </TableCell>
                       <TableCell>{new Date(r.requestedAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
