@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 export type ErrorCode =
   | "UNAUTHORIZED"
   | "FORBIDDEN"
@@ -28,14 +30,41 @@ export class AppError extends Error {
   }
 }
 
-export const errorResponse = (err: unknown) => {
+export function zodErrorFields(error: ZodError): Record<string, string[]> {
+  const flattened = error.flatten().fieldErrors as Record<string, string[] | undefined>;
+  const fields: Record<string, string[]> = {};
+  for (const [key, value] of Object.entries(flattened)) {
+    if (Array.isArray(value) && value.length > 0) fields[key] = value;
+  }
+  return fields;
+}
+
+export const errorResponse = (err: unknown, requestId?: string) => {
+  const prefix = requestId ? `[${requestId}]` : "[api]";
+
+  if (err instanceof ZodError) {
+    console.warn(prefix, "Validation error", err.flatten());
+    return Response.json(
+      {
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Validation failed",
+          fields: zodErrorFields(err),
+        },
+      },
+      { status: 422 },
+    );
+  }
+
   if (err instanceof AppError) {
+    console.warn(prefix, `${err.code}: ${err.message}`);
     return Response.json(
       { error: { code: err.code, message: err.message, fields: err.fields } },
       { status: err.status },
     );
   }
-  console.error(err);
+
+  console.error(prefix, err);
   return Response.json(
     { error: { code: "INTERNAL_ERROR", message: "Something went wrong" } },
     { status: 500 },
