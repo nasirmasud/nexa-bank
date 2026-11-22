@@ -45,6 +45,10 @@ describe("settingsService", () => {
     expect(updated.maxSingleTransaction.toFixed(2)).toBe("150000.00");
     expect(updated.minAccountBalance.toFixed(2)).toBe("100.00");
     expect(updated.minTransferFee.toFixed(2)).toBe("10.00");
+    const audit = await prisma.auditLog.findFirst({
+      where: { action: "SETTINGS_UPDATED", entityType: "Settings" },
+    });
+    expect(audit).toBeTruthy();
   });
 
   it("forbids staff", async () => {
