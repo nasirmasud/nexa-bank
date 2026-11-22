@@ -150,3 +150,27 @@ export async function updateCustomerKyc(
 
   return getCustomerById(db, actor, id);
 }
+
+export async function updateCustomerStatus(
+  db: PrismaClient,
+  actor: CustomerActor,
+  id: string,
+  status: UserStatus,
+) {
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  const existing = await db.user.findFirst({
+    where: { id, role: Role.CUSTOMER },
+    select: { id: true },
+  });
+  if (!existing) throw new AppError("NOT_FOUND", "Customer not found", 404);
+
+  await db.user.update({
+    where: { id },
+    data: {
+      status,
+      ...(status !== UserStatus.ACTIVE ? { sessionVersion: { increment: 1 } } : {}),
+    },
+  });
+
+  return getCustomerById(db, actor, id);
+}
