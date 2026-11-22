@@ -12,6 +12,7 @@ import {
   UserStatus,
 } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { assertNotSelf } from "@/lib/guards";
 import { generateReference } from "@/lib/ids";
 import { addMoney, subMoney, toDecimal } from "@/lib/money";
@@ -160,6 +161,14 @@ export async function forwardLoan(
         data: { loanId, authorId: actor.id, body: note, internal: true },
       });
     }
+    await recordAuditLog(tx, {
+      actorId: actor.id,
+      action: "LOAN_FORWARDED",
+      entityType: "Loan",
+      entityId: loanId,
+      before: { status: loan.status },
+      after: { status: LoanStatus.UNDER_REVIEW },
+    });
     return updated;
   });
 }
@@ -196,6 +205,14 @@ export async function rejectLoan(
         message: reason,
         link: `/loans/${loan.id}`,
       },
+    });
+    await recordAuditLog(tx, {
+      actorId: actor.id,
+      action: "LOAN_REJECTED",
+      entityType: "Loan",
+      entityId: loanId,
+      before: { status: loan.status },
+      after: { status: LoanStatus.REJECTED, rejectionReason: reason },
     });
     return updated;
   });
@@ -357,6 +374,14 @@ export async function approveLoan(
         message: `Your loan ${loan.loanNo} was approved and disbursed.`,
         link: `/loans/${loan.id}`,
       },
+    });
+    await recordAuditLog(tx, {
+      actorId: actor.id,
+      action: "LOAN_APPROVED",
+      entityType: "Loan",
+      entityId: loan.id,
+      before: { status: loan.status },
+      after: { status: LoanStatus.ACTIVE, disbursementTxId: txRecord.id },
     });
 
     return { loan: updatedLoan, disbursementTransactionId: txRecord.id };
