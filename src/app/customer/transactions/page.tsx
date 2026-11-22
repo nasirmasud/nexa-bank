@@ -67,6 +67,7 @@ export default function CustomerTransactionsPage() {
               }}
             />
             <select
+              aria-label="Filter by type"
               className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={type}
               onChange={(e) => {
@@ -80,6 +81,7 @@ export default function CustomerTransactionsPage() {
               <option value="TRANSFER">Transfer</option>
             </select>
             <select
+              aria-label="Filter by status"
               className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={status}
               onChange={(e) => {
