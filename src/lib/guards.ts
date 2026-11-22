@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors";
 import type { Role } from "@prisma/client";
@@ -6,6 +5,7 @@ import type { Role } from "@prisma/client";
 export type SessionUser = { id: string; role: Role; email: string; name: string };
 
 export async function requireAuth(): Promise<SessionUser> {
+  const { auth } = await import("@/lib/auth");
   const session = await auth();
   const user = session?.user as SessionUser | undefined;
   if (!user?.id) throw new AppError("UNAUTHORIZED", "Authentication required", 401);
