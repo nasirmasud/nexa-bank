@@ -108,6 +108,19 @@ If you ran `npm run db:seed`, use the seeded demo credentials from your local se
 - **Tests**: Keep `TEST_DATABASE_URL` separate from production/dev DB.
 - **Docs**: `docs/` is local-only and gitignored; do not commit planning/internal docs.
 
+## CI
+
+GitHub Actions workflow: `.github/workflows/ci.yml` runs lint, typecheck, tests, and build on push/PR.
+
+Configure repository secrets (names only, no values committed):
+
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `TEST_DATABASE_URL`
+- `AUTH_SECRET`
+- `NEXTAUTH_URL`
+- `BANK_TIMEZONE` (optional)
+
 ## Project Notes
 
 - Make changes in small, approved steps; commit each changed file separately.
