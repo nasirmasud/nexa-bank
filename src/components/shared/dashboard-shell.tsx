@@ -228,7 +228,10 @@ export function DashboardShell({ children, navItems, roleLabel, user }: Dashboar
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" className="max-w-[220px] justify-between gap-2">
+                <Button
+                  variant="outline"
+                  className="max-w-[140px] justify-between gap-2 sm:max-w-[220px]"
+                >
                   <span className="truncate">{user.name || user.email || "User"}</span>
                   <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>
