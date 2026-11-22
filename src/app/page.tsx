@@ -2,6 +2,8 @@ import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
+export const instant = false;
+
 const roleHome: Record<string, string> = {
   ADMIN: "/admin/dashboard",
   STAFF: "/staff/dashboard",
