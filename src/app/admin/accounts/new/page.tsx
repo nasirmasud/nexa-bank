@@ -41,8 +41,11 @@ export default function AdminCreateAccountPage() {
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Customer</label>
+              <label className="text-sm font-medium" htmlFor="new-account-owner">
+                Customer
+              </label>
               <select
+                id="new-account-owner"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={ownerId}
                 onChange={(e) => setOwnerId(e.target.value)}
@@ -57,8 +60,11 @@ export default function AdminCreateAccountPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Account type</label>
+              <label className="text-sm font-medium" htmlFor="new-account-type">
+                Account type
+              </label>
               <select
+                id="new-account-type"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={type}
                 onChange={(e) => setType(e.target.value as "SAVINGS" | "CURRENT" | "BUSINESS")}
@@ -69,8 +75,11 @@ export default function AdminCreateAccountPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Nickname (optional)</label>
+              <label className="text-sm font-medium" htmlFor="new-account-nickname">
+                Nickname (optional)
+              </label>
               <Input
+                id="new-account-nickname"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="e.g. Salary account"
