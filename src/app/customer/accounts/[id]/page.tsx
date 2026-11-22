@@ -39,7 +39,7 @@ export default function CustomerAccountDetailPage() {
   if (error?.status === 404 || !accountQuery.data?.data) {
     return (
       <div className="space-y-4">
-        <Button render={<Link href="/customer/accounts" />} variant="ghost" size="sm">
+        <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back to accounts
         </Button>
@@ -54,7 +54,7 @@ export default function CustomerAccountDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button render={<Link href="/customer/accounts" />} variant="ghost" size="sm">
+        <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back
         </Button>
