@@ -4,7 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
-import { Menu, LogOut, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+  Users,
+  Wallet,
+  ArrowLeftRight,
+  FileText,
+  ShieldAlert,
+  Landmark,
+  Settings,
+  Bell,
+  ClipboardList,
+  UserCog,
+  ScrollText,
+  CreditCard,
+  type LucideIcon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +35,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import type { NavItem } from "@/components/shared/dashboard-nav";
+import type { NavIcon, NavItem } from "@/components/shared/dashboard-nav";
+
+const iconMap: Record<NavIcon, LucideIcon> = {
+  LayoutDashboard,
+  Users,
+  Wallet,
+  ArrowLeftRight,
+  FileText,
+  ShieldAlert,
+  Landmark,
+  Settings,
+  Bell,
+  ClipboardList,
+  UserCog,
+  ScrollText,
+  CreditCard,
+};
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -35,7 +69,7 @@ function NavLinks({ navItems, onNavigate }: { navItems: NavItem[]; onNavigate?: 
   return (
     <nav className="flex flex-col gap-1 px-3 py-4">
       {navItems.map((item) => {
-        const Icon = item.icon;
+        const Icon = iconMap[item.icon];
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
