@@ -102,6 +102,23 @@ export const loansApi = baseApi.injectEndpoints({
       query: ({ id, ...body }) => ({ url: `/loans/${id}/notes`, method: "POST", body }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Loan", id }],
     }),
+    applyLoan: build.mutation<{ data: Loan }, Record<string, unknown>>({
+      query: (body) => ({ url: "/loans", method: "POST", body }),
+      invalidatesTags: [{ type: "Loan", id: "LIST" }],
+    }),
+    payLoanInstallment: build.mutation<
+      { data: { loan: Loan; transactionId: string; installmentId: string } },
+      { loanId: string; installmentId: string }
+    >({
+      query: ({ loanId, installmentId }) => ({
+        url: `/loans/${loanId}/installments/${installmentId}/pay`,
+        method: "POST",
+      }),
+      invalidatesTags: (_r, _e, { loanId }) => [
+        { type: "Loan", id: "LIST" },
+        { type: "Loan", id: loanId },
+      ],
+    }),
   }),
 });
 
@@ -112,4 +129,6 @@ export const {
   useRejectLoanMutation,
   useForwardLoanMutation,
   useAddLoanNoteMutation,
+  useApplyLoanMutation,
+  usePayLoanInstallmentMutation,
 } = loansApi;
