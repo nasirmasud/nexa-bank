@@ -12,6 +12,8 @@ export type MoneyRequest = {
   reviewedById: string | null;
   reviewedAt: string | null;
   rejectionReason: string | null;
+  account?: { id: string; accountNumber: string; ownerId: string | null };
+  requester?: { id: string; name: string; email: string };
 };
 
 type ListResponse<T> = {
@@ -39,8 +41,25 @@ export const requestsApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/requests/${id}/cancel`, method: "POST" }),
       invalidatesTags: [{ type: "Request", id: "LIST" }],
     }),
+    approveRequest: build.mutation<{ data: MoneyRequest }, string>({
+      query: (id) => ({ url: `/requests/${id}/approve`, method: "POST" }),
+      invalidatesTags: [{ type: "Request", id: "LIST" }],
+    }),
+    rejectRequest: build.mutation<{ data: MoneyRequest }, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/requests/${id}/reject`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: [{ type: "Request", id: "LIST" }],
+    }),
   }),
 });
 
-export const { useListRequestsQuery, useCreateRequestMutation, useCancelRequestMutation } =
-  requestsApi;
+export const {
+  useListRequestsQuery,
+  useCreateRequestMutation,
+  useCancelRequestMutation,
+  useApproveRequestMutation,
+  useRejectRequestMutation,
+} = requestsApi;
