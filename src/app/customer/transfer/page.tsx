@@ -97,8 +97,11 @@ export default function CustomerTransferPage() {
           <CardContent>
             <form className="space-y-4" onSubmit={openConfirm}>
               <div className="space-y-1">
-                <label className="text-sm font-medium">From account</label>
+                <label className="text-sm font-medium" htmlFor="transfer-from-account">
+                  From account
+                </label>
                 <select
+                  id="transfer-from-account"
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                   value={fromAccountId}
                   onChange={(e) => setFromAccountId(e.target.value)}
@@ -115,9 +118,12 @@ export default function CustomerTransferPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium">Recipient account number</label>
+                <label className="text-sm font-medium" htmlFor="transfer-to-account">
+                  Recipient account number
+                </label>
                 <div className="flex gap-2">
                   <Input
+                    id="transfer-to-account"
                     value={toAccountNumber}
                     onChange={(e) =>
                       setToAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 12))
@@ -144,8 +150,11 @@ export default function CustomerTransferPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Amount (BDT)</label>
+                  <label className="text-sm font-medium" htmlFor="transfer-amount">
+                    Amount (BDT)
+                  </label>
                   <Input
+                    id="transfer-amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     inputMode="decimal"
@@ -154,8 +163,11 @@ export default function CustomerTransferPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Transaction PIN</label>
+                  <label className="text-sm font-medium" htmlFor="transfer-pin">
+                    Transaction PIN
+                  </label>
                   <Input
+                    id="transfer-pin"
                     value={pin}
                     onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     type="password"
@@ -167,8 +179,11 @@ export default function CustomerTransferPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium">Description (optional)</label>
+                <label className="text-sm font-medium" htmlFor="transfer-description">
+                  Description (optional)
+                </label>
                 <Input
+                  id="transfer-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="What's this for?"
