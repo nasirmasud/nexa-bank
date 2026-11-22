@@ -33,10 +33,10 @@ export default function AdminCustomersPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Customer List</CardTitle>
           <Input
-            className="max-w-xs"
+            className="w-full sm:max-w-xs"
             placeholder="Search name/email/NID"
             value={q}
             onChange={(e) => setQ(e.target.value)}
