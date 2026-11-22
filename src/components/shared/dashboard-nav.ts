@@ -38,6 +38,7 @@ export const staffNav: NavItem[] = [
   { label: "Accounts", href: "/staff/accounts/new", icon: "CreditCard" },
   { label: "Requests", href: "/staff/requests", icon: "ClipboardList" },
   { label: "Transactions", href: "/staff/transactions", icon: "ArrowLeftRight" },
+  { label: "Suspicious", href: "/staff/suspicious", icon: "ShieldAlert" },
   { label: "Loans", href: "/staff/loans", icon: "Landmark" },
 ];
 
