@@ -66,7 +66,16 @@ export const transactionsApi = baseApi.injectEndpoints({
       query: (id) => `/transactions/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Transaction", id }],
     }),
+    flagTransaction: build.mutation<{ data: unknown }, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/transactions/${id}/flag`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: (_r, _e, { id }) => [{ type: "Transaction", id }],
+    }),
   }),
 });
 
-export const { useListTransactionsQuery, useGetTransactionQuery } = transactionsApi;
+export const { useListTransactionsQuery, useGetTransactionQuery, useFlagTransactionMutation } =
+  transactionsApi;
