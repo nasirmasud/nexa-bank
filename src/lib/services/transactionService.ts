@@ -1,5 +1,6 @@
 import {
   EntryDirection,
+  FlagSource,
   NotificationType,
   Prisma,
   PrismaClient,
@@ -36,7 +37,11 @@ const txSelect = {
   toAccount: { select: { id: true, accountNumber: true, ownerId: true } },
 } satisfies Prisma.TransactionSelect;
 
-export async function listTransactions(db: PrismaClient, actor: TxActor, input: TransactionListInput) {
+export async function listTransactions(
+  db: PrismaClient,
+  actor: TxActor,
+  input: TransactionListInput,
+) {
   const where: Prisma.TransactionWhereInput = {};
 
   if (actor.role === Role.CUSTOMER) {
@@ -45,10 +50,16 @@ export async function listTransactions(db: PrismaClient, actor: TxActor, input: 
 
   if (input.accountId) {
     if (actor.role === Role.CUSTOMER) {
-      const owns = await db.account.findFirst({ where: { id: input.accountId, ownerId: actor.id }, select: { id: true } });
+      const owns = await db.account.findFirst({
+        where: { id: input.accountId, ownerId: actor.id },
+        select: { id: true },
+      });
       if (!owns) throw new AppError("NOT_FOUND", "Account not found", 404);
     }
-    where.AND = [...(where.AND as Prisma.TransactionWhereInput[] ?? []), { OR: [{ fromAccountId: input.accountId }, { toAccountId: input.accountId }] }];
+    where.AND = [
+      ...((where.AND as Prisma.TransactionWhereInput[]) ?? []),
+      { OR: [{ fromAccountId: input.accountId }, { toAccountId: input.accountId }] },
+    ];
   }
 
   if (input.type) where.type = input.type;
@@ -65,7 +76,13 @@ export async function listTransactions(db: PrismaClient, actor: TxActor, input: 
   const { skip, take } = paginationToSkipTake(input.page, input.pageSize);
   const [total, items] = await Promise.all([
     db.transaction.count({ where }),
-    db.transaction.findMany({ where, skip, take, orderBy: { createdAt: "desc" }, select: txSelect }),
+    db.transaction.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: "desc" },
+      select: txSelect,
+    }),
   ]);
   return { items, pagination: buildPaginationMeta(input.page, input.pageSize, total) };
 }
@@ -76,7 +93,14 @@ export async function getTransactionById(db: PrismaClient, actor: TxActor, txId:
     select: {
       ...txSelect,
       ledger: {
-        select: { id: true, accountId: true, direction: true, amount: true, balanceAfter: true, createdAt: true },
+        select: {
+          id: true,
+          accountId: true,
+          direction: true,
+          amount: true,
+          balanceAfter: true,
+          createdAt: true,
+        },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -91,7 +115,8 @@ export async function getTransactionById(db: PrismaClient, actor: TxActor, txId:
 }
 
 export async function reverseTransaction(db: PrismaClient, actor: TxActor, txId: string) {
-  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can reverse transactions", 403);
+  if (actor.role !== Role.ADMIN)
+    throw new AppError("FORBIDDEN", "Only admins can reverse transactions", 403);
 
   return withSerializableRetry(db, async (tx) => {
     const original = await tx.transaction.findUnique({
@@ -103,9 +128,12 @@ export async function reverseTransaction(db: PrismaClient, actor: TxActor, txId:
       },
     });
     if (!original) throw new AppError("NOT_FOUND", "Transaction not found", 404);
-    if (original.status !== TxStatus.COMPLETED) throw new AppError("VALIDATION_ERROR", "Only completed transactions can be reversed", 422);
-    if (original.reversedBy) throw new AppError("VALIDATION_ERROR", "Transaction already reversed", 422);
-    if (!original.fromAccountId || !original.toAccountId) throw new AppError("VALIDATION_ERROR", "Transaction cannot be reversed", 422);
+    if (original.status !== TxStatus.COMPLETED)
+      throw new AppError("VALIDATION_ERROR", "Only completed transactions can be reversed", 422);
+    if (original.reversedBy)
+      throw new AppError("VALIDATION_ERROR", "Transaction already reversed", 422);
+    if (!original.fromAccountId || !original.toAccountId)
+      throw new AppError("VALIDATION_ERROR", "Transaction cannot be reversed", 422);
 
     // Reverse main amount: receiver -> sender. Fee (if any) refunded from system -> sender.
     const sender = original.fromAccount!;
@@ -125,9 +153,20 @@ export async function reverseTransaction(db: PrismaClient, actor: TxActor, txId:
     await tx.$queryRaw`SELECT id FROM "Account" WHERE id IN (${Prisma.join(lockIds)}) FOR UPDATE`;
 
     const [lockedSender, lockedReceiver, lockedSystem] = await Promise.all([
-      tx.account.findUniqueOrThrow({ where: { id: sender.id }, include: { owner: { select: { id: true, status: true } } } }),
-      tx.account.findUniqueOrThrow({ where: { id: receiver.id }, include: { owner: { select: { id: true, status: true } } } }),
-      systemAccountId ? tx.account.findUniqueOrThrow({ where: { id: systemAccountId }, select: { id: true, balance: true } }) : Promise.resolve(null),
+      tx.account.findUniqueOrThrow({
+        where: { id: sender.id },
+        include: { owner: { select: { id: true, status: true } } },
+      }),
+      tx.account.findUniqueOrThrow({
+        where: { id: receiver.id },
+        include: { owner: { select: { id: true, status: true } } },
+      }),
+      systemAccountId
+        ? tx.account.findUniqueOrThrow({
+            where: { id: systemAccountId },
+            select: { id: true, balance: true },
+          })
+        : Promise.resolve(null),
     ]);
 
     const receiverBalance = toDecimal(lockedReceiver.balance.toString());
@@ -136,15 +175,27 @@ export async function reverseTransaction(db: PrismaClient, actor: TxActor, txId:
     }
 
     if (fee.gt(0) && lockedSystem && !gteMoney(toDecimal(lockedSystem.balance.toString()), fee)) {
-      throw new AppError("INSUFFICIENT_FUNDS", "System account has insufficient funds to refund fee", 400);
+      throw new AppError(
+        "INSUFFICIENT_FUNDS",
+        "System account has insufficient funds to refund fee",
+        400,
+      );
     }
 
     const newReceiverBalance = subMoney(receiverBalance, amount).toDecimalPlaces(2);
     const refundTotal = addMoney(amount, fee);
-    const newSenderBalance = addMoney(lockedSender.balance.toString(), refundTotal).toDecimalPlaces(2);
+    const newSenderBalance = addMoney(lockedSender.balance.toString(), refundTotal).toDecimalPlaces(
+      2,
+    );
 
-    await tx.account.update({ where: { id: lockedReceiver.id }, data: { balance: newReceiverBalance } });
-    await tx.account.update({ where: { id: lockedSender.id }, data: { balance: newSenderBalance } });
+    await tx.account.update({
+      where: { id: lockedReceiver.id },
+      data: { balance: newReceiverBalance },
+    });
+    await tx.account.update({
+      where: { id: lockedSender.id },
+      data: { balance: newSenderBalance },
+    });
 
     const now = new Date();
     const reversal = await tx.transaction.create({
@@ -165,24 +216,83 @@ export async function reverseTransaction(db: PrismaClient, actor: TxActor, txId:
     });
 
     const ledgerData: Prisma.LedgerEntryCreateManyInput[] = [
-      { transactionId: reversal.id, accountId: lockedReceiver.id, direction: EntryDirection.DEBIT, amount: amount.toDecimalPlaces(2), balanceAfter: newReceiverBalance },
-      { transactionId: reversal.id, accountId: lockedSender.id, direction: EntryDirection.CREDIT, amount: refundTotal.toDecimalPlaces(2), balanceAfter: newSenderBalance },
+      {
+        transactionId: reversal.id,
+        accountId: lockedReceiver.id,
+        direction: EntryDirection.DEBIT,
+        amount: amount.toDecimalPlaces(2),
+        balanceAfter: newReceiverBalance,
+      },
+      {
+        transactionId: reversal.id,
+        accountId: lockedSender.id,
+        direction: EntryDirection.CREDIT,
+        amount: refundTotal.toDecimalPlaces(2),
+        balanceAfter: newSenderBalance,
+      },
     ];
 
     if (fee.gt(0) && lockedSystem) {
       const newSystemBalance = subMoney(lockedSystem.balance.toString(), fee).toDecimalPlaces(2);
-      await tx.account.update({ where: { id: lockedSystem.id }, data: { balance: newSystemBalance } });
-      ledgerData.push({ transactionId: reversal.id, accountId: lockedSystem.id, direction: EntryDirection.DEBIT, amount: fee.toDecimalPlaces(2), balanceAfter: newSystemBalance });
+      await tx.account.update({
+        where: { id: lockedSystem.id },
+        data: { balance: newSystemBalance },
+      });
+      ledgerData.push({
+        transactionId: reversal.id,
+        accountId: lockedSystem.id,
+        direction: EntryDirection.DEBIT,
+        amount: fee.toDecimalPlaces(2),
+        balanceAfter: newSystemBalance,
+      });
     }
 
     await tx.ledgerEntry.createMany({ data: ledgerData });
-    await tx.transaction.update({ where: { id: original.id }, data: { status: TxStatus.REVERSED } });
+    await tx.transaction.update({
+      where: { id: original.id },
+      data: { status: TxStatus.REVERSED },
+    });
 
     const notifications: Prisma.NotificationCreateManyInput[] = [];
-    if (lockedSender.ownerId) notifications.push({ userId: lockedSender.ownerId, type: NotificationType.TRANSFER_COMPLETED, title: "Transaction reversed", message: `Transaction ${original.reference} was reversed.`, link: `/transactions/${reversal.id}` });
-    if (lockedReceiver.ownerId) notifications.push({ userId: lockedReceiver.ownerId, type: NotificationType.TRANSFER_COMPLETED, title: "Transaction reversed", message: `Transaction ${original.reference} was reversed.`, link: `/transactions/${reversal.id}` });
+    if (lockedSender.ownerId)
+      notifications.push({
+        userId: lockedSender.ownerId,
+        type: NotificationType.TRANSFER_COMPLETED,
+        title: "Transaction reversed",
+        message: `Transaction ${original.reference} was reversed.`,
+        link: `/transactions/${reversal.id}`,
+      });
+    if (lockedReceiver.ownerId)
+      notifications.push({
+        userId: lockedReceiver.ownerId,
+        type: NotificationType.TRANSFER_COMPLETED,
+        title: "Transaction reversed",
+        message: `Transaction ${original.reference} was reversed.`,
+        link: `/transactions/${reversal.id}`,
+      });
     if (notifications.length) await tx.notification.createMany({ data: notifications });
 
     return reversal;
+  });
+}
+
+export async function flagTransaction(
+  db: PrismaClient,
+  actor: TxActor,
+  txId: string,
+  reason: string,
+) {
+  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  const tx = await db.transaction.findUnique({ where: { id: txId }, select: { id: true } });
+  if (!tx) throw new AppError("NOT_FOUND", "Transaction not found", 404);
+
+  const source = actor.role === Role.ADMIN ? FlagSource.ADMIN : FlagSource.STAFF;
+  return db.suspiciousFlag.create({
+    data: {
+      transactionId: txId,
+      source,
+      reason,
+      raisedById: actor.id,
+    },
   });
 }
