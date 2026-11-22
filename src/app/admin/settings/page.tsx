@@ -78,26 +78,31 @@ export default function AdminSettingsPage() {
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
             <Field
+              id="settings-daily-limit"
               label="Daily transfer limit (BDT)"
               value={form.dailyTransferLimit}
               onChange={(v) => set("dailyTransferLimit", v)}
             />
             <Field
+              id="settings-max-single"
               label="Max single transaction (BDT)"
               value={form.maxSingleTransaction}
               onChange={(v) => set("maxSingleTransaction", v)}
             />
             <Field
+              id="settings-min-balance"
               label="Min account balance (BDT)"
               value={form.minAccountBalance}
               onChange={(v) => set("minAccountBalance", v)}
             />
             <Field
+              id="settings-fee-percent"
               label="Transfer fee percent (%)"
               value={form.transferFeePercent}
               onChange={(v) => set("transferFeePercent", v)}
             />
             <Field
+              id="settings-min-fee"
               label="Min transfer fee (BDT)"
               value={form.minTransferFee}
               onChange={(v) => set("minTransferFee", v)}
@@ -105,7 +110,11 @@ export default function AdminSettingsPage() {
             <Button type="submit" disabled={updateState.isLoading}>
               {updateState.isLoading ? "Saving..." : "Save settings"}
             </Button>
-            {message && <p className="text-sm text-muted-foreground">{message}</p>}
+            {message && (
+              <p className="text-sm text-muted-foreground" role="status">
+                {message}
+              </p>
+            )}
           </form>
         </CardContent>
       </Card>
@@ -114,18 +123,22 @@ export default function AdminSettingsPage() {
 }
 
 function Field({
+  id,
   label,
   value,
   onChange,
 }: {
+  id: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium">{label}</label>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} />
+      <label className="text-sm font-medium" htmlFor={id}>
+        {label}
+      </label>
+      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
