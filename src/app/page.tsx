@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 const roleHome: Record<string, string> = {
   ADMIN: "/admin/dashboard",
   STAFF: "/staff/dashboard",
@@ -9,7 +11,7 @@ const roleHome: Record<string, string> = {
 
 export default async function Home() {
   const session = await auth();
-  const role = (session?.user as any)?.role;
+  const role = (session?.user as { role?: string } | undefined)?.role;
   if (role && roleHome[role]) redirect(roleHome[role]);
   redirect("/login");
 }
