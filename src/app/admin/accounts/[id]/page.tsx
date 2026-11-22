@@ -191,24 +191,33 @@ export default function AdminAccountDetailPage() {
           <form className="space-y-4" onSubmit={onLimits}>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1">
-                <label className="text-sm font-medium">Daily transfer limit</label>
+                <label className="text-sm font-medium" htmlFor="account-daily-limit">
+                  Daily transfer limit
+                </label>
                 <Input
+                  id="account-daily-limit"
                   value={dailyTransferLimit}
                   onChange={(e) => setDailyTransferLimit(e.target.value)}
                   placeholder="empty = no limit"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Per-tx limit</label>
+                <label className="text-sm font-medium" htmlFor="account-per-tx-limit">
+                  Per-tx limit
+                </label>
                 <Input
+                  id="account-per-tx-limit"
                   value={perTxLimit}
                   onChange={(e) => setPerTxLimit(e.target.value)}
                   placeholder="empty = no limit"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Min balance</label>
+                <label className="text-sm font-medium" htmlFor="account-min-balance">
+                  Min balance
+                </label>
                 <Input
+                  id="account-min-balance"
                   value={minBalance}
                   onChange={(e) => setMinBalance(e.target.value)}
                   placeholder="empty = no limit"
@@ -228,11 +237,17 @@ export default function AdminAccountDetailPage() {
             <DialogTitle>Freeze account</DialogTitle>
             <DialogDescription>Provide a reason for freezing this account.</DialogDescription>
           </DialogHeader>
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason (min 3 chars)"
-          />
+          <div className="space-y-1">
+            <label className="text-sm font-medium" htmlFor="freeze-reason">
+              Reason
+            </label>
+            <Input
+              id="freeze-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reason (min 3 chars)"
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFreezeOpen(false)}>
               Cancel
