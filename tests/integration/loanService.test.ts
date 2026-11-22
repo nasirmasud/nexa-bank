@@ -9,7 +9,14 @@ import {
   UserStatus,
 } from "@prisma/client";
 import { createTestPrisma, resetDb } from "../helpers/db";
-import { approveLoan, getLoanById, listLoans, rejectLoan } from "@/lib/services/loanService";
+import {
+  applyLoan,
+  approveLoan,
+  getLoanById,
+  listLoans,
+  payLoanInstallment,
+  rejectLoan,
+} from "@/lib/services/loanService";
 
 const prisma = createTestPrisma();
 
@@ -140,5 +147,96 @@ describe("loanService", () => {
     );
     expect(rejected.status).toBe(LoanStatus.REJECTED);
     expect(rejected.rejectionReason).toBe("Insufficient income");
+  });
+
+  it("customer can apply for loan and ownership is scoped", async () => {
+    const customer = await createUser("c@test.com");
+    const other = await createUser("o@test.com");
+    const acct = await createAccount({ ownerId: customer.id, number: "100000000010" });
+
+    const loan = await applyLoan(
+      prisma,
+      { id: customer.id, role: Role.CUSTOMER },
+      {
+        type: LoanType.PERSONAL,
+        requestedAmount: "5000.00",
+        durationMonths: 6,
+        monthlyIncome: "30000.00",
+        employmentStatus: EmploymentStatus.EMPLOYED,
+        disbursementAccountId: acct.id,
+        description: "Need funds",
+      },
+    );
+
+    expect(loan.status).toBe(LoanStatus.PENDING);
+    expect(loan.applicantId).toBe(customer.id);
+
+    await expect(
+      getLoanById(prisma, { id: other.id, role: Role.CUSTOMER }, loan.id),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("pays installment and completes loan on final payment", async () => {
+    const admin = await createUser("admin@test.com", Role.ADMIN);
+    const customer = await createUser("c@test.com");
+    const acct = await createAccount({
+      ownerId: customer.id,
+      number: "100000000010",
+      balance: "0.00",
+    });
+    const loan = await createLoan(customer.id, acct.id);
+    // make loan short for test
+    await prisma.loan.update({
+      where: { id: loan.id },
+      data: { requestedAmount: "100.00", durationMonths: 2 },
+    });
+
+    const approved = await approveLoan(prisma, { id: admin.id, role: Role.ADMIN }, loan.id, {
+      disbursementAccountId: acct.id,
+    });
+    expect(approved.loan.status).toBe(LoanStatus.ACTIVE);
+
+    const installments = await prisma.loanInstallment.findMany({
+      where: { loanId: loan.id },
+      orderBy: { number: "asc" },
+    });
+    expect(installments).toHaveLength(2);
+
+    // fund account for repayments (disbursement gave 100, need enough for total payable)
+    const totalPayable = approved.loan.totalPayable!.toString();
+    await prisma.account.update({ where: { id: acct.id }, data: { balance: totalPayable } });
+
+    const r1 = await payLoanInstallment(
+      prisma,
+      { id: customer.id, role: Role.CUSTOMER },
+      loan.id,
+      installments[0].id,
+    );
+    expect(r1.loan.status).toBe(LoanStatus.ACTIVE);
+    const paid1 = await prisma.loanInstallment.findUniqueOrThrow({
+      where: { id: installments[0].id },
+    });
+    expect(paid1.status).toBe("PAID");
+    expect(paid1.paymentTxId).toBeTruthy();
+
+    const r2 = await payLoanInstallment(
+      prisma,
+      { id: customer.id, role: Role.CUSTOMER },
+      loan.id,
+      installments[1].id,
+    );
+    expect(r2.loan.status).toBe(LoanStatus.COMPLETED);
+    expect(Number(r2.loan.remainingBalance)).toBe(0);
+
+    const tx = await prisma.transaction.findUniqueOrThrow({ where: { id: r2.transactionId } });
+    expect(tx.type).toBe("LOAN_REPAYMENT");
+    expect(tx.status).toBe(TxStatus.COMPLETED);
+    const entries = await prisma.ledgerEntry.findMany({ where: { transactionId: tx.id } });
+    expect(entries).toHaveLength(2);
+    const sum = entries.reduce(
+      (a, e) => a + (e.direction === "DEBIT" ? -Number(e.amount) : Number(e.amount)),
+      0,
+    );
+    expect(sum).toBe(0);
   });
 });
