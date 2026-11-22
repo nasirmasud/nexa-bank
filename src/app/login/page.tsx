@@ -6,8 +6,8 @@ import { Suspense, useState } from "react";
 
 const demos = [
   { label: "Admin", email: "admin@nexabank.com", password: "Password@123" },
-  { label: "Staff", email: "staff@nexabank.com", password: "Password@123" },
-  { label: "Customer", email: "customer@nexabank.com", password: "Password@123" },
+  { label: "Staff", email: "staff1@nexabank.com", password: "Password@123" },
+  { label: "Customer", email: "customer1@nexabank.com", password: "Password@123" },
 ];
 
 function LoginForm() {
