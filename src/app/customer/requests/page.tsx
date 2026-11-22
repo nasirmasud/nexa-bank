@@ -83,8 +83,11 @@ export default function CustomerRequestsPage() {
           <CardContent>
             <form className="space-y-4" onSubmit={onSubmit}>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Type</label>
+                <label className="text-sm font-medium" htmlFor="request-type">
+                  Type
+                </label>
                 <select
+                  id="request-type"
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                   value={type}
                   onChange={(e) => setType(e.target.value as "DEPOSIT" | "WITHDRAWAL")}
@@ -94,8 +97,11 @@ export default function CustomerRequestsPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Account</label>
+                <label className="text-sm font-medium" htmlFor="request-account">
+                  Account
+                </label>
                 <select
+                  id="request-account"
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
@@ -110,8 +116,11 @@ export default function CustomerRequestsPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Amount (BDT)</label>
+                <label className="text-sm font-medium" htmlFor="request-amount">
+                  Amount (BDT)
+                </label>
                 <Input
+                  id="request-amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   inputMode="decimal"
@@ -120,8 +129,11 @@ export default function CustomerRequestsPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Description (optional)</label>
+                <label className="text-sm font-medium" htmlFor="request-description">
+                  Description (optional)
+                </label>
                 <Input
+                  id="request-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Notes for staff/admin"
