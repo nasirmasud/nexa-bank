@@ -4,6 +4,14 @@ import { useState } from "react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -15,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatBDT } from "@/lib/money";
-import { useListTransactionsQuery } from "@/store/api/transactionsApi";
+import { useFlagTransactionMutation, useListTransactionsQuery } from "@/store/api/transactionsApi";
 
 const statusVariant = (s: string): "success" | "danger" | "warning" | "neutral" =>
   s === "COMPLETED"
@@ -30,14 +38,31 @@ export default function StaffTransactionsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [flagId, setFlagId] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+  const [flagError, setFlagError] = useState<string | null>(null);
   const { data, isLoading } = useListTransactionsQuery({
     page,
     pageSize: 10,
     q: q || undefined,
     status: status || undefined,
   });
+  const [flagTransaction, flagState] = useFlagTransactionMutation();
   const txs = data?.data ?? [];
   const pagination = data?.pagination;
+
+  async function onFlag() {
+    if (!flagId || reason.trim().length < 3) return;
+    setFlagError(null);
+    try {
+      await flagTransaction({ id: flagId, reason: reason.trim() }).unwrap();
+      setFlagId(null);
+      setReason("");
+    } catch (e: unknown) {
+      const err = e as { data?: { error?: { message?: string } } };
+      setFlagError(err?.data?.error?.message ?? "Failed to flag transaction");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -91,6 +116,7 @@ export default function StaffTransactionsPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -102,6 +128,19 @@ export default function StaffTransactionsPage() {
                         <StatusBadge variant={statusVariant(t.status)}>{t.status}</StatusBadge>
                       </TableCell>
                       <TableCell className="text-right">{formatBDT(t.amount)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setFlagId(t.id);
+                            setReason("");
+                            setFlagError(null);
+                          }}
+                        >
+                          Flag
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -133,6 +172,49 @@ export default function StaffTransactionsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={!!flagId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setFlagId(null);
+            setReason("");
+            setFlagError(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Flag transaction</DialogTitle>
+            <DialogDescription>Report this transaction as suspicious for review.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason (min 3 characters)"
+          />
+          {flagError && <p className="text-sm text-destructive">{flagError}</p>}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFlagId(null);
+                setReason("");
+                setFlagError(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={flagState.isLoading || reason.trim().length < 3}
+              onClick={onFlag}
+            >
+              {flagState.isLoading ? "Flagging..." : "Flag"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
