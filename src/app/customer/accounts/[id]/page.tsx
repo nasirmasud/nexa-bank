@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -25,6 +27,8 @@ export default function CustomerAccountDetailPage() {
   const id = params.id;
   const accountQuery = useGetAccountQuery(id, { skip: !id });
   const txQuery = useListTransactionsQuery({ accountId: id, page: 1, pageSize: 10 }, { skip: !id });
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
 
   if (accountQuery.isLoading) {
     return (
@@ -39,7 +43,12 @@ export default function CustomerAccountDetailPage() {
   if (error?.status === 404 || !accountQuery.data?.data) {
     return (
       <div className="space-y-4">
-        <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="ghost" size="sm">
+        <Button
+          render={<Link href="/customer/accounts" />}
+          nativeButton={false}
+          variant="ghost"
+          size="sm"
+        >
           <ArrowLeft className="size-4" />
           Back to accounts
         </Button>
@@ -54,7 +63,12 @@ export default function CustomerAccountDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="ghost" size="sm">
+        <Button
+          render={<Link href="/customer/accounts" />}
+          nativeButton={false}
+          variant="ghost"
+          size="sm"
+        >
           <ArrowLeft className="size-4" />
           Back
         </Button>
@@ -105,6 +119,44 @@ export default function CustomerAccountDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Statement Export</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              render={
+                <a
+                  href={`/api/accounts/${id}/statement?format=csv${from ? `&from=${from}` : ""}${to ? `&to=${to}` : ""}`}
+                />
+              }
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+            >
+              <Download className="size-4" /> CSV
+            </Button>
+            <Button
+              render={
+                <a
+                  href={`/api/accounts/${id}/statement?format=pdf${from ? `&from=${from}` : ""}${to ? `&to=${to}` : ""}`}
+                />
+              }
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+            >
+              <Download className="size-4" /> PDF
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
