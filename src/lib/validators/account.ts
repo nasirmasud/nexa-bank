@@ -42,5 +42,14 @@ export const accountLimitsSchema = z
   })
   .strict();
 
+export const accountStatementSchema = z
+  .object({
+    format: z.enum(["csv", "pdf"]).default("csv"),
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+  })
+  .strict();
+
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type AccountListInput = z.infer<typeof accountListSchema>;
+export type AccountStatementInput = z.infer<typeof accountStatementSchema>;
