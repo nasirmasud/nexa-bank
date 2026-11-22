@@ -7,29 +7,30 @@ Legend: 🔴 must-have (required by task) · 🟡 should-have · 🟢 bonus
 
 ---
 
-## Phase 0 — Project Setup (Day 1)
-- [ ] 🔴 `create-next-app` (TypeScript, App Router, Tailwind, ESLint, `src/` dir)
-- [ ] 🔴 Install: `@reduxjs/toolkit react-redux next-auth@beta prisma @prisma/client zod react-hook-form @hookform/resolvers recharts bcryptjs decimal.js date-fns lucide-react clsx tailwind-merge`
-- [ ] 🔴 shadcn/ui init + base components (button, input, card, dialog, table, tabs, badge, dropdown, select, toast/sonner, sheet, skeleton)
-- [ ] 🔴 Prisma + Postgres (Neon) connection; `.env.example`
-- [ ] 🔴 Prettier/ESLint rules, path alias, Husky (optional), folder structure from TRD §2
-- [ ] 🔴 GitHub repo (public), first commit, Vercel project linked (deploy empty shell early)
+## Phase 0 — Project Setup (Day 1) — **In progress**
+- [x] 🔴 `create-next-app` (TypeScript, App Router, Tailwind, ESLint, `src/` dir)
+- [x] 🔴 Install: `@reduxjs/toolkit react-redux next-auth@beta prisma @prisma/client zod react-hook-form @hookform/resolvers recharts bcryptjs decimal.js date-fns lucide-react clsx tailwind-merge` *(installed; workspace currently on Next 16/Prisma 6 — verify against deployment target)*
+- [ ] 🔴 shadcn/ui init + base components (button, input, card, dialog, table, tabs, badge, dropdown, select, toast/sonner, sheet, skeleton) *(partial: `components.json`, `src/lib/utils.ts`; base components not added yet)*
+- [x] 🔴 Prisma + Postgres (Neon) connection; `.env.example` *(Prisma schema/config + `.env.example`/local `.env` created; DB not provisioned/migrated)*
+- [ ] 🔴 Prettier/ESLint rules, path alias, Husky (optional), folder structure from TRD §2 *(base folder structure created; Prettier/Husky not configured)*
+- [ ] 🔴 GitHub repo (public), first commit, Vercel project linked (deploy empty shell early) *(local git initialized + initial commit done; GitHub/Vercel not linked)*
+- [ ] 🔴 Design system foundation: adopt `docs/DESIGN.md` tokens and use `docs/code.html` as visual reference; map into Tailwind/CSS variables and reusable Next.js/shadcn components (no monolithic HTML copy-paste)
 - **Done when:** blank app deploys on Vercel and connects to DB.
 
-## Phase 1 — Database & Seed (Day 2)
-- [ ] 🔴 Implement full Prisma schema (05_schema.md) + migration
+## Phase 1 — Database & Seed (Day 2) — **In progress**
+- [x] 🔴 Implement full Prisma schema (05_schema.md) + migration *(schema implemented in `prisma/schema.prisma`; migration not created/applied yet)*
 - [ ] 🔴 Custom SQL migration: CHECK constraints, ledger delete-block trigger
-- [ ] 🔴 `lib/money.ts`, `lib/errors.ts`, `lib/ids.ts` (reference & account number generators)
+- [x] 🔴 `lib/money.ts`, `lib/errors.ts`, `lib/ids.ts` (reference & account number generators)
 - [ ] 🔴 Seed script (users, accounts, settings, SYSTEM account) — transactions seeded later via services
 - **Done when:** `prisma migrate dev && prisma db seed` works from scratch.
 
-## Phase 2 — Auth & RBAC (Day 3)
-- [ ] 🔴 NextAuth Credentials + JWT (id, role, sessionVersion); lockout logic
-- [ ] 🔴 `middleware.ts` route gating by role
-- [ ] 🔴 `lib/guards.ts` (`requireAuth`, `requireRole`, `assertAccountOwner`, `assertNotSelf`) + `withApi` wrapper + Zod error mapper
-- [ ] 🔴 Login page with demo credential autofill
-- [ ] 🔴 Role-based layouts: Admin / Staff / Customer shells with sidebar + topbar (responsive drawer)
-- [ ] 🔴 Redux store, providers, typed hooks, `auth` + `ui` slices, `baseApi` with error handling & centralized loading middleware
+## Phase 2 — Auth & RBAC (Day 3) — **In progress**
+- [x] 🔴 NextAuth Credentials + JWT (id, role, sessionVersion); lockout logic *(skeleton in `src/lib/auth.ts`; end-to-end hardening/tests pending)*
+- [x] 🔴 `middleware.ts` route gating by role *(implemented as `src/proxy.ts` for Next 16; verify runtime behavior)*
+- [ ] 🔴 `lib/guards.ts` (`requireAuth`, `requireRole`, `assertAccountOwner`, `assertNotSelf`) + `withApi` wrapper + Zod error mapper *(guards implemented in `src/lib/guards.ts`; `withApi` wrapper + Zod error mapper pending)*
+- [x] 🔴 Login page with demo credential autofill *(UI autofill present; seeded demo credentials pending)*
+- [ ] 🔴 Role-based layouts: Admin / Staff / Customer shells with sidebar + topbar (responsive drawer) *(placeholder dashboards exist)*
+- [x] 🔴 Redux store, providers, typed hooks, `auth` + `ui` slices, `baseApi` with error handling & centralized loading middleware *(base store/providers/hooks/slices/baseApi implemented; centralized error/loading middleware pending)*
 - **Done when:** 3 roles log in, land on their dashboard, forbidden routes redirect, API returns 401/403 correctly (verified with curl).
 
 ## Phase 3 — Core Banking Engine (Days 4–5) ⭐ most important
@@ -89,6 +90,7 @@ Priority order (most value / least effort first):
 7. [ ] 🟢 2FA (email/TOTP OTP for PIN-sensitive ops) — only if time remains
 
 ## Phase 9 — Polish, Responsiveness, Accessibility (Day 13)
+- [ ] 🔴 Apply `docs/DESIGN.md` tokens and `docs/code.html` visual patterns consistently across all role shells and feature screens (no monolithic HTML copy-paste)
 - [ ] 🔴 Test on 360 / 768 / 1280 widths; tables → cards on mobile; bottom tab bar for customer
 - [ ] 🔴 Loading skeletons, empty states, error boundaries, 403/404 pages
 - [ ] 🔴 Confirmation dialogs for all financial/destructive actions
