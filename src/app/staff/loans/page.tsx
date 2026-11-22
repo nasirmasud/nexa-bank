@@ -62,6 +62,7 @@ export default function StaffLoansPage() {
               }}
             />
             <select
+              aria-label="Filter by status"
               className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
               value={status}
               onChange={(e) => {
