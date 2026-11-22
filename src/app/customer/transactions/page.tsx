@@ -129,6 +129,7 @@ export default function CustomerTransactionsPage() {
                       <TableCell className="text-right">
                         <Button
                           render={<Link href={`/customer/transactions/${t.id}`} />}
+                          nativeButton={false}
                           variant="ghost"
                           size="sm"
                         >
