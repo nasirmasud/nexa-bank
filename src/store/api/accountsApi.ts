@@ -56,7 +56,16 @@ export const accountsApi = baseApi.injectEndpoints({
     >({
       query: (number) => ({ url: "/accounts/lookup", params: { number } }),
     }),
+    createAccount: build.mutation<{ data: Account }, Record<string, unknown>>({
+      query: (body) => ({ url: "/accounts", method: "POST", body }),
+      invalidatesTags: [{ type: "Account", id: "LIST" }],
+    }),
   }),
 });
 
-export const { useListAccountsQuery, useGetAccountQuery, useLazyLookupAccountQuery } = accountsApi;
+export const {
+  useListAccountsQuery,
+  useGetAccountQuery,
+  useLazyLookupAccountQuery,
+  useCreateAccountMutation,
+} = accountsApi;
