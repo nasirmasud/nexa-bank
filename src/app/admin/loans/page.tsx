@@ -62,7 +62,7 @@ export default function AdminLoansPage() {
               }}
             />
             <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value);
