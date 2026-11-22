@@ -12,6 +12,7 @@ import {
   UserStatus,
 } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { assertNotSelf } from "@/lib/guards";
 import { generateReference } from "@/lib/ids";
 import { addMoney, gteMoney, subMoney, toDecimal } from "@/lib/money";
@@ -33,21 +34,30 @@ const requestSelect = {
   reviewedById: true,
   reviewedAt: true,
   rejectionReason: true,
-  account: { select: { id: true, accountNumber: true, ownerId: true, balance: true, status: true } },
+  account: {
+    select: { id: true, accountNumber: true, ownerId: true, balance: true, status: true },
+  },
   requester: { select: { id: true, name: true, email: true } },
   reviewer: { select: { id: true, name: true, email: true } },
   transaction: { select: { id: true, reference: true, status: true } },
 } satisfies Prisma.DepositWithdrawRequestSelect;
 
-export async function createRequest(db: PrismaClient, actor: RequestActor, input: CreateRequestInput) {
-  if (actor.role !== Role.CUSTOMER) throw new AppError("FORBIDDEN", "Only customers can create requests", 403);
+export async function createRequest(
+  db: PrismaClient,
+  actor: RequestActor,
+  input: CreateRequestInput,
+) {
+  if (actor.role !== Role.CUSTOMER)
+    throw new AppError("FORBIDDEN", "Only customers can create requests", 403);
 
   const account = await db.account.findUnique({
     where: { id: input.accountId },
     select: { id: true, ownerId: true, status: true },
   });
-  if (!account || account.ownerId !== actor.id) throw new AppError("NOT_FOUND", "Account not found", 404);
-  if (account.status !== AccountStatus.ACTIVE) throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
+  if (!account || account.ownerId !== actor.id)
+    throw new AppError("NOT_FOUND", "Account not found", 404);
+  if (account.status !== AccountStatus.ACTIVE)
+    throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
 
   return db.depositWithdrawRequest.create({
     data: {
@@ -64,7 +74,13 @@ export async function createRequest(db: PrismaClient, actor: RequestActor, input
 export async function listRequests(
   db: PrismaClient,
   actor: RequestActor,
-  input: { page: number; pageSize: number; status?: RequestStatus; type?: RequestType; accountId?: string },
+  input: {
+    page: number;
+    pageSize: number;
+    status?: RequestStatus;
+    type?: RequestType;
+    accountId?: string;
+  },
 ) {
   const where: Prisma.DepositWithdrawRequestWhereInput = {};
   if (actor.role === Role.CUSTOMER) where.requesterId = actor.id;
@@ -75,23 +91,38 @@ export async function listRequests(
   const { skip, take } = paginationToSkipTake(input.page, input.pageSize);
   const [total, items] = await Promise.all([
     db.depositWithdrawRequest.count({ where }),
-    db.depositWithdrawRequest.findMany({ where, skip, take, orderBy: { requestedAt: "desc" }, select: requestSelect }),
+    db.depositWithdrawRequest.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { requestedAt: "desc" },
+      select: requestSelect,
+    }),
   ]);
   return { items, pagination: buildPaginationMeta(input.page, input.pageSize, total) };
 }
 
 export async function getRequestById(db: PrismaClient, actor: RequestActor, requestId: string) {
-  const req = await db.depositWithdrawRequest.findUnique({ where: { id: requestId }, select: requestSelect });
+  const req = await db.depositWithdrawRequest.findUnique({
+    where: { id: requestId },
+    select: requestSelect,
+  });
   if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
-  if (actor.role === Role.CUSTOMER && req.requesterId !== actor.id) throw new AppError("NOT_FOUND", "Request not found", 404);
+  if (actor.role === Role.CUSTOMER && req.requesterId !== actor.id)
+    throw new AppError("NOT_FOUND", "Request not found", 404);
   return req;
 }
 
 export async function cancelRequest(db: PrismaClient, actor: RequestActor, requestId: string) {
-  const req = await db.depositWithdrawRequest.findUnique({ where: { id: requestId }, select: { id: true, requesterId: true, status: true } });
+  const req = await db.depositWithdrawRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, requesterId: true, status: true },
+  });
   if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
-  if (actor.role === Role.CUSTOMER && req.requesterId !== actor.id) throw new AppError("NOT_FOUND", "Request not found", 404);
-  if (req.status !== RequestStatus.PENDING) throw new AppError("VALIDATION_ERROR", "Only pending requests can be cancelled", 422);
+  if (actor.role === Role.CUSTOMER && req.requesterId !== actor.id)
+    throw new AppError("NOT_FOUND", "Request not found", 404);
+  if (req.status !== RequestStatus.PENDING)
+    throw new AppError("VALIDATION_ERROR", "Only pending requests can be cancelled", 422);
 
   return db.depositWithdrawRequest.update({
     where: { id: requestId },
@@ -100,29 +131,51 @@ export async function cancelRequest(db: PrismaClient, actor: RequestActor, reque
   });
 }
 
-export async function rejectRequest(db: PrismaClient, actor: RequestActor, requestId: string, reason: string) {
+export async function rejectRequest(
+  db: PrismaClient,
+  actor: RequestActor,
+  requestId: string,
+  reason: string,
+) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
 
   return withSerializableRetry(db, async (tx) => {
     const req = await tx.depositWithdrawRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
     assertNotSelf(actor, req.requesterId);
-    if (req.status !== RequestStatus.PENDING) throw new AppError("VALIDATION_ERROR", "Request is not pending", 422);
+    if (req.status !== RequestStatus.PENDING)
+      throw new AppError("VALIDATION_ERROR", "Request is not pending", 422);
 
     const updated = await tx.depositWithdrawRequest.update({
       where: { id: requestId },
-      data: { status: RequestStatus.REJECTED, reviewedById: actor.id, reviewedAt: new Date(), rejectionReason: reason },
+      data: {
+        status: RequestStatus.REJECTED,
+        reviewedById: actor.id,
+        reviewedAt: new Date(),
+        rejectionReason: reason,
+      },
       select: requestSelect,
     });
 
     await tx.notification.create({
       data: {
         userId: req.requesterId,
-        type: req.type === RequestType.DEPOSIT ? NotificationType.DEPOSIT_REJECTED : NotificationType.WITHDRAWAL_REJECTED,
+        type:
+          req.type === RequestType.DEPOSIT
+            ? NotificationType.DEPOSIT_REJECTED
+            : NotificationType.WITHDRAWAL_REJECTED,
         title: `${req.type === RequestType.DEPOSIT ? "Deposit" : "Withdrawal"} request rejected`,
         message: reason,
         link: `/requests/${req.id}`,
       },
+    });
+    await recordAuditLog(tx, {
+      actorId: actor.id,
+      action: "REQUEST_REJECTED",
+      entityType: "DepositWithdrawRequest",
+      entityId: req.id,
+      before: { status: req.status },
+      after: { status: RequestStatus.REJECTED, rejectionReason: reason },
     });
 
     return updated;
@@ -136,28 +189,39 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
     const req = await tx.depositWithdrawRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
     assertNotSelf(actor, req.requesterId);
-    if (req.status !== RequestStatus.PENDING) throw new AppError("VALIDATION_ERROR", "Request is not pending", 422);
+    if (req.status !== RequestStatus.PENDING)
+      throw new AppError("VALIDATION_ERROR", "Request is not pending", 422);
 
     const account = await tx.account.findUnique({
       where: { id: req.accountId },
       include: { owner: { select: { id: true, status: true } } },
     });
     if (!account) throw new AppError("NOT_FOUND", "Account not found", 404);
-    if (account.status !== AccountStatus.ACTIVE) throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
-    if (!account.owner || account.owner.status !== UserStatus.ACTIVE) throw new AppError("FORBIDDEN", "Account owner is not active", 403);
+    if (account.status !== AccountStatus.ACTIVE)
+      throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
+    if (!account.owner || account.owner.status !== UserStatus.ACTIVE)
+      throw new AppError("FORBIDDEN", "Account owner is not active", 403);
 
-    const system = await tx.account.findFirst({ where: { type: "SYSTEM" }, select: { id: true, balance: true } });
+    const system = await tx.account.findFirst({
+      where: { type: "SYSTEM" },
+      select: { id: true, balance: true },
+    });
     if (!system) throw new AppError("INTERNAL_ERROR", "System account not configured", 500);
 
     const ids = [account.id, system.id].sort();
     await tx.$queryRaw`SELECT id FROM "Account" WHERE id IN (${Prisma.join(ids)}) FOR UPDATE`;
     const [lockedAccount, lockedSystem] = await Promise.all([
-      tx.account.findUniqueOrThrow({ where: { id: account.id }, include: { owner: { select: { id: true, status: true } } } }),
+      tx.account.findUniqueOrThrow({
+        where: { id: account.id },
+        include: { owner: { select: { id: true, status: true } } },
+      }),
       tx.account.findUniqueOrThrow({ where: { id: system.id } }),
     ]);
 
-    if (lockedAccount.status !== AccountStatus.ACTIVE) throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
-    if (!lockedAccount.owner || lockedAccount.owner.status !== UserStatus.ACTIVE) throw new AppError("FORBIDDEN", "Account owner is not active", 403);
+    if (lockedAccount.status !== AccountStatus.ACTIVE)
+      throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
+    if (!lockedAccount.owner || lockedAccount.owner.status !== UserStatus.ACTIVE)
+      throw new AppError("FORBIDDEN", "Account owner is not active", 403);
 
     const amount = toDecimal(req.amount.toString());
     let fromId: string;
@@ -174,10 +238,12 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
       txType = TxType.WITHDRAWAL;
 
       const fromBalance = toDecimal(lockedAccount.balance.toString());
-      if (!gteMoney(fromBalance, amount)) throw new AppError("INSUFFICIENT_FUNDS", "Insufficient funds", 400);
+      if (!gteMoney(fromBalance, amount))
+        throw new AppError("INSUFFICIENT_FUNDS", "Insufficient funds", 400);
       const minBalance = lockedAccount.minBalance ?? toDecimal("0");
       const post = subMoney(fromBalance, amount);
-      if (post.lt(toDecimal(minBalance.toString()))) throw new AppError("BELOW_MIN_BALANCE", "Withdrawal would breach minimum balance", 400);
+      if (post.lt(toDecimal(minBalance.toString())))
+        throw new AppError("BELOW_MIN_BALANCE", "Withdrawal would breach minimum balance", 400);
     }
 
     const lockedFrom = fromId === lockedAccount.id ? lockedAccount : lockedSystem;
@@ -209,8 +275,20 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
 
     await tx.ledgerEntry.createMany({
       data: [
-        { transactionId: txRecord.id, accountId: fromId, direction: EntryDirection.DEBIT, amount: amount.toDecimalPlaces(2), balanceAfter: newFromBalance },
-        { transactionId: txRecord.id, accountId: toId, direction: EntryDirection.CREDIT, amount: amount.toDecimalPlaces(2), balanceAfter: newToBalance },
+        {
+          transactionId: txRecord.id,
+          accountId: fromId,
+          direction: EntryDirection.DEBIT,
+          amount: amount.toDecimalPlaces(2),
+          balanceAfter: newFromBalance,
+        },
+        {
+          transactionId: txRecord.id,
+          accountId: toId,
+          direction: EntryDirection.CREDIT,
+          amount: amount.toDecimalPlaces(2),
+          balanceAfter: newToBalance,
+        },
       ],
     });
 
@@ -223,11 +301,22 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
     await tx.notification.create({
       data: {
         userId: req.requesterId,
-        type: req.type === RequestType.DEPOSIT ? NotificationType.DEPOSIT_APPROVED : NotificationType.WITHDRAWAL_APPROVED,
+        type:
+          req.type === RequestType.DEPOSIT
+            ? NotificationType.DEPOSIT_APPROVED
+            : NotificationType.WITHDRAWAL_APPROVED,
         title: `${req.type === RequestType.DEPOSIT ? "Deposit" : "Withdrawal"} request approved`,
         message: `${amount.toFixed(2)} BDT has been ${req.type === RequestType.DEPOSIT ? "deposited to" : "withdrawn from"} your account.`,
         link: `/requests/${req.id}`,
       },
+    });
+    await recordAuditLog(tx, {
+      actorId: actor.id,
+      action: "REQUEST_APPROVED",
+      entityType: "DepositWithdrawRequest",
+      entityId: req.id,
+      before: { status: req.status },
+      after: { status: RequestStatus.APPROVED },
     });
 
     return updated;
