@@ -67,7 +67,7 @@ export default function CustomerTransactionsPage() {
               }}
             />
             <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={type}
               onChange={(e) => {
                 setType(e.target.value);
@@ -80,7 +80,7 @@ export default function CustomerTransactionsPage() {
               <option value="TRANSFER">Transfer</option>
             </select>
             <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value);
@@ -108,25 +108,29 @@ export default function CustomerTransactionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Reference</TableHead>
+                    <TableHead className="whitespace-nowrap">Reference</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="whitespace-nowrap">Date</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {txs.map((t) => (
                     <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.reference}</TableCell>
-                      <TableCell>{t.type}</TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">{t.reference}</TableCell>
+                      <TableCell className="whitespace-nowrap">{t.type}</TableCell>
                       <TableCell>
                         <StatusBadge variant={statusVariant(t.status)}>{t.status}</StatusBadge>
                       </TableCell>
-                      <TableCell>{new Date(t.createdAt).toLocaleString()}</TableCell>
-                      <TableCell className="text-right">{formatBDT(t.amount)}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="whitespace-nowrap">
+                        {new Date(t.createdAt).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        {formatBDT(t.amount)}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
                         <Button
                           render={<Link href={`/customer/transactions/${t.id}`} />}
                           nativeButton={false}
