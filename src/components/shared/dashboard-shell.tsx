@@ -193,6 +193,12 @@ export function DashboardShell({ children, navItems, roleLabel, user }: Dashboar
 
   return (
     <div className="min-h-screen bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-md focus:ring-2 focus:ring-ring"
+      >
+        Skip to content
+      </a>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] border-r border-sidebar-border lg:block">
         <SidebarContent navItems={navItems} roleLabel={roleLabel} />
       </aside>
@@ -260,7 +266,9 @@ export function DashboardShell({ children, navItems, roleLabel, user }: Dashboar
           </DropdownMenu>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <main id="main-content" tabIndex={-1} className="p-4 sm:p-6 lg:p-8 outline-none">
+          {children}
+        </main>
       </div>
     </div>
   );
