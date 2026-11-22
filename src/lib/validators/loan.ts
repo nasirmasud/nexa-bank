@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LoanStatus } from "@prisma/client";
+import { EmploymentStatus, LoanStatus, LoanType } from "@prisma/client";
 import { cuidSchema, moneyAmountSchema, paginationSchema } from "./common";
 
 export const loanListSchema = paginationSchema
@@ -7,6 +7,18 @@ export const loanListSchema = paginationSchema
     status: z.nativeEnum(LoanStatus).optional(),
     applicantId: cuidSchema.optional(),
     q: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+export const applyLoanSchema = z
+  .object({
+    type: z.nativeEnum(LoanType),
+    requestedAmount: moneyAmountSchema,
+    durationMonths: z.coerce.number().int().min(1).max(360),
+    monthlyIncome: moneyAmountSchema,
+    employmentStatus: z.nativeEnum(EmploymentStatus),
+    description: z.string().trim().max(1000).optional(),
+    disbursementAccountId: cuidSchema,
   })
   .strict();
 
@@ -37,3 +49,4 @@ export const loanForwardSchema = z
   .strict();
 
 export type LoanListInput = z.infer<typeof loanListSchema>;
+export type ApplyLoanInput = z.infer<typeof applyLoanSchema>;
