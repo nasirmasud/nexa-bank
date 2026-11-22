@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient, Role } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { toDecimal } from "@/lib/money";
 import type { UpdateSettingsInput } from "@/lib/validators/settings";
 
@@ -55,5 +56,13 @@ export async function updateSettings(
   if (input.minTransferFee !== undefined)
     data.minTransferFee = toDecimal(input.minTransferFee).toDecimalPlaces(2);
 
-  return db.settings.update({ where: { id: 1 }, data, select: settingsSelect });
+  const updated = await db.settings.update({ where: { id: 1 }, data, select: settingsSelect });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "SETTINGS_UPDATED",
+    entityType: "Settings",
+    entityId: "1",
+    after: input as unknown as Prisma.InputJsonValue,
+  });
+  return updated;
 }
