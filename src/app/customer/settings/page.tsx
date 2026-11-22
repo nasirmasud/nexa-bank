@@ -58,12 +58,25 @@ function SettingsForm({ me }: { me: MyProfile }) {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-sm font-medium">Name</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                <label className="text-sm font-medium" htmlFor="settings-name">
+                  Name
+                </label>
+                <Input
+                  id="settings-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Phone</label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <label className="text-sm font-medium" htmlFor="settings-phone">
+                  Phone
+                </label>
+                <Input
+                  id="settings-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
             </div>
             <div className="text-sm text-muted-foreground">Email: {me.email}</div>
@@ -93,8 +106,11 @@ function SettingsForm({ me }: { me: MyProfile }) {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-sm font-medium">Current password</label>
+                <label className="text-sm font-medium" htmlFor="settings-current-password">
+                  Current password
+                </label>
                 <Input
+                  id="settings-current-password"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -102,8 +118,11 @@ function SettingsForm({ me }: { me: MyProfile }) {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">New password</label>
+                <label className="text-sm font-medium" htmlFor="settings-new-password">
+                  New password
+                </label>
                 <Input
+                  id="settings-new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -144,8 +163,11 @@ function SettingsForm({ me }: { me: MyProfile }) {
             <div className="grid gap-4 sm:grid-cols-2">
               {me.hasPin && (
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Current PIN</label>
+                  <label className="text-sm font-medium" htmlFor="settings-current-pin">
+                    Current PIN
+                  </label>
                   <Input
+                    id="settings-current-pin"
                     type="password"
                     inputMode="numeric"
                     value={currentPin}
@@ -154,8 +176,11 @@ function SettingsForm({ me }: { me: MyProfile }) {
                 </div>
               )}
               <div className="space-y-1">
-                <label className="text-sm font-medium">New PIN</label>
+                <label className="text-sm font-medium" htmlFor="settings-new-pin">
+                  New PIN
+                </label>
                 <Input
+                  id="settings-new-pin"
                   type="password"
                   inputMode="numeric"
                   value={newPin}
@@ -195,8 +220,11 @@ function SettingsForm({ me }: { me: MyProfile }) {
             </Button>
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Theme</label>
+            <label className="text-sm font-medium" htmlFor="settings-theme">
+              Theme
+            </label>
             <select
+              id="settings-theme"
               className="h-9 w-full max-w-xs rounded-md border bg-background px-3 text-sm"
               value={me.theme}
               onChange={async (e) => {
