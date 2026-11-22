@@ -44,8 +44,23 @@ export const customersApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/customers", method: "POST", body }),
       invalidatesTags: [{ type: "Customer", id: "LIST" }],
     }),
+    updateCustomerKyc: build.mutation<
+      { data: Customer },
+      { id: string; kycStatus: "PENDING" | "VERIFIED" | "REJECTED" }
+    >({
+      query: ({ id, kycStatus }) => ({
+        url: `/customers/${id}/kyc`,
+        method: "PATCH",
+        body: { kycStatus },
+      }),
+      invalidatesTags: [{ type: "Customer", id: "LIST" }],
+    }),
   }),
 });
 
-export const { useListCustomersQuery, useGetCustomerQuery, useCreateCustomerMutation } =
-  customersApi;
+export const {
+  useListCustomersQuery,
+  useGetCustomerQuery,
+  useCreateCustomerMutation,
+  useUpdateCustomerKycMutation,
+} = customersApi;
