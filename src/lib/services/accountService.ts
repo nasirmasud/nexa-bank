@@ -4,7 +4,11 @@ import { recordAuditLog } from "@/lib/audit";
 import { generateAccountNumber } from "@/lib/ids";
 import { toDecimal } from "@/lib/money";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
-import type { AccountListInput, CreateAccountInput } from "@/lib/validators/account";
+import type {
+  AccountListInput,
+  AccountStatementInput,
+  CreateAccountInput,
+} from "@/lib/validators/account";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -259,4 +263,50 @@ export async function updateAccountLimits(
     after: input,
   });
   return account;
+}
+
+export async function getAccountStatement(
+  db: PrismaClient,
+  actor: AccountActor,
+  accountId: string,
+  input: AccountStatementInput,
+) {
+  const account = await getAccountById(db, actor, accountId);
+  const where: Prisma.TransactionWhereInput = {
+    AND: [
+      { OR: [{ fromAccountId: accountId }, { toAccountId: accountId }] },
+      ...(input.from || input.to
+        ? [
+            {
+              createdAt: {
+                ...(input.from ? { gte: input.from } : {}),
+                ...(input.to ? { lte: input.to } : {}),
+              },
+            },
+          ]
+        : []),
+    ],
+  };
+
+  const transactions = await db.transaction.findMany({
+    where,
+    orderBy: { createdAt: "asc" },
+    take: 2000,
+    select: {
+      id: true,
+      reference: true,
+      type: true,
+      status: true,
+      amount: true,
+      fee: true,
+      currency: true,
+      description: true,
+      createdAt: true,
+      completedAt: true,
+      fromAccountId: true,
+      toAccountId: true,
+    },
+  });
+
+  return { account, transactions, from: input.from ?? null, to: input.to ?? null };
 }
