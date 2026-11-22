@@ -108,8 +108,11 @@ export default function CustomerApplyLoanPage() {
             <form className="space-y-4" onSubmit={onSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Loan type</label>
+                  <label className="text-sm font-medium" htmlFor="loan-type">
+                    Loan type
+                  </label>
                   <select
+                    id="loan-type"
                     className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                     value={type}
                     onChange={(e) => setType(e.target.value as (typeof LOAN_TYPES)[number])}
@@ -122,8 +125,11 @@ export default function CustomerApplyLoanPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Employment status</label>
+                  <label className="text-sm font-medium" htmlFor="loan-employment">
+                    Employment status
+                  </label>
                   <select
+                    id="loan-employment"
                     className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                     value={employmentStatus}
                     onChange={(e) =>
@@ -141,8 +147,11 @@ export default function CustomerApplyLoanPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Requested amount (BDT)</label>
+                  <label className="text-sm font-medium" htmlFor="loan-amount">
+                    Requested amount (BDT)
+                  </label>
                   <Input
+                    id="loan-amount"
                     value={requestedAmount}
                     onChange={(e) => setRequestedAmount(e.target.value)}
                     placeholder="e.g. 50000.00"
@@ -150,8 +159,11 @@ export default function CustomerApplyLoanPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Duration (months)</label>
+                  <label className="text-sm font-medium" htmlFor="loan-duration">
+                    Duration (months)
+                  </label>
                   <Input
+                    id="loan-duration"
                     type="number"
                     min={1}
                     max={360}
@@ -164,8 +176,11 @@ export default function CustomerApplyLoanPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Monthly income (BDT)</label>
+                  <label className="text-sm font-medium" htmlFor="loan-income">
+                    Monthly income (BDT)
+                  </label>
                   <Input
+                    id="loan-income"
                     value={monthlyIncome}
                     onChange={(e) => setMonthlyIncome(e.target.value)}
                     placeholder="e.g. 30000.00"
@@ -173,11 +188,14 @@ export default function CustomerApplyLoanPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Disbursement account</label>
+                  <label className="text-sm font-medium" htmlFor="loan-disbursement">
+                    Disbursement account
+                  </label>
                   {accountsLoading ? (
                     <Skeleton className="h-9 w-full" />
                   ) : (
                     <select
+                      id="loan-disbursement"
                       className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                       value={disbursementAccountId}
                       onChange={(e) => setDisbursementAccountId(e.target.value)}
@@ -195,8 +213,11 @@ export default function CustomerApplyLoanPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium">Description (optional)</label>
+                <label className="text-sm font-medium" htmlFor="loan-description">
+                  Description (optional)
+                </label>
                 <textarea
+                  id="loan-description"
                   className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -204,7 +225,11 @@ export default function CustomerApplyLoanPage() {
                 />
               </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
 
               <Button type="submit" disabled={applyState.isLoading || !disbursementAccountId}>
                 {applyState.isLoading ? "Submitting..." : "Submit application"}
