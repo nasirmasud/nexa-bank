@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { KycStatus, Prisma, PrismaClient, Role, UserStatus } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
 import type { CreateCustomerInput, CustomerListInput } from "@/lib/validators/customer";
 
@@ -139,13 +140,21 @@ export async function updateCustomerKyc(
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.user.findFirst({
     where: { id, role: Role.CUSTOMER },
-    select: { id: true, profile: { select: { id: true } } },
+    select: { id: true, profile: { select: { id: true, kycStatus: true } } },
   });
   if (!existing?.profile) throw new AppError("NOT_FOUND", "Customer not found", 404);
 
   await db.customerProfile.update({
     where: { userId: id },
     data: { kycStatus },
+  });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "CUSTOMER_KYC_UPDATED",
+    entityType: "CustomerProfile",
+    entityId: existing.profile.id,
+    before: { kycStatus: existing.profile.kycStatus },
+    after: { kycStatus },
   });
 
   return getCustomerById(db, actor, id);
@@ -160,7 +169,7 @@ export async function updateCustomerStatus(
   if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.user.findFirst({
     where: { id, role: Role.CUSTOMER },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!existing) throw new AppError("NOT_FOUND", "Customer not found", 404);
 
@@ -170,6 +179,14 @@ export async function updateCustomerStatus(
       status,
       ...(status !== UserStatus.ACTIVE ? { sessionVersion: { increment: 1 } } : {}),
     },
+  });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "CUSTOMER_STATUS_UPDATED",
+    entityType: "User",
+    entityId: id,
+    before: { status: existing.status },
+    after: { status },
   });
 
   return getCustomerById(db, actor, id);
