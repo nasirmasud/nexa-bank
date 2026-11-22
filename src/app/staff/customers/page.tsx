@@ -22,12 +22,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCreateCustomerMutation, useListCustomersQuery } from "@/store/api/customersApi";
+import {
+  useCreateCustomerMutation,
+  useListCustomersQuery,
+  useUpdateCustomerKycMutation,
+} from "@/store/api/customersApi";
 
 export default function StaffCustomersPage() {
   const [q, setQ] = useState("");
   const { data, isLoading } = useListCustomersQuery({ page: 1, pageSize: 20, q: q || undefined });
   const [createCustomer, createState] = useCreateCustomerMutation();
+  const [updateKyc] = useUpdateCustomerKycMutation();
   const [open, setOpen] = useState(false);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -115,17 +120,33 @@ export default function StaffCustomersPage() {
                     <TableCell>{c.email}</TableCell>
                     <TableCell>{c.profile?.customerNo ?? "—"}</TableCell>
                     <TableCell>
-                      <StatusBadge
-                        variant={
-                          c.profile?.kycStatus === "VERIFIED"
-                            ? "success"
-                            : c.profile?.kycStatus === "REJECTED"
-                              ? "danger"
-                              : "warning"
-                        }
-                      >
-                        {c.profile?.kycStatus ?? "—"}
-                      </StatusBadge>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge
+                          variant={
+                            c.profile?.kycStatus === "VERIFIED"
+                              ? "success"
+                              : c.profile?.kycStatus === "REJECTED"
+                                ? "danger"
+                                : "warning"
+                          }
+                        >
+                          {c.profile?.kycStatus ?? "—"}
+                        </StatusBadge>
+                        <select
+                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          value={c.profile?.kycStatus ?? "PENDING"}
+                          onChange={(e) =>
+                            updateKyc({
+                              id: c.id,
+                              kycStatus: e.target.value as "PENDING" | "VERIFIED" | "REJECTED",
+                            })
+                          }
+                        >
+                          <option value="PENDING">PENDING</option>
+                          <option value="VERIFIED">VERIFIED</option>
+                          <option value="REJECTED">REJECTED</option>
+                        </select>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
