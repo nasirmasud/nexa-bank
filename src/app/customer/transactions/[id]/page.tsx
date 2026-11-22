@@ -46,7 +46,7 @@ export default function CustomerTransactionDetailPage() {
   if (err?.status === 404 || !tx) {
     return (
       <div className="space-y-4">
-        <Button render={<Link href="/customer/transactions" />} variant="ghost" size="sm">
+        <Button render={<Link href="/customer/transactions" />} nativeButton={false} variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back to transactions
         </Button>
@@ -58,7 +58,7 @@ export default function CustomerTransactionDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button render={<Link href="/customer/transactions" />} variant="ghost" size="sm">
+        <Button render={<Link href="/customer/transactions" />} nativeButton={false} variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back
         </Button>
