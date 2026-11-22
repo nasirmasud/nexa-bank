@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Prisma, PrismaClient, Role, UserStatus } from "@prisma/client";
+import { KycStatus, Prisma, PrismaClient, Role, UserStatus } from "@prisma/client";
 import { AppError } from "@/lib/errors";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
 import type { CreateCustomerInput, CustomerListInput } from "@/lib/validators/customer";
@@ -128,4 +128,25 @@ export async function getCustomerById(db: PrismaClient, actor: CustomerActor, id
   });
   if (!user) throw new AppError("NOT_FOUND", "Customer not found", 404);
   return user;
+}
+
+export async function updateCustomerKyc(
+  db: PrismaClient,
+  actor: CustomerActor,
+  id: string,
+  kycStatus: KycStatus,
+) {
+  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  const existing = await db.user.findFirst({
+    where: { id, role: Role.CUSTOMER },
+    select: { id: true, profile: { select: { id: true } } },
+  });
+  if (!existing?.profile) throw new AppError("NOT_FOUND", "Customer not found", 404);
+
+  await db.customerProfile.update({
+    where: { userId: id },
+    data: { kycStatus },
+  });
+
+  return getCustomerById(db, actor, id);
 }
