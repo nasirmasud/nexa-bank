@@ -2,6 +2,8 @@ import { requireRole } from "@/lib/guards";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { staffNav } from "@/components/shared/dashboard-nav";
 
+export const dynamic = "force-dynamic";
+
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("STAFF", "ADMIN");
 
