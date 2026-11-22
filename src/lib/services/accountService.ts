@@ -1,5 +1,6 @@
 import { AccountStatus, Prisma, PrismaClient, Role } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { generateAccountNumber } from "@/lib/ids";
 import { toDecimal } from "@/lib/money";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
@@ -36,13 +37,20 @@ function decimalOrNull(value: string | null | undefined) {
 async function generateUniqueAccountNumber(db: Db) {
   for (let i = 0; i < 10; i++) {
     const accountNumber = generateAccountNumber();
-    const existing = await db.account.findUnique({ where: { accountNumber }, select: { id: true } });
+    const existing = await db.account.findUnique({
+      where: { accountNumber },
+      select: { id: true },
+    });
     if (!existing) return accountNumber;
   }
   throw new AppError("INTERNAL_ERROR", "Failed to generate unique account number", 500);
 }
 
-export async function createAccount(db: PrismaClient, actor: AccountActor, input: CreateAccountInput) {
+export async function createAccount(
+  db: PrismaClient,
+  actor: AccountActor,
+  input: CreateAccountInput,
+) {
   if (actor.role === "CUSTOMER") throw new AppError("FORBIDDEN", "Not authorized", 403);
 
   const owner = await db.user.findUnique({
@@ -58,7 +66,7 @@ export async function createAccount(db: PrismaClient, actor: AccountActor, input
 
   const accountNumber = await generateUniqueAccountNumber(db);
 
-  return db.account.create({
+  const account = await db.account.create({
     data: {
       accountNumber,
       ownerId: input.ownerId,
@@ -71,6 +79,14 @@ export async function createAccount(db: PrismaClient, actor: AccountActor, input
     },
     select: safeAccountSelect,
   });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "ACCOUNT_CREATED",
+    entityType: "Account",
+    entityId: account.id,
+    after: { ownerId: account.ownerId, type: account.type, accountNumber: account.accountNumber },
+  });
+  return account;
 }
 
 export async function listAccounts(db: PrismaClient, actor: AccountActor, input: AccountListInput) {
@@ -96,14 +112,23 @@ export async function listAccounts(db: PrismaClient, actor: AccountActor, input:
   const { skip, take } = paginationToSkipTake(input.page, input.pageSize);
   const [total, items] = await Promise.all([
     db.account.count({ where }),
-    db.account.findMany({ where, skip, take, orderBy: { openedAt: "desc" }, select: safeAccountSelect }),
+    db.account.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { openedAt: "desc" },
+      select: safeAccountSelect,
+    }),
   ]);
 
   return { items, pagination: buildPaginationMeta(input.page, input.pageSize, total) };
 }
 
 export async function getAccountById(db: PrismaClient, actor: AccountActor, accountId: string) {
-  const account = await db.account.findUnique({ where: { id: accountId }, select: safeAccountSelect });
+  const account = await db.account.findUnique({
+    where: { id: accountId },
+    select: safeAccountSelect,
+  });
   if (!account) throw new AppError("NOT_FOUND", "Account not found", 404);
   if (actor.role === Role.CUSTOMER && account.ownerId !== actor.id) {
     throw new AppError("NOT_FOUND", "Account not found", 404);
@@ -111,7 +136,11 @@ export async function getAccountById(db: PrismaClient, actor: AccountActor, acco
   return account;
 }
 
-export async function lookupAccountByNumber(db: PrismaClient, actor: AccountActor, accountNumber: string) {
+export async function lookupAccountByNumber(
+  db: PrismaClient,
+  actor: AccountActor,
+  accountNumber: string,
+) {
   const account = await db.account.findUnique({
     where: { accountNumber },
     select: {
@@ -132,48 +161,102 @@ export async function lookupAccountByNumber(db: PrismaClient, actor: AccountActo
   return account;
 }
 
-export async function freezeAccount(db: PrismaClient, actor: AccountActor, accountId: string, reason: string) {
+export async function freezeAccount(
+  db: PrismaClient,
+  actor: AccountActor,
+  accountId: string,
+  reason: string,
+) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
-  const existing = await db.account.findUnique({ where: { id: accountId }, select: { id: true, status: true } });
+  const existing = await db.account.findUnique({
+    where: { id: accountId },
+    select: { id: true, status: true },
+  });
   if (!existing) throw new AppError("NOT_FOUND", "Account not found", 404);
   if (existing.status === AccountStatus.CLOSED) {
     throw new AppError("VALIDATION_ERROR", "Closed account cannot be frozen", 422);
   }
-  return db.account.update({
+  const account = await db.account.update({
     where: { id: accountId },
     data: { status: AccountStatus.FROZEN, freezeReason: reason },
     select: safeAccountSelect,
   });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "ACCOUNT_FROZEN",
+    entityType: "Account",
+    entityId: accountId,
+    before: { status: existing.status },
+    after: { status: AccountStatus.FROZEN, freezeReason: reason },
+  });
+  return account;
 }
 
 export async function unfreezeAccount(db: PrismaClient, actor: AccountActor, accountId: string) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
-  const existing = await db.account.findUnique({ where: { id: accountId }, select: { id: true, status: true } });
+  const existing = await db.account.findUnique({
+    where: { id: accountId },
+    select: { id: true, status: true },
+  });
   if (!existing) throw new AppError("NOT_FOUND", "Account not found", 404);
   if (existing.status === AccountStatus.CLOSED) {
     throw new AppError("VALIDATION_ERROR", "Closed account cannot be unfrozen", 422);
   }
-  return db.account.update({
+  const account = await db.account.update({
     where: { id: accountId },
     data: { status: AccountStatus.ACTIVE, freezeReason: null },
     select: safeAccountSelect,
   });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "ACCOUNT_UNFROZEN",
+    entityType: "Account",
+    entityId: accountId,
+    before: { status: existing.status },
+    after: { status: AccountStatus.ACTIVE },
+  });
+  return account;
 }
 
 export async function updateAccountLimits(
   db: PrismaClient,
   actor: AccountActor,
   accountId: string,
-  input: { dailyTransferLimit?: string | null; perTxLimit?: string | null; minBalance?: string | null },
+  input: {
+    dailyTransferLimit?: string | null;
+    perTxLimit?: string | null;
+    minBalance?: string | null;
+  },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
-  const existing = await db.account.findUnique({ where: { id: accountId }, select: { id: true } });
+  const existing = await db.account.findUnique({
+    where: { id: accountId },
+    select: { id: true, dailyTransferLimit: true, perTxLimit: true, minBalance: true },
+  });
   if (!existing) throw new AppError("NOT_FOUND", "Account not found", 404);
 
   const data: Prisma.AccountUpdateInput = {};
-  if (input.dailyTransferLimit !== undefined) data.dailyTransferLimit = decimalOrNull(input.dailyTransferLimit);
+  if (input.dailyTransferLimit !== undefined)
+    data.dailyTransferLimit = decimalOrNull(input.dailyTransferLimit);
   if (input.perTxLimit !== undefined) data.perTxLimit = decimalOrNull(input.perTxLimit);
   if (input.minBalance !== undefined) data.minBalance = decimalOrNull(input.minBalance);
 
-  return db.account.update({ where: { id: accountId }, data, select: safeAccountSelect });
+  const account = await db.account.update({
+    where: { id: accountId },
+    data,
+    select: safeAccountSelect,
+  });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "ACCOUNT_LIMITS_UPDATED",
+    entityType: "Account",
+    entityId: accountId,
+    before: {
+      dailyTransferLimit: existing.dailyTransferLimit?.toString() ?? null,
+      perTxLimit: existing.perTxLimit?.toString() ?? null,
+      minBalance: existing.minBalance?.toString() ?? null,
+    },
+    after: input,
+  });
+  return account;
 }
