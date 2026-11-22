@@ -1,8 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 const roleHome: Record<string, string> = {
   ADMIN: "/admin/dashboard",
   STAFF: "/staff/dashboard",
