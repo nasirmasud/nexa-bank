@@ -60,6 +60,39 @@ export const accountsApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/accounts", method: "POST", body }),
       invalidatesTags: [{ type: "Account", id: "LIST" }],
     }),
+    freezeAccount: build.mutation<{ data: Account }, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/accounts/${id}/freeze`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Account", id: "LIST" },
+        { type: "Account", id },
+      ],
+    }),
+    unfreezeAccount: build.mutation<{ data: Account }, string>({
+      query: (id) => ({ url: `/accounts/${id}/unfreeze`, method: "POST" }),
+      invalidatesTags: (_r, _e, id) => [
+        { type: "Account", id: "LIST" },
+        { type: "Account", id },
+      ],
+    }),
+    updateAccountLimits: build.mutation<
+      { data: Account },
+      {
+        id: string;
+        dailyTransferLimit?: string | null;
+        perTxLimit?: string | null;
+        minBalance?: string | null;
+      }
+    >({
+      query: ({ id, ...body }) => ({ url: `/accounts/${id}/limits`, method: "PUT", body }),
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Account", id: "LIST" },
+        { type: "Account", id },
+      ],
+    }),
   }),
 });
 
@@ -68,4 +101,7 @@ export const {
   useGetAccountQuery,
   useLazyLookupAccountQuery,
   useCreateAccountMutation,
+  useFreezeAccountMutation,
+  useUnfreezeAccountMutation,
+  useUpdateAccountLimitsMutation,
 } = accountsApi;
