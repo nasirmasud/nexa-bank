@@ -1,55 +1,53 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  LayoutDashboard,
-  Users,
-  Wallet,
-  ArrowLeftRight,
-  FileText,
-  ShieldAlert,
-  Landmark,
-  Settings,
-  Bell,
-  ClipboardList,
-  UserCog,
-  ScrollText,
-  CreditCard,
-} from "lucide-react";
+export type NavIcon =
+  | "LayoutDashboard"
+  | "Users"
+  | "Wallet"
+  | "ArrowLeftRight"
+  | "FileText"
+  | "ShieldAlert"
+  | "Landmark"
+  | "Settings"
+  | "Bell"
+  | "ClipboardList"
+  | "UserCog"
+  | "ScrollText"
+  | "CreditCard";
 
 export type NavItem = {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: NavIcon;
 };
 
 export const adminNav: NavItem[] = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Customers", href: "/admin/customers", icon: Users },
-  { label: "Accounts", href: "/admin/accounts", icon: Wallet },
-  { label: "Requests", href: "/admin/requests", icon: ClipboardList },
-  { label: "Transactions", href: "/admin/transactions", icon: ArrowLeftRight },
-  { label: "Suspicious", href: "/admin/suspicious", icon: ShieldAlert },
-  { label: "Loans", href: "/admin/loans", icon: Landmark },
-  { label: "Staff", href: "/admin/staff", icon: UserCog },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
-  { label: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },
+  { label: "Dashboard", href: "/admin/dashboard", icon: "LayoutDashboard" },
+  { label: "Customers", href: "/admin/customers", icon: "Users" },
+  { label: "Accounts", href: "/admin/accounts", icon: "Wallet" },
+  { label: "Requests", href: "/admin/requests", icon: "ClipboardList" },
+  { label: "Transactions", href: "/admin/transactions", icon: "ArrowLeftRight" },
+  { label: "Suspicious", href: "/admin/suspicious", icon: "ShieldAlert" },
+  { label: "Loans", href: "/admin/loans", icon: "Landmark" },
+  { label: "Staff", href: "/admin/staff", icon: "UserCog" },
+  { label: "Settings", href: "/admin/settings", icon: "Settings" },
+  { label: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
 ];
 
 export const staffNav: NavItem[] = [
-  { label: "Dashboard", href: "/staff/dashboard", icon: LayoutDashboard },
-  { label: "Customers", href: "/staff/customers", icon: Users },
-  { label: "Accounts", href: "/staff/accounts/new", icon: CreditCard },
-  { label: "Requests", href: "/staff/requests", icon: ClipboardList },
-  { label: "Transactions", href: "/staff/transactions", icon: ArrowLeftRight },
-  { label: "Loans", href: "/staff/loans", icon: Landmark },
+  { label: "Dashboard", href: "/staff/dashboard", icon: "LayoutDashboard" },
+  { label: "Customers", href: "/staff/customers", icon: "Users" },
+  { label: "Accounts", href: "/staff/accounts/new", icon: "CreditCard" },
+  { label: "Requests", href: "/staff/requests", icon: "ClipboardList" },
+  { label: "Transactions", href: "/staff/transactions", icon: "ArrowLeftRight" },
+  { label: "Loans", href: "/staff/loans", icon: "Landmark" },
 ];
 
 export const customerNav: NavItem[] = [
-  { label: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
-  { label: "Accounts", href: "/customer/accounts", icon: Wallet },
-  { label: "Transfer", href: "/customer/transfer", icon: ArrowLeftRight },
-  { label: "Requests", href: "/customer/requests", icon: ClipboardList },
-  { label: "Transactions", href: "/customer/transactions", icon: FileText },
-  { label: "Loans", href: "/customer/loans", icon: Landmark },
-  { label: "Notifications", href: "/customer/notifications", icon: Bell },
-  { label: "Settings", href: "/customer/settings", icon: Settings },
+  { label: "Dashboard", href: "/customer/dashboard", icon: "LayoutDashboard" },
+  { label: "Accounts", href: "/customer/accounts", icon: "Wallet" },
+  { label: "Transfer", href: "/customer/transfer", icon: "ArrowLeftRight" },
+  { label: "Requests", href: "/customer/requests", icon: "ClipboardList" },
+  { label: "Transactions", href: "/customer/transactions", icon: "FileText" },
+  { label: "Loans", href: "/customer/loans", icon: "Landmark" },
+  { label: "Notifications", href: "/customer/notifications", icon: "Bell" },
+  { label: "Settings", href: "/customer/settings", icon: "Settings" },
 ];
