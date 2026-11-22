@@ -139,6 +139,10 @@ describe("customerService", () => {
       select: { sessionVersion: true },
     });
     expect(after.sessionVersion).toBe(before.sessionVersion + 1);
+    const audit = await prisma.auditLog.findFirst({
+      where: { action: "CUSTOMER_STATUS_UPDATED", entityId: created.customer.id },
+    });
+    expect(audit).toBeTruthy();
   });
 
   it("staff cannot update customer status", async () => {
