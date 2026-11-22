@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { KycStatus } from "@prisma/client";
+import { KycStatus, UserStatus } from "@prisma/client";
 import { paginationSchema } from "./common";
 
 export const createCustomerSchema = z
@@ -28,6 +28,13 @@ export const updateKycSchema = z
   })
   .strict();
 
+export const updateCustomerStatusSchema = z
+  .object({
+    status: z.nativeEnum(UserStatus),
+  })
+  .strict();
+
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 export type CustomerListInput = z.infer<typeof customerListSchema>;
 export type UpdateKycInput = z.infer<typeof updateKycSchema>;
+export type UpdateCustomerStatusInput = z.infer<typeof updateCustomerStatusSchema>;
