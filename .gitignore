@@ -4,5 +4,4 @@ node_modules
 .env
 .env.example
 AGENTS.md
-next-env.d.ts
 tsconfig.tsbuildinfo
