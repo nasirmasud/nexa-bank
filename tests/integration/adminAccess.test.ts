@@ -5,7 +5,10 @@ const findUniqueMock = vi.fn();
 
 vi.mock("@/lib/auth", () => ({ auth: authMock }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { user: { findUnique: findUniqueMock } },
+  prisma: {
+    user: { findUnique: findUniqueMock },
+    auditLog: { count: vi.fn().mockResolvedValue(0), findMany: vi.fn().mockResolvedValue([]) },
+  },
 }));
 
 describe("admin-only access", () => {
