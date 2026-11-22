@@ -1,6 +1,7 @@
 import {
   AccountStatus,
   EntryDirection,
+  InstallmentStatus,
   LoanStatus,
   NotificationType,
   Prisma,
@@ -17,7 +18,7 @@ import { addMoney, subMoney, toDecimal } from "@/lib/money";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
 import { withSerializableRetry } from "@/lib/prisma-tx";
 import { generateInstallments } from "@/lib/emi";
-import type { LoanListInput } from "@/lib/validators/loan";
+import type { ApplyLoanInput, LoanListInput } from "@/lib/validators/loan";
 
 export type LoanActor = { id: string; role: Role };
 
@@ -49,6 +50,22 @@ const loanSelect = {
   applicant: { select: { id: true, name: true, email: true } },
   reviewer: { select: { id: true, name: true, email: true } },
 } satisfies Prisma.LoanSelect;
+
+function randomDigits(len: number) {
+  let o = "";
+  for (let i = 0; i < len; i++) o += Math.floor(Math.random() * 10);
+  return o;
+}
+
+async function generateLoanNo(db: PrismaClient | Prisma.TransactionClient) {
+  const year = new Date().getFullYear();
+  for (let i = 0; i < 10; i++) {
+    const loanNo = `LN-${year}-${randomDigits(6)}`;
+    const exists = await db.loan.findUnique({ where: { loanNo }, select: { id: true } });
+    if (!exists) return loanNo;
+  }
+  throw new AppError("INTERNAL_ERROR", "Failed to generate loan number", 500);
+}
 
 async function getLoanInterestRate(db: PrismaClient | Prisma.TransactionClient, type: string) {
   const settings = await db.settings.findUnique({ where: { id: 1 } });
@@ -343,5 +360,208 @@ export async function approveLoan(
     });
 
     return { loan: updatedLoan, disbursementTransactionId: txRecord.id };
+  });
+}
+
+export async function applyLoan(db: PrismaClient, actor: LoanActor, input: ApplyLoanInput) {
+  if (actor.role !== Role.CUSTOMER) {
+    throw new AppError("FORBIDDEN", "Only customers can apply for loans", 403);
+  }
+
+  const account = await db.account.findUnique({
+    where: { id: input.disbursementAccountId },
+    select: { id: true, ownerId: true, status: true },
+  });
+  if (!account || account.ownerId !== actor.id) {
+    throw new AppError("NOT_FOUND", "Disbursement account not found", 404);
+  }
+  if (account.status !== AccountStatus.ACTIVE) {
+    throw new AppError("ACCOUNT_FROZEN", "Disbursement account is not active", 400);
+  }
+
+  const interestRate = await getLoanInterestRate(db, input.type);
+  const loanNo = await generateLoanNo(db);
+
+  return db.loan.create({
+    data: {
+      loanNo,
+      applicantId: actor.id,
+      type: input.type,
+      requestedAmount: toDecimal(input.requestedAmount).toDecimalPlaces(2),
+      durationMonths: input.durationMonths,
+      interestRate: toDecimal(interestRate).toDecimalPlaces(2),
+      monthlyIncome: toDecimal(input.monthlyIncome).toDecimalPlaces(2),
+      employmentStatus: input.employmentStatus,
+      description: input.description,
+      disbursementAccountId: input.disbursementAccountId,
+      status: LoanStatus.PENDING,
+    },
+    select: loanSelect,
+  });
+}
+
+export async function payLoanInstallment(
+  db: PrismaClient,
+  actor: LoanActor,
+  loanId: string,
+  installmentId: string,
+) {
+  if (actor.role !== Role.CUSTOMER) {
+    throw new AppError("FORBIDDEN", "Only customers can pay installments", 403);
+  }
+
+  return withSerializableRetry(db, async (tx) => {
+    const loan = await tx.loan.findUnique({
+      where: { id: loanId },
+      select: {
+        id: true,
+        loanNo: true,
+        applicantId: true,
+        status: true,
+        disbursementAccountId: true,
+        remainingBalance: true,
+      },
+    });
+    if (!loan) throw new AppError("NOT_FOUND", "Loan not found", 404);
+    if (loan.applicantId !== actor.id) throw new AppError("NOT_FOUND", "Loan not found", 404);
+    if (loan.status !== LoanStatus.ACTIVE) {
+      throw new AppError("VALIDATION_ERROR", "Loan is not active", 422);
+    }
+    if (!loan.disbursementAccountId) {
+      throw new AppError("VALIDATION_ERROR", "Loan has no disbursement account", 422);
+    }
+
+    const installment = await tx.loanInstallment.findUnique({
+      where: { id: installmentId },
+    });
+    if (!installment || installment.loanId !== loan.id) {
+      throw new AppError("NOT_FOUND", "Installment not found", 404);
+    }
+    if (
+      installment.status !== InstallmentStatus.UPCOMING &&
+      installment.status !== InstallmentStatus.OVERDUE
+    ) {
+      throw new AppError("VALIDATION_ERROR", "Installment is not payable", 422);
+    }
+
+    const account = await tx.account.findUnique({
+      where: { id: loan.disbursementAccountId },
+      select: { id: true, ownerId: true, status: true, balance: true },
+    });
+    if (!account || account.ownerId !== actor.id) {
+      throw new AppError("NOT_FOUND", "Payment account not found", 404);
+    }
+    if (account.status !== AccountStatus.ACTIVE) {
+      throw new AppError("ACCOUNT_FROZEN", "Payment account is not active", 400);
+    }
+
+    const system = await tx.account.findFirst({
+      where: { type: "SYSTEM" },
+      select: { id: true, balance: true },
+    });
+    if (!system) throw new AppError("INTERNAL_ERROR", "System account not configured", 500);
+
+    const lockIds = [system.id, account.id].sort();
+    await tx.$queryRaw`SELECT id FROM "Account" WHERE id IN (${Prisma.join(lockIds)}) FOR UPDATE`;
+    const [lockedSystem, lockedAccount] = await Promise.all([
+      tx.account.findUniqueOrThrow({ where: { id: system.id } }),
+      tx.account.findUniqueOrThrow({ where: { id: account.id } }),
+    ]);
+
+    const amount = toDecimal(installment.amount.toString()).toDecimalPlaces(2);
+    const newAccountBalance = subMoney(lockedAccount.balance.toString(), amount).toDecimalPlaces(2);
+    if (newAccountBalance.lt(0)) {
+      throw new AppError("INSUFFICIENT_FUNDS", "Insufficient funds for installment payment", 400);
+    }
+    const newSystemBalance = addMoney(lockedSystem.balance.toString(), amount).toDecimalPlaces(2);
+
+    await tx.account.update({
+      where: { id: lockedAccount.id },
+      data: { balance: newAccountBalance },
+    });
+    await tx.account.update({
+      where: { id: lockedSystem.id },
+      data: { balance: newSystemBalance },
+    });
+
+    const now = new Date();
+    const txRecord = await tx.transaction.create({
+      data: {
+        reference: generateReference("TXN"),
+        type: TxType.LOAN_REPAYMENT,
+        status: TxStatus.COMPLETED,
+        fromAccountId: lockedAccount.id,
+        toAccountId: lockedSystem.id,
+        amount,
+        fee: toDecimal("0").toDecimalPlaces(2),
+        currency: "BDT",
+        description: `Loan repayment ${loan.loanNo} installment #${installment.number}`,
+        initiatedById: actor.id,
+        completedAt: now,
+      },
+    });
+
+    await tx.ledgerEntry.createMany({
+      data: [
+        {
+          transactionId: txRecord.id,
+          accountId: lockedAccount.id,
+          direction: EntryDirection.DEBIT,
+          amount,
+          balanceAfter: newAccountBalance,
+        },
+        {
+          transactionId: txRecord.id,
+          accountId: lockedSystem.id,
+          direction: EntryDirection.CREDIT,
+          amount,
+          balanceAfter: newSystemBalance,
+        },
+      ],
+    });
+
+    await tx.loanInstallment.update({
+      where: { id: installment.id },
+      data: { status: InstallmentStatus.PAID, paidAt: now, paymentTxId: txRecord.id },
+    });
+
+    const remaining = subMoney(loan.remainingBalance?.toString() ?? "0", amount).toDecimalPlaces(2);
+    const unpaidCount = await tx.loanInstallment.count({
+      where: {
+        loanId: loan.id,
+        status: { in: [InstallmentStatus.UPCOMING, InstallmentStatus.OVERDUE] },
+        id: { not: installment.id },
+      },
+    });
+
+    const loanUpdate: Prisma.LoanUpdateInput = {
+      remainingBalance: remaining.lt(0) ? toDecimal("0").toDecimalPlaces(2) : remaining,
+    };
+    if (unpaidCount === 0) {
+      loanUpdate.status = LoanStatus.COMPLETED;
+      loanUpdate.completedAt = now;
+      loanUpdate.remainingBalance = toDecimal("0").toDecimalPlaces(2);
+    }
+
+    const updatedLoan = await tx.loan.update({
+      where: { id: loan.id },
+      data: loanUpdate,
+      select: loanSelect,
+    });
+
+    await tx.notification.create({
+      data: {
+        userId: loan.applicantId,
+        type: unpaidCount === 0 ? NotificationType.LOAN_APPROVED : NotificationType.SYSTEM,
+        title: unpaidCount === 0 ? "Loan completed" : "Installment paid",
+        message:
+          unpaidCount === 0
+            ? `Your loan ${loan.loanNo} is fully repaid.`
+            : `Installment #${installment.number} for ${loan.loanNo} was paid.`,
+        link: `/loans/${loan.id}`,
+      },
+    });
+
+    return { loan: updatedLoan, transactionId: txRecord.id, installmentId: installment.id };
   });
 }
