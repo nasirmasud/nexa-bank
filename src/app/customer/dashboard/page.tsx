@@ -72,10 +72,10 @@ export default function CustomerDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button render={<Link href="/customer/accounts" />} variant="outline">
+          <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="outline">
             Accounts
           </Button>
-          <Button render={<Link href="/customer/transfer" />}>Transfer</Button>
+          <Button render={<Link href="/customer/transfer" />} nativeButton={false}>Transfer</Button>
         </div>
       </div>
 
