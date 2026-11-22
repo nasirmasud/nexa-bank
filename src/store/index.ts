@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { baseApi } from "./api/baseApi";
+import { loadingMiddleware } from "./middleware/loadingMiddleware";
 import accountReducer from "./slices/accountSlice";
 import authReducer from "./slices/authSlice";
 import loanReducer from "./slices/loanSlice";
@@ -18,7 +19,7 @@ export const makeStore = () =>
       transaction: transactionReducer,
       ui: uiReducer,
     },
-    middleware: (getDefault) => getDefault().concat(baseApi.middleware),
+    middleware: (getDefault) => getDefault().concat(baseApi.middleware, loadingMiddleware),
   });
 
 export type AppStore = ReturnType<typeof makeStore>;
