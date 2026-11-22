@@ -1,5 +1,6 @@
 import { FlagStatus, Prisma, PrismaClient, Role } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import { buildPaginationMeta, paginationToSkipTake } from "@/lib/pagination";
 import type { ResolveFlagInput, SuspiciousFlagListInput } from "@/lib/validators/suspiciousFlag";
 
@@ -77,7 +78,7 @@ export async function resolveSuspiciousFlag(
     throw new AppError("VALIDATION_ERROR", "Only open flags can be resolved", 422);
   }
 
-  return db.suspiciousFlag.update({
+  const updated = await db.suspiciousFlag.update({
     where: { id },
     data: {
       status: input.status,
@@ -87,4 +88,13 @@ export async function resolveSuspiciousFlag(
     },
     select: flagSelect,
   });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "SUSPICIOUS_FLAG_RESOLVED",
+    entityType: "SuspiciousFlag",
+    entityId: id,
+    before: { status: existing.status },
+    after: { status: input.status, resolutionNote: input.resolutionNote },
+  });
+  return updated;
 }
