@@ -41,7 +41,22 @@ export const accountsApi = baseApi.injectEndpoints({
       query: (id) => `/accounts/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Account", id }],
     }),
+    lookupAccount: build.query<
+      {
+        data: {
+          id: string;
+          accountNumber: string;
+          type: string;
+          status: string;
+          currency: string;
+          owner: { name: string } | null;
+        };
+      },
+      string
+    >({
+      query: (number) => ({ url: "/accounts/lookup", params: { number } }),
+    }),
   }),
 });
 
-export const { useListAccountsQuery, useGetAccountQuery } = accountsApi;
+export const { useListAccountsQuery, useGetAccountQuery, useLazyLookupAccountQuery } = accountsApi;
