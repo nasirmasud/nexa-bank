@@ -1,10 +1,10 @@
+import { connection } from "next/server";
 import { requireRole } from "@/lib/guards";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { adminNav } from "@/components/shared/dashboard-nav";
 
-export const dynamic = "force-dynamic";
-
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await connection();
   const user = await requireRole("ADMIN");
 
   return (
