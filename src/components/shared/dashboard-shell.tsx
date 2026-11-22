@@ -1,0 +1,155 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useState } from "react";
+import { Menu, LogOut, ChevronDown } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import type { NavItem } from "@/components/shared/dashboard-nav";
+
+type DashboardShellProps = {
+  children: React.ReactNode;
+  navItems: NavItem[];
+  roleLabel: string;
+  user: {
+    name?: string | null;
+    email?: string | null;
+  };
+};
+
+function NavLinks({ navItems, onNavigate }: { navItems: NavItem[]; onNavigate?: () => void }) {
+  const pathname = usePathname();
+
+  return (
+    <nav className="flex flex-col gap-1 px-3 py-4">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              active
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            )}
+          >
+            <Icon className="size-4 shrink-0" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function SidebarContent({
+  navItems,
+  roleLabel,
+  onNavigate,
+}: {
+  navItems: NavItem[];
+  roleLabel: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      <div className="flex h-16 items-center border-b border-sidebar-border px-5">
+        <div>
+          <p className="font-heading text-lg font-semibold tracking-tight text-white">NexaBank</p>
+          <p className="text-xs text-sidebar-foreground/70">{roleLabel}</p>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <NavLinks navItems={navItems} onNavigate={onNavigate} />
+      </div>
+    </div>
+  );
+}
+
+export function DashboardShell({ children, navItems, roleLabel, user }: DashboardShellProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] border-r border-sidebar-border lg:block">
+        <SidebarContent navItems={navItems} roleLabel={roleLabel} />
+      </aside>
+
+      <div className="lg:pl-[264px]">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-card px-4 sm:px-6">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger
+              render={
+                <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open menu">
+                  <Menu className="size-4" />
+                </Button>
+              }
+            />
+            <SheetContent
+              side="left"
+              showCloseButton={false}
+              className="w-[264px] p-0 sm:max-w-[264px]"
+            >
+              <SidebarContent
+                navItems={navItems}
+                roleLabel={roleLabel}
+                onNavigate={() => setMobileOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-muted-foreground">{roleLabel}</p>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="max-w-[220px] justify-between gap-2">
+                  <span className="truncate">{user.name || user.email || "User"}</span>
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <span className="truncate text-sm font-medium">{user.name || "User"}</span>
+                  <span className="truncate text-xs font-normal text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
+    </div>
+  );
+}
