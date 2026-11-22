@@ -2,15 +2,18 @@
 
 import { Provider } from "react-redux";
 import { SessionProvider } from "next-auth/react";
-import { useRef } from "react";
+import { useState } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { makeStore, type AppStore } from "@/store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const storeRef = useRef<AppStore | null>(null);
-  if (!storeRef.current) storeRef.current = makeStore();
+  const [store] = useState<AppStore>(makeStore);
   return (
     <SessionProvider>
-      <Provider store={storeRef.current}>{children}</Provider>
+      <Provider store={store}>
+        {children}
+        <Toaster />
+      </Provider>
     </SessionProvider>
   );
 }
