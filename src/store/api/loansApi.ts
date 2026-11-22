@@ -15,12 +15,42 @@ export type Loan = {
   description: string | null;
   status: string;
   disbursementAccountId: string | null;
+  disbursementTxId?: string | null;
   reviewedById: string | null;
   reviewedAt: string | null;
   rejectionReason: string | null;
   appliedAt: string;
   disbursedAt: string | null;
+  completedAt?: string | null;
+  totalPayable?: string | null;
+  remainingBalance?: string | null;
+  forwardedById?: string | null;
   applicant?: { id: string; name: string; email: string };
+  reviewer?: { id: string; name: string; email: string } | null;
+};
+
+export type LoanInstallment = {
+  id: string;
+  number: number;
+  dueDate: string;
+  principal: string;
+  interest: string;
+  amount: string;
+  status: string;
+  paidAt: string | null;
+};
+
+export type LoanNote = {
+  id: string;
+  body: string;
+  internal: boolean;
+  createdAt: string;
+  author: { id: string; name: string; role: string };
+};
+
+export type LoanDetail = Loan & {
+  installments: LoanInstallment[];
+  notes: LoanNote[];
 };
 
 type ListResponse<T> = {
@@ -37,7 +67,7 @@ export const loansApi = baseApi.injectEndpoints({
       query: (params) => ({ url: "/loans", params: params ?? undefined }),
       providesTags: [{ type: "Loan", id: "LIST" }],
     }),
-    getLoan: build.query<{ data: Loan }, string>({
+    getLoan: build.query<{ data: LoanDetail }, string>({
       query: (id) => `/loans/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Loan", id }],
     }),
@@ -46,15 +76,24 @@ export const loansApi = baseApi.injectEndpoints({
       { id: string; disbursementAccountId: string; approvedAmount?: string }
     >({
       query: ({ id, ...body }) => ({ url: `/loans/${id}/approve`, method: "POST", body }),
-      invalidatesTags: [{ type: "Loan", id: "LIST" }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Loan", id: "LIST" },
+        { type: "Loan", id },
+      ],
     }),
     rejectLoan: build.mutation<{ data: Loan }, { id: string; reason: string }>({
       query: ({ id, reason }) => ({ url: `/loans/${id}/reject`, method: "POST", body: { reason } }),
-      invalidatesTags: [{ type: "Loan", id: "LIST" }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Loan", id: "LIST" },
+        { type: "Loan", id },
+      ],
     }),
     forwardLoan: build.mutation<{ data: Loan }, { id: string; note?: string }>({
       query: ({ id, ...body }) => ({ url: `/loans/${id}/forward`, method: "POST", body }),
-      invalidatesTags: [{ type: "Loan", id: "LIST" }],
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Loan", id: "LIST" },
+        { type: "Loan", id },
+      ],
     }),
     addLoanNote: build.mutation<
       { data: unknown },
