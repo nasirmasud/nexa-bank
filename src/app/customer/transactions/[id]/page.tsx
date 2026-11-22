@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +46,12 @@ export default function CustomerTransactionDetailPage() {
   if (err?.status === 404 || !tx) {
     return (
       <div className="space-y-4">
-        <Button render={<Link href="/customer/transactions" />} nativeButton={false} variant="ghost" size="sm">
+        <Button
+          render={<Link href="/customer/transactions" />}
+          nativeButton={false}
+          variant="ghost"
+          size="sm"
+        >
           <ArrowLeft className="size-4" />
           Back to transactions
         </Button>
@@ -57,17 +62,33 @@ export default function CustomerTransactionDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button render={<Link href="/customer/transactions" />} nativeButton={false} variant="ghost" size="sm">
-          <ArrowLeft className="size-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Transaction Receipt
-          </h1>
-          <p className="text-sm text-muted-foreground">{tx.reference}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            render={<Link href="/customer/transactions" />}
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="font-heading text-2xl font-semibold tracking-tight">
+              Transaction Receipt
+            </h1>
+            <p className="text-sm text-muted-foreground">{tx.reference}</p>
+          </div>
         </div>
+        <Button
+          render={<a href={`/api/transactions/${id}/receipt`} />}
+          nativeButton={false}
+          variant="outline"
+          size="sm"
+        >
+          <Download className="size-4" />
+          Download PDF
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
