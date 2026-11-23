@@ -234,6 +234,14 @@ function LoginForm() {
                           )}
                         </div>
                         <p className="mt-1 truncate font-mono text-sm text-landing-muted">{demo.email}</p>
+                        <p className="mt-0.5 font-mono text-xs text-landing-muted">
+                          Password: <span className="text-landing-ink">{demo.password}</span>
+                          {demo.pin ? (
+                            <>
+                              {" · "}PIN: <span className="text-landing-ink">{demo.pin}</span>
+                            </>
+                          ) : null}
+                        </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <button
