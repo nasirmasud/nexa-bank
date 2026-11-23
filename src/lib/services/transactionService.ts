@@ -281,6 +281,7 @@ export async function flagTransaction(
   actor: TxActor,
   txId: string,
   reason: string,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const tx = await db.transaction.findUnique({ where: { id: txId }, select: { id: true } });
@@ -293,6 +294,7 @@ export async function flagTransaction(
       source,
       reason,
       raisedById: actor.id,
+      ...(options?.occurredAt ? { createdAt: options.occurredAt } : {}),
     },
   });
 }
