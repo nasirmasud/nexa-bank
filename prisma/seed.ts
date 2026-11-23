@@ -1,12 +1,12 @@
 import { Prisma, PrismaClient, Role, UserStatus, KycStatus, AccountType, AccountStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEMO_PASSWORD, DEMO_PIN } from "../src/lib/demo-credentials";
 
 const prisma = new PrismaClient();
 
-const DEMO_PASSWORD = "Password@123";
-
 async function main() {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  const pinHash = await bcrypt.hash(DEMO_PIN, 10);
 
   // Settings singleton
   await prisma.settings.upsert({
@@ -72,6 +72,7 @@ async function main() {
         phone: u.phone,
         role: u.role,
         status: UserStatus.ACTIVE,
+        ...(u.email === "customer1@nexabank.com" ? { pinHash } : {}),
       },
       select: { id: true, email: true, role: true, name: true },
     });
