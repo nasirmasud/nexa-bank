@@ -34,7 +34,7 @@ export function FaqSection() {
         <div className="mt-10 space-y-3">
           {faqs.map((item) => (
             <details key={item.q} className="group rounded-[12px] border border-landing-border bg-landing-surface p-5">
-              <summary className="cursor-pointer list-none pr-8 font-semibold text-landing-ink marker:content-none">
+              <summary className="cursor-pointer list-none pr-8 font-semibold text-landing-ink marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary rounded-[4px]">
                 <span className="flex items-center justify-between gap-4">
                   <span>{item.q}</span>
                   <span className="text-landing-primary transition group-open:rotate-45" aria-hidden="true">+</span>
