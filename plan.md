@@ -1,6 +1,6 @@
 # NexaBank Public Home Page — Implementation Plan
 
-Source design files: `docs/design/home/code-light.html` (primary), `code-dark.html` (dark reference), `code-mobile.html` (mobile reference), `DESIGN.md` (tokens), `ShaderShowcase.txt` (hero background), `glassFold.txt` (footer background). `Glass_-_Dashboard.txt` is identical to `glassFold.txt` — ignore.
+Source design files: `docs/design/home/code-light.html` (primary), `code-dark.html` (dark reference), `code-mobile.html` (mobile reference), `DESIGN.md` (tokens), `ShaderShowcase.txt` (MeshGradient/footer reference), `glassFold.txt` (hero GlassFold reference). `Glass_-_Dashboard.txt` is identical to `glassFold.txt` - ignore.
 
 ## Rules / constraints
 
@@ -24,7 +24,7 @@ Source design files: `docs/design/home/code-light.html` (primary), `code-dark.ht
 
 - Split P2.2 into **P2.2a** (header, top bar, hero, stats, roles/experience, admin preview) and **P2.2b** (all remaining sections). **Pause after P2.2a for user review.**
 - Write corrected content from the start (no SOC2/FDIC/uptime/"International, Inc." claims, 5 real transaction types, "Sample data" labels). P6.1 remains an audit pass.
-- Shaders: apply lazy-load, reduced-motion, off-screen pause, and static-fallback rules to **footer GlassFold as well**, not only hero.
+- Shaders: apply lazy-load, reduced-motion, off-screen pause/freeze, and static CSS fallback rules to **both hero and footer** shader backgrounds. Load via a small client wrapper with `next/dynamic` (`ssr:false`) where possible; render a static CSS gradient first and as fallback when WebGL is unavailable; respect `prefers-reduced-motion`; pause/freeze when off-screen (`IntersectionObserver`); `aria-hidden` on decorative canvases; no `Math.random` in render.
 
 ## Real seeded demo credentials (from `prisma/seed.ts`)
 
@@ -112,23 +112,26 @@ Source design files: `docs/design/home/code-light.html` (primary), `code-dark.ht
   - Accessible keyboard behavior and ARIA semantics. Credential panel uses shared constants; copy/show-hide accessible; handle clipboard errors.
   - Verify: lint/typecheck/test/build.
 
-### Phase 4 — Hero shader background (MeshGradient only)
-- [ ] **P4.1 Add shader dependency and hero wrapper**
-  - Files: `package.json`, `package-lock.json`, `src/components/features/landing/hero-shader.tsx` (client), hero integration.
-  - Add `@paper-design/shaders-react`. Use only MeshGradient idea from `ShaderShowcase.txt`; drop PulsingBorder, rotating text, demo/pricing copy, random particle logo, cyan/orange.
-  - Recolor: base `#06120F`, emerald `#0E7C66`, navy `#1F3A5F`, light emerald `#2FBF9F`. No cyan/orange.
-  - `next/dynamic(..., { ssr: false })` in small client wrapper; static CSS gradient first and WebGL fallback.
-  - `prefers-reduced-motion` => speed 0/static; pause when off-screen (`IntersectionObserver`); skip second wireframe layer on mobile.
-  - Dark gradient overlay for WCAG AA text contrast. No `Math.random` in render. `aria-hidden` on decorative canvas.
+### Phase 4 — Hero shader background (GlassFold)
+- [ ] **P4.1 Add GlassFold hero background (no dependency change)**
+  - Files: `src/components/ui/glass-fold.tsx`, `src/components/features/landing/hero-background.tsx` (small client wrapper), hero integration. **No `package.json`/`package-lock.json` change in this phase.**
+  - Use `glassFold.txt` as reference. Keep GradFlow attribution comment in `glass-fold.tsx`.
+  - Colors: `color1 #0E7C66`, `color2 #06120F`, `color3 #2FBF9F`, `speed ~0.4`, `noise ~0.08`.
+  - Load via small client wrapper with `next/dynamic(..., { ssr: false })` where possible; render a static CSS gradient first and as fallback when WebGL is unavailable.
+  - Respect `prefers-reduced-motion`; pause/freeze when off-screen via `IntersectionObserver` (e.g. speed 0 while hidden). `aria-hidden` on decorative canvas; no `Math.random` in render.
+  - GlassFold has no shader-compile error check: add a safe guard so a failed WebGL compile/context falls back to the static gradient instead of a blank canvas.
+  - Hero: add a dark gradient overlay so heading, subtitle and buttons keep WCAG AA contrast against bright glass edges.
   - Verify: lint/typecheck/test/build; no hydration warnings.
 
-### Phase 5 — Footer GlassFold background
-- [ ] **P5.1 Add GlassFold component and footer integration**
-  - Files: `src/components/ui/glass-fold.tsx`, footer landing component(s).
-  - Keep GradFlow attribution comment from `glassFold.txt`. Recolor: `color1 #0E7C66`, `color2 #06120F`, `color3 #2FBF9F`, `speed ~0.4`, `noise ~0.08`.
-  - Footer content above with overlay for contrast: 4 columns, disclaimer, GitHub/LinkedIn, theme toggle. Real links only where they exist; no fabricated governance/whitepaper/disclosure links unless real page exists.
+### Phase 5 — Footer shader background (MeshGradient only)
+- [ ] **P5.1 Add MeshGradient dependency and footer integration**
+  - Files: `package.json`, `package-lock.json`, `src/components/features/landing/footer-background.tsx` (client), footer integration.
+  - Add `@paper-design/shaders-react` in this phase. Use only the MeshGradient idea from `ShaderShowcase.txt`; drop PulsingBorder, rotating text, demo/pricing copy, random-particle logo, and cyan/orange palette.
+  - Colors: `["#06120F", "#0E7C66", "#1F3A5F", "#2FBF9F"]`, `speed ~0.3`, `backgroundColor "#06120F"`. Skip the second wireframe layer on mobile.
+  - Load via small client wrapper with `next/dynamic(..., { ssr: false })` where possible; render a static CSS gradient first and as fallback when WebGL is unavailable.
+  - Respect `prefers-reduced-motion`; pause/freeze when off-screen via `IntersectionObserver`. `aria-hidden` on decorative canvas; no `Math.random` in render.
+  - Footer content above with overlay for contrast on links and text in both light and dark themes: 4 columns, disclaimer, GitHub/LinkedIn, theme toggle. Real links only where they exist; no fabricated governance/whitepaper/disclosure links unless real page exists.
   - Footer text: `© 2026 NexaBank. Simulated banking system, not a real financial institution.`
-  - **Same shader rules as hero**: lazy-load, reduced-motion, off-screen pause, static fallback. `aria-hidden` on canvas.
   - Verify: lint/typecheck/test/build.
 
 ### Phase 6 — Content corrections, responsiveness, and polish
@@ -147,7 +150,8 @@ Source design files: `docs/design/home/code-light.html` (primary), `code-dark.ht
 ### Phase 7 — Dependencies/docs, Playwright screenshots, final CI
 - [ ] **P7.1 Package/README updates**
   - Files: `package.json`, `package-lock.json`, `README.md`.
-  - Add required deps (`@paper-design/shaders-react`; `framer-motion` only if actually kept — plan to avoid). Document new libraries in README Tech Stack/libraries section. README demo credentials must use shared constants/real seeded values.
+  - `@paper-design/shaders-react` is added in **Phase 5** (footer MeshGradient), not Phase 4. No `framer-motion` (avoid unless actually needed).
+  - Document new libraries in README Tech Stack/libraries section. README demo credentials must use shared constants/real seeded values.
   - Verify: lint/typecheck/test/build.
 
 - [ ] **P7.2 Playwright screenshot capture**
