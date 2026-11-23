@@ -16,7 +16,7 @@ const capabilities = [
 
 export function AdminPreviewSection() {
   return (
-    <section className="bg-landing-surface-low py-20 scroll-mt-28" aria-labelledby="admin-preview-heading">
+    <section className="bg-landing-surface-low py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="admin-preview-heading">
       <div className="landing-container grid gap-10 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-5">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Executive Terminal</p>
