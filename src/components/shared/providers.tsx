@@ -10,7 +10,13 @@ import { makeStore, type AppStore } from "@/store";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [store] = useState<AppStore>(makeStore);
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+      scriptProps={{ suppressHydrationWarning: true }}
+    >
       <SessionProvider>
         <Provider store={store}>
           {children}
