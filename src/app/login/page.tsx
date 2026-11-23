@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { ArrowLeft, Check, Copy, Eye, EyeOff, Landmark, Lock, ShieldCheck, Zap } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Landmark, Lock, ShieldCheck, Zap } from "lucide-react";
 import { ThemeToggle } from "@/components/features/landing/theme-toggle";
 import { DEMO_CREDENTIAL_LIST, getDemoCredential, type DemoRole } from "@/lib/demo-credentials";
 
@@ -34,7 +34,6 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeRole, setActiveRole] = useState<DemoRole | null>(roleDemo?.role ?? null);
-  const [copiedRole, setCopiedRole] = useState<DemoRole | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,18 +56,6 @@ function LoginForm() {
     setPassword(demo.password);
     setActiveRole(role);
     setError("");
-  }
-
-  async function copyDemo(role: DemoRole) {
-    const demo = getDemoCredential(role);
-    if (!demo) return;
-    try {
-      await navigator.clipboard.writeText(`${demo.email} / ${demo.password}`);
-      setCopiedRole(role);
-      window.setTimeout(() => setCopiedRole((current) => (current === role ? null : current)), 1500);
-    } catch {
-      setCopiedRole(null);
-    }
   }
 
   return (
@@ -226,7 +213,6 @@ function LoginForm() {
             <div className="mt-4 space-y-3">
               {DEMO_CREDENTIAL_LIST.map((demo) => {
                 const active = activeRole === demo.role;
-                const copied = copiedRole === demo.role;
                 return (
                   <div
                     key={demo.role}
@@ -256,15 +242,6 @@ function LoginForm() {
                           className="inline-flex items-center justify-center rounded-[8px] bg-landing-primary px-3 py-2 text-sm font-medium text-landing-primary-foreground transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary"
                         >
                           Use
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`Copy ${demo.label} credentials`}
-                          onClick={() => copyDemo(demo.role)}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-[8px] border border-landing-border bg-landing-surface px-3 py-2 text-sm font-medium text-landing-ink transition hover:bg-landing-surface-mid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary"
-                        >
-                          {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
-                          {copied ? "Copied" : "Copy"}
                         </button>
                       </div>
                     </div>
