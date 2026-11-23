@@ -67,8 +67,10 @@ export async function resolveSuspiciousFlag(
   actor: FlagActor,
   id: string,
   input: ResolveFlagInput,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  const at = options?.occurredAt ?? new Date();
   const existing = await db.suspiciousFlag.findUnique({
     where: { id },
     select: { id: true, status: true },
@@ -84,7 +86,7 @@ export async function resolveSuspiciousFlag(
       status: input.status,
       resolutionNote: input.resolutionNote,
       resolvedById: actor.id,
-      resolvedAt: new Date(),
+      resolvedAt: at,
     },
     select: flagSelect,
   });
@@ -95,6 +97,7 @@ export async function resolveSuspiciousFlag(
     entityId: id,
     before: { status: existing.status },
     after: { status: input.status, resolutionNote: input.resolutionNote },
+    occurredAt: options?.occurredAt,
   });
   return updated;
 }
