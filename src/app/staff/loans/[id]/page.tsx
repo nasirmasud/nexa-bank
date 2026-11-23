@@ -7,15 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -28,10 +19,8 @@ import {
 import { formatBDT } from "@/lib/money";
 import {
   useAddLoanNoteMutation,
-  useApproveLoanMutation,
   useForwardLoanMutation,
   useGetLoanQuery,
-  useRejectLoanMutation,
 } from "@/store/api/loansApi";
 
 const statusVariant = (s: string): "success" | "danger" | "warning" | "info" | "neutral" => {
@@ -46,16 +35,9 @@ export default function StaffLoanDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { data, isLoading, error } = useGetLoanQuery(id, { skip: !id });
-  const [approveLoan, approveState] = useApproveLoanMutation();
-  const [rejectLoan, rejectState] = useRejectLoanMutation();
   const [forwardLoan, forwardState] = useForwardLoanMutation();
   const [addNote, noteState] = useAddLoanNoteMutation();
 
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [approveOpen, setApproveOpen] = useState(false);
-  const [reason, setReason] = useState("");
-  const [approvedAmount, setApprovedAmount] = useState("");
-  const [disbursementAccountId, setDisbursementAccountId] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -88,36 +70,6 @@ export default function StaffLoanDetailPage() {
   const actionable = loan.status === "PENDING" || loan.status === "UNDER_REVIEW";
 
   const loanId = id;
-  const defaultDisbAccountId = loan.disbursementAccountId ?? "";
-
-  async function onApprove() {
-    setActionError(null);
-    try {
-      await approveLoan({
-        id: loanId,
-        disbursementAccountId: disbursementAccountId || defaultDisbAccountId,
-        ...(approvedAmount ? { approvedAmount } : {}),
-      }).unwrap();
-      setApproveOpen(false);
-      setApprovedAmount("");
-    } catch (e: unknown) {
-      const err = e as { data?: { error?: { message?: string } } };
-      setActionError(err?.data?.error?.message ?? "Failed to approve loan");
-    }
-  }
-
-  async function onReject() {
-    if (reason.trim().length < 3) return;
-    setActionError(null);
-    try {
-      await rejectLoan({ id: loanId, reason: reason.trim() }).unwrap();
-      setRejectOpen(false);
-      setReason("");
-    } catch (e: unknown) {
-      const err = e as { data?: { error?: { message?: string } } };
-      setActionError(err?.data?.error?.message ?? "Failed to reject loan");
-    }
-  }
 
   async function onForward() {
     setActionError(null);
@@ -165,24 +117,6 @@ export default function StaffLoanDetailPage() {
           <div className="flex gap-2">
             <Button variant="outline" disabled={forwardState.isLoading} onClick={onForward}>
               Forward
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setReason("");
-                setRejectOpen(true);
-              }}
-            >
-              Reject
-            </Button>
-            <Button
-              onClick={() => {
-                setDisbursementAccountId(loan.disbursementAccountId ?? "");
-                setApprovedAmount(loan.requestedAmount);
-                setApproveOpen(true);
-              }}
-            >
-              Approve
             </Button>
           </div>
         )}
@@ -307,68 +241,7 @@ export default function StaffLoanDetailPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={approveOpen} onOpenChange={setApproveOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Approve loan</DialogTitle>
-            <DialogDescription>
-              This will disburse funds from the system account and activate the loan.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Disbursement account ID</label>
-              <Input
-                value={disbursementAccountId}
-                onChange={(e) => setDisbursementAccountId(e.target.value)}
-                placeholder="Account ID"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Approved amount</label>
-              <Input
-                value={approvedAmount}
-                onChange={(e) => setApprovedAmount(e.target.value)}
-                placeholder="Amount"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveOpen(false)}>
-              Cancel
-            </Button>
-            <Button disabled={approveState.isLoading || !disbursementAccountId} onClick={onApprove}>
-              {approveState.isLoading ? "Approving..." : "Approve & disburse"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject loan</DialogTitle>
-            <DialogDescription>Provide a reason for rejecting this loan.</DialogDescription>
-          </DialogHeader>
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason (min 3 characters)"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={rejectState.isLoading || reason.trim().length < 3}
-              onClick={onReject}
-            >
-              {rejectState.isLoading ? "Rejecting..." : "Reject"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
