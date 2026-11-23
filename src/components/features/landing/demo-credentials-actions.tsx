@@ -10,7 +10,8 @@ export function DemoCredentialActions({ demo }: { demo: DemoCredential }) {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${demo.email} / ${demo.password}`);
+      const pinPart = demo.pin ? ` / PIN ${demo.pin}` : "";
+      await navigator.clipboard.writeText(`${demo.email} / ${demo.password}${pinPart}`);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -31,6 +32,12 @@ export function DemoCredentialActions({ demo }: { demo: DemoCredential }) {
           {visible ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
         </button>
       </div>
+      {demo.pin ? (
+        <div className="inline-flex items-center rounded-[8px] border border-landing-border bg-landing-surface-low px-3 py-2 font-mono text-sm text-landing-ink">
+          <span className="text-landing-muted mr-1.5">PIN</span>
+          <span>{demo.pin}</span>
+        </div>
+      ) : null}
       <button
         type="button"
         aria-label={`Copy ${demo.label} credentials`}
