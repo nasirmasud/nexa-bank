@@ -56,7 +56,7 @@ float fbm(vec2 p){ float v = 0.0; float a = 0.5; for (int i = 0; i < 4; i++){ v 
 vec3 spectrum(float x){ return 0.5 + 0.5 * cos(6.28318 * (x + vec3(0.0, 0.33, 0.67))); }
 
 vec3 mosaic(vec2 frag){
-  float cell = max(uRes.y / 30.0, 9.0);
+  float cell = max(min(uRes.x, uRes.y) / 30.0, 9.0);
   vec2 id = floor(frag / cell);
   vec2 f = fract(frag / cell);
   vec2 p = (id + 0.5) * cell / uRes.y;
@@ -125,7 +125,7 @@ void main(){
   vec3 a; vec3 b = vec3(0.0); float k;
   if (m < 1.0) { k = m; a = mosaic(frag); if (k > 0.001) b = prism(frag); }
   else { k = m - 1.0; a = prism(frag); if (k > 0.001) b = waves(frag); }
-  float cell = max(uRes.y / 30.0, 9.0);
+  float cell = max(min(uRes.x, uRes.y) / 30.0, 9.0);
   float thr = hash(floor(frag / cell) + 7.0) * 0.65 + (frag.y / uRes.y) * 0.35;
   float w = smoothstep(thr - 0.06, thr + 0.06, k * 1.12 - 0.06);
   vec3 col = mix(a, b, w);
