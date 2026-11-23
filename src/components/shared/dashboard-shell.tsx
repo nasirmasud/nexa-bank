@@ -149,7 +149,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   return (
     <div className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed && "justify-center px-2")}>
       <Link
-        href="/"
+        href="/home"
         aria-label="NexaBank home"
         className={cn(
           "flex items-center gap-3 overflow-hidden rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
