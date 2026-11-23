@@ -5,7 +5,7 @@ import { DemoCredentialActions } from "./demo-credentials-actions";
 
 export function DemoCredentialsSection() {
   return (
-    <section id="demo-credentials" className="bg-landing-bg py-20 scroll-mt-28" aria-labelledby="demo-credentials-heading">
+    <section id="demo-credentials" className="bg-landing-bg py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="demo-credentials-heading">
       <div className="landing-container">
         <div className="rounded-[12px] border border-landing-warning/30 bg-landing-warning/10 p-4 text-sm text-landing-ink">
           <p className="flex items-start gap-3">
