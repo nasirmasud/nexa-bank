@@ -148,17 +148,26 @@ function NavLinks({
 function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   return (
     <div className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed && "justify-center px-2")}>
-      <div className="flex items-center gap-3 overflow-hidden">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[#0E7C66] font-heading text-sm font-bold text-white shadow-sm">
-          N
-        </div>
+      <Link
+        href="/"
+        aria-label="NexaBank home"
+        className={cn(
+          "flex items-center gap-3 overflow-hidden rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+          collapsed && "justify-center",
+        )}
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[#0E7C66] text-white shadow-sm">
+          <Landmark className="size-5" aria-hidden="true" />
+        </span>
         {!collapsed ? (
           <div className="min-w-0">
-            <p className="truncate font-heading text-lg font-semibold tracking-tight text-white">NexaBank</p>
+            <p className="truncate font-heading text-lg font-bold tracking-tight text-white">
+              Nexa<span className="text-[#2FBF9F]">Bank</span>
+            </p>
             <p className="truncate text-[11px] text-sidebar-foreground/65">Banking workspace</p>
           </div>
         ) : null}
-      </div>
+      </Link>
     </div>
   );
 }
