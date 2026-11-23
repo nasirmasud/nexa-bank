@@ -7,7 +7,7 @@ import { rejectLoan } from "@/lib/services/loanService";
 type Ctx = { params: Promise<{ id: string }> };
 
 export const POST = withApi(async (request, context) => {
-  const user = await requireRole("ADMIN", "STAFF");
+  const user = await requireRole("ADMIN");
   const { id } = await (context as Ctx).params;
   const body = loanRejectSchema.parse(await request.json());
   const loan = await rejectLoan(prisma, user, id, body.reason);
