@@ -9,7 +9,7 @@ const stages = [
 
 export function TransferPipelineSection() {
   return (
-    <section className="bg-landing-bg py-20 scroll-mt-28" aria-labelledby="pipeline-heading">
+    <section className="bg-landing-bg py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="pipeline-heading">
       <div className="landing-container">
         <div className="mx-auto max-w-3xl text-center">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Resilience Invariant</p>
