@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 const MeshGradient = dynamic(
   () => import("@paper-design/shaders-react").then((mod) => mod.MeshGradient),
@@ -42,10 +42,13 @@ function canUseWebGL() {
   }
 }
 
+const emptySubscribe = () => () => {};
+
 export function FooterBackground() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(true);
-  const [webgl] = useState(canUseWebGL);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const webgl = useMemo(() => (mounted ? canUseWebGL() : false), [mounted]);
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
 
