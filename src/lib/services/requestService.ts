@@ -46,6 +46,7 @@ export async function createRequest(
   db: PrismaClient,
   actor: RequestActor,
   input: CreateRequestInput,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role !== Role.CUSTOMER)
     throw new AppError("FORBIDDEN", "Only customers can create requests", 403);
@@ -59,6 +60,7 @@ export async function createRequest(
   if (account.status !== AccountStatus.ACTIVE)
     throw new AppError("ACCOUNT_FROZEN", "Account is not active", 400);
 
+  const at = options?.occurredAt;
   return db.depositWithdrawRequest.create({
     data: {
       type: input.type,
@@ -66,6 +68,7 @@ export async function createRequest(
       requesterId: actor.id,
       amount: toDecimal(input.amount).toDecimalPlaces(2),
       description: input.description,
+      ...(at ? { requestedAt: at } : {}),
     },
     select: requestSelect,
   });
@@ -136,10 +139,12 @@ export async function rejectRequest(
   actor: RequestActor,
   requestId: string,
   reason: string,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
 
   return withSerializableRetry(db, async (tx) => {
+    const at = options?.occurredAt ?? new Date();
     const req = await tx.depositWithdrawRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
     assertNotSelf(actor, req.requesterId);
@@ -151,7 +156,7 @@ export async function rejectRequest(
       data: {
         status: RequestStatus.REJECTED,
         reviewedById: actor.id,
-        reviewedAt: new Date(),
+        reviewedAt: at,
         rejectionReason: reason,
       },
       select: requestSelect,
@@ -167,6 +172,7 @@ export async function rejectRequest(
         title: `${req.type === RequestType.DEPOSIT ? "Deposit" : "Withdrawal"} request rejected`,
         message: reason,
         link: `/requests/${req.id}`,
+        ...(options?.occurredAt ? { createdAt: at } : {}),
       },
     });
     await recordAuditLog(tx, {
@@ -176,16 +182,23 @@ export async function rejectRequest(
       entityId: req.id,
       before: { status: req.status },
       after: { status: RequestStatus.REJECTED, rejectionReason: reason },
+      occurredAt: options?.occurredAt,
     });
 
     return updated;
   });
 }
 
-export async function approveRequest(db: PrismaClient, actor: RequestActor, requestId: string) {
+export async function approveRequest(
+  db: PrismaClient,
+  actor: RequestActor,
+  requestId: string,
+  options?: { occurredAt?: Date },
+) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
 
   return withSerializableRetry(db, async (tx) => {
+    const at = options?.occurredAt ?? new Date();
     const req = await tx.depositWithdrawRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new AppError("NOT_FOUND", "Request not found", 404);
     assertNotSelf(actor, req.requesterId);
@@ -255,7 +268,6 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
     await tx.account.update({ where: { id: lockedTo.id }, data: { balance: newToBalance } });
 
     const reference = generateReference("TXN");
-    const now = new Date();
     const txRecord = await tx.transaction.create({
       data: {
         reference,
@@ -269,7 +281,8 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
         description: req.description,
         initiatedById: req.requesterId,
         requestId: req.id,
-        completedAt: now,
+        completedAt: at,
+        ...(options?.occurredAt ? { createdAt: at } : {}),
       },
     });
 
@@ -281,6 +294,7 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
           direction: EntryDirection.DEBIT,
           amount: amount.toDecimalPlaces(2),
           balanceAfter: newFromBalance,
+          ...(options?.occurredAt ? { createdAt: at } : {}),
         },
         {
           transactionId: txRecord.id,
@@ -288,13 +302,14 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
           direction: EntryDirection.CREDIT,
           amount: amount.toDecimalPlaces(2),
           balanceAfter: newToBalance,
+          ...(options?.occurredAt ? { createdAt: at } : {}),
         },
       ],
     });
 
     const updated = await tx.depositWithdrawRequest.update({
       where: { id: req.id },
-      data: { status: RequestStatus.APPROVED, reviewedById: actor.id, reviewedAt: now },
+      data: { status: RequestStatus.APPROVED, reviewedById: actor.id, reviewedAt: at },
       select: requestSelect,
     });
 
@@ -308,6 +323,7 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
         title: `${req.type === RequestType.DEPOSIT ? "Deposit" : "Withdrawal"} request approved`,
         message: `${amount.toFixed(2)} BDT has been ${req.type === RequestType.DEPOSIT ? "deposited to" : "withdrawn from"} your account.`,
         link: `/requests/${req.id}`,
+        ...(options?.occurredAt ? { createdAt: at } : {}),
       },
     });
     await recordAuditLog(tx, {
@@ -317,6 +333,7 @@ export async function approveRequest(db: PrismaClient, actor: RequestActor, requ
       entityId: req.id,
       before: { status: req.status },
       after: { status: RequestStatus.APPROVED },
+      occurredAt: options?.occurredAt,
     });
 
     return updated;
