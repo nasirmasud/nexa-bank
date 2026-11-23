@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Copy, Eye, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { DEMO_CREDENTIAL_LIST } from "@/lib/demo-credentials";
+import { DemoCredentialActions } from "./demo-credentials-actions";
 
 export function DemoCredentialsSection() {
   return (
@@ -31,15 +32,7 @@ export function DemoCredentialsSection() {
                 <p className="mt-1 font-mono text-sm text-landing-muted">{demo.email}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 rounded-[8px] border border-landing-border bg-landing-surface-low px-3 py-2 font-mono text-sm text-landing-ink">
-                  <span>{demo.password}</span>
-                  <button type="button" aria-label={`Show or hide ${demo.label} password`} className="text-landing-muted hover:text-landing-primary">
-                    <Eye className="size-4" aria-hidden="true" />
-                  </button>
-                </div>
-                <button type="button" aria-label={`Copy ${demo.label} credentials`} className="inline-flex items-center gap-2 rounded-[8px] border border-landing-border bg-landing-surface px-3 py-2 text-sm font-medium text-landing-ink hover:bg-landing-surface-mid">
-                  <Copy className="size-4" aria-hidden="true" /> Copy
-                </button>
+                <DemoCredentialActions demo={demo} />
                 <Link href={`/login?role=${demo.role}`} className="inline-flex items-center rounded-[8px] bg-landing-primary px-4 py-2 text-sm font-semibold text-landing-primary-foreground hover:opacity-95">
                   Login as {demo.label}
                 </Link>
