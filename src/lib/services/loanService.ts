@@ -187,7 +187,7 @@ export async function rejectLoan(
   reason: string,
   options?: { occurredAt?: Date },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can reject loans", 403);
   return withSerializableRetry(db, async (tx) => {
     const at = options?.occurredAt ?? new Date();
     const loan = await tx.loan.findUnique({ where: { id: loanId } });
@@ -236,7 +236,7 @@ export async function approveLoan(
   input: { disbursementAccountId: string; approvedAmount?: string },
   options?: { occurredAt?: Date },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can approve loans", 403);
 
   return withSerializableRetry(db, async (tx) => {
     const loan = await tx.loan.findUnique({
