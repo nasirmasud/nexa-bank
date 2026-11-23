@@ -11,7 +11,7 @@ const trustPoints = [
 export function HeroSection() {
   return (
     <section
-      className="relative overflow-hidden bg-[#06120f] py-16 text-white sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-[#06120f] py-20 text-white sm:py-28 lg:py-36 xl:py-40"
       aria-labelledby="hero-heading"
     >
       <HeroBackground />
