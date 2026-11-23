@@ -44,7 +44,7 @@ export default function StaffLoansPage() {
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Loans</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Review loan applications, forward, approve, or reject.
+          Review loan applications, add notes, and forward to admin for decision.
         </p>
       </div>
 
