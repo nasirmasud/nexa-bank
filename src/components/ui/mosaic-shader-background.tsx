@@ -12,7 +12,7 @@ import * as React from "react"
  */
 
 export type MosaicScene = "mosaic" | "prism" | "waves"
-export type MosaicAccent = "ice" | "ember" | "lime"
+export type MosaicAccent = "ice" | "ember" | "lime" | "emerald"
 
 export interface MosaicShaderBackgroundProps {
   /** Which scene is showing. Changing it re-tiles the sky into the new one. */
@@ -35,6 +35,7 @@ const ACCENTS = {
   ice: [0.55, 0.78, 1.0],
   ember: [1.0, 0.62, 0.4],
   lime: [0.72, 0.95, 0.38],
+  emerald: [0.18, 0.75, 0.62],
 }
 
 const VERT = "attribute vec2 aPos;void main(){gl_Position=vec4(aPos,0.0,1.0);}"
@@ -62,9 +63,9 @@ vec3 mosaic(vec2 frag){
   vec2 p = (id + 0.5) * cell / uRes.y;
   float ax = uRes.x / uRes.y;
   float t = uTime * 0.07;
-  vec2 l1 = vec2(ax * 0.5 + 0.38 * sin(t * 2.1), 0.56 + 0.14 * cos(t * 1.7));
-  vec2 l2 = vec2(ax * 0.5 - 0.55 * cos(t * 1.3), 0.2 + 0.1 * sin(t * 2.3));
-  vec2 l3 = vec2(ax * 0.5 + 0.62 * cos(t * 0.9 + 2.0), 0.86 + 0.08 * sin(t * 1.1));
+  vec2 l1 = vec2(ax * (0.5 + 0.30 * sin(t * 2.1)), 0.56 + 0.14 * cos(t * 1.7));
+  vec2 l2 = vec2(ax * (0.5 - 0.34 * cos(t * 1.3)), 0.2 + 0.1 * sin(t * 2.3));
+  vec2 l3 = vec2(ax * (0.5 + 0.36 * cos(t * 0.9 + 2.0)), 0.86 + 0.08 * sin(t * 1.1));
   float L = 0.62 * exp(-2.6 * dot(p - l1, p - l1)) + 0.42 * exp(-3.8 * dot(p - l2, p - l2)) + 0.3 * exp(-5.0 * dot(p - l3, p - l3));
   L += uPtrOn * 0.5 * exp(-14.0 * dot(p - uPtr, p - uPtr));
   float n = fbm(p * 3.0 + vec2(t * 1.6, -t * 1.1));
@@ -75,12 +76,12 @@ vec3 mosaic(vec2 frag){
   L = floor(L * 8.0 + h * 0.6) / 8.0;
   vec2 q = abs(f - 0.5);
   float tile = smoothstep(0.47, 0.41, max(q.x, q.y));
-  vec3 cool = vec3(0.60, 0.70, 0.86);
-  vec3 warm = vec3(0.96, 0.88, 0.78);
-  vec3 col = mix(cool, warm, smoothstep(0.25, 0.75, n)) * L * 0.6;
-  col = mix(col, uAccent * L * 0.75, 0.2 * L);
-  col *= tile * (0.82 + 0.36 * f.y);
-  return col + vec3(0.010, 0.010, 0.014);
+  vec3 cool = vec3(0.10, 0.28, 0.30);
+  vec3 warm = vec3(0.18, 0.62, 0.52);
+  vec3 col = mix(cool, warm, smoothstep(0.25, 0.75, n)) * L * 0.72;
+  col = mix(col, uAccent * L * 0.85, 0.28 * L);
+  col *= tile * (0.84 + 0.32 * f.y);
+  return col + vec3(0.012, 0.035, 0.032);
 }
 
 vec3 prism(vec2 frag){
@@ -131,7 +132,7 @@ void main(){
   vec3 col = mix(a, b, w);
   vec2 uv = frag / uRes;
   float vig = smoothstep(1.25, 0.25, length((uv - 0.5) * vec2(1.0, 1.15)));
-  col *= 0.55 + 0.45 * vig;
+  col *= 0.75 + 0.25 * vig;
   col += (hash(frag + fract(uTime)) - 0.5) / 255.0;
   gl_FragColor = vec4(col, 1.0);
 }`
@@ -331,7 +332,8 @@ export default function MosaicShaderBackground({
 }
 
 const MSB_CSS = `
-.msb-root{position:relative;isolation:isolate;width:100%;height:var(--msb-h);min-height:0;overflow:hidden;color:#f5f5f6;background:radial-gradient(60% 50% at 50% 55%,#2a2b33,transparent 70%),#050506;transition:background .8s ease}
+.msb-root{position:relative;isolation:isolate;width:100%;height:var(--msb-h);min-height:0;overflow:hidden;color:#f5f5f6;background:radial-gradient(70% 55% at 50% 45%,rgba(14,124,102,0.28),transparent 62%),radial-gradient(45% 45% at 80% 75%,rgba(31,58,95,0.24),transparent 58%),linear-gradient(180deg,#06120f 0%,#0b1a17 100%);transition:background .8s ease}
+.msb-root[data-scene="mosaic"]{background:radial-gradient(70% 55% at 50% 45%,rgba(14,124,102,0.28),transparent 62%),radial-gradient(45% 45% at 80% 75%,rgba(31,58,95,0.24),transparent 58%),linear-gradient(180deg,#06120f 0%,#0b1a17 100%)}
 .msb-root[data-scene="prism"]{background:linear-gradient(120deg,#0f1420,#2b3a52 50%,#0f1420)}
 .msb-root[data-scene="waves"]{background:radial-gradient(80% 60% at 50% 60%,#33192f,transparent 70%),#120a12}
 .msb-root :where(canvas){display:block;max-width:none}
