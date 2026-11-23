@@ -12,6 +12,7 @@ export async function recordAuditLog(
     before?: Prisma.InputJsonValue;
     after?: Prisma.InputJsonValue;
     ip?: string | null;
+    occurredAt?: Date;
   },
 ) {
   return db.auditLog.create({
@@ -23,6 +24,7 @@ export async function recordAuditLog(
       before: data.before,
       after: data.after,
       ip: data.ip ?? null,
+      ...(data.occurredAt ? { createdAt: data.occurredAt } : {}),
     },
   });
 }
