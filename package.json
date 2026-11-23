@@ -14,7 +14,6 @@
     "test:watch": "vitest",
     "screenshots": "playwright test tests/e2e/landing-screenshots.spec.ts",
     "db:seed": "prisma db seed",
-    "db:seed:history": "tsx prisma/seed-history.ts",
     "seed:demo": "tsx prisma/seed-demo.ts",
     "db:migrate": "prisma migrate dev"
   },
