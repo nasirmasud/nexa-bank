@@ -8,14 +8,15 @@ export function FinalCtaSection() {
       className="relative overflow-hidden py-24 text-white sm:py-28 lg:py-32"
       aria-labelledby="final-cta-heading"
     >
-      <MosaicShaderBackground
-        scene="prism"
-        accent="ice"
-        interactive={false}
-        height="100%"
-        className="absolute inset-0 min-h-0!"
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0" aria-hidden="true">
+        <MosaicShaderBackground
+          scene="prism"
+          accent="ice"
+          interactive={false}
+          height="100%"
+          className="h-full w-full"
+        />
+      </div>
       <div className="landing-container relative z-10 text-center">
         <h2
           id="final-cta-heading"
