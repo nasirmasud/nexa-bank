@@ -49,8 +49,8 @@ async function getSettings(db: PrismaClient | Prisma.TransactionClient) {
   };
 }
 
-function startOfTodayUtc() {
-  const now = new Date();
+function startOfTodayUtc(at?: Date) {
+  const now = at ?? new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
@@ -89,7 +89,12 @@ async function assertPin(db: PrismaClient, userId: string, pin: string) {
   }
 }
 
-export async function transfer(db: PrismaClient, actor: TransferActor, input: CreateTransferInput): Promise<TransferResult> {
+export async function transfer(
+  db: PrismaClient,
+  actor: TransferActor,
+  input: CreateTransferInput,
+  options?: { occurredAt?: Date },
+): Promise<TransferResult> {
   if (actor.role !== Role.CUSTOMER) {
     throw new AppError("FORBIDDEN", "Only customers can transfer funds", 403);
   }
@@ -170,7 +175,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
     }
 
     const dailyLimit = lockedFrom.dailyTransferLimit ?? settings.dailyTransferLimit;
-    const dayStart = startOfTodayUtc();
+    const dayStart = startOfTodayUtc(options?.occurredAt);
     const dailyAgg = await tx.transaction.aggregate({
       where: {
         fromAccountId: lockedFrom.id,
@@ -202,7 +207,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
     const newToBalance = addMoney(toBalance, amount).toDecimalPlaces(2);
 
     const reference = generateReference("TXN");
-    const now = new Date();
+    const at = options?.occurredAt ?? new Date();
 
     await tx.account.update({ where: { id: lockedFrom.id }, data: { balance: newFromBalance } });
     await tx.account.update({ where: { id: lockedTo.id }, data: { balance: newToBalance } });
@@ -219,7 +224,8 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
         currency: "BDT",
         description: input.description,
         initiatedById: actor.id,
-        completedAt: now,
+        completedAt: at,
+        ...(options?.occurredAt ? { createdAt: at } : {}),
       },
     });
 
@@ -231,6 +237,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
           direction: EntryDirection.DEBIT,
           amount: totalDebit.toDecimalPlaces(2),
           balanceAfter: newFromBalance,
+          ...(options?.occurredAt ? { createdAt: at } : {}),
         },
         {
           transactionId: txRecord.id,
@@ -238,6 +245,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
           direction: EntryDirection.CREDIT,
           amount: amount.toDecimalPlaces(2),
           balanceAfter: newToBalance,
+          ...(options?.occurredAt ? { createdAt: at } : {}),
         },
       ],
     });
@@ -254,6 +262,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
             direction: EntryDirection.CREDIT,
             amount: fee.toDecimalPlaces(2),
             balanceAfter: newSystemBalance,
+            ...(options?.occurredAt ? { createdAt: at } : {}),
           },
         });
       }
@@ -267,6 +276,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
           title: "Transfer completed",
           message: `You sent ${amount.toFixed(2)} BDT to ${lockedTo.accountNumber}.`,
           link: `/transactions/${txRecord.id}`,
+          ...(options?.occurredAt ? { createdAt: at } : {}),
         },
         ...(lockedTo.ownerId
           ? [
@@ -276,6 +286,7 @@ export async function transfer(db: PrismaClient, actor: TransferActor, input: Cr
                 title: "Money received",
                 message: `You received ${amount.toFixed(2)} BDT from ${lockedFrom.accountNumber}.`,
                 link: `/transactions/${txRecord.id}`,
+                ...(options?.occurredAt ? { createdAt: at } : {}),
               },
             ]
           : []),
