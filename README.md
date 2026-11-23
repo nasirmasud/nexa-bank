@@ -100,11 +100,11 @@ npx vitest run
 
 If you ran `npm run db:seed`, use these local development demo credentials (also defined in `src/lib/demo-credentials.ts`, used by the landing page and `/login?role=` prefill):
 
-| Role     | Email                 | Password       |
-| -------- | --------------------- | -------------- |
-| Admin    | `admin@nexabank.com`  | `Password@123` |
-| Staff    | `staff1@nexabank.com` | `Password@123` |
-| Customer | `customer1@nexabank.com` | `Password@123` |
+| Role     | Email                    | Password       | Demo PIN |
+| -------- | ------------------------ | -------------- | -------- |
+| Admin    | `admin@nexabank.com`     | `Password@123` | —        |
+| Staff    | `staff1@nexabank.com`    | `Password@123` | —        |
+| Customer | `customer1@nexabank.com` | `Password@123` | `123456` |
 
 > Local development/demo only. Not real banking credentials. No real money involved.
 
