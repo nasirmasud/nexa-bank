@@ -5,6 +5,9 @@ export type AnalyticsSummary = {
     totalCustomers: number;
     totalAccounts: number;
     totalBalance: string;
+    totalDeposits: string;
+    totalWithdrawals: string;
+    totalTransactions: number;
     pendingLoans: number;
     activeLoans: number;
     openFlags: number;
