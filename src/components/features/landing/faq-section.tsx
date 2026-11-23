@@ -23,7 +23,7 @@ const faqs = [
 
 export function FaqSection() {
   return (
-    <section id="faq" className="bg-landing-surface-low py-20 scroll-mt-28" aria-labelledby="faq-heading">
+    <section id="faq" className="bg-landing-surface-low py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="faq-heading">
       <div className="landing-container max-w-4xl">
         <div className="text-center">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Inquiries</p>
