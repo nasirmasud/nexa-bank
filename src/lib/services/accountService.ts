@@ -170,6 +170,7 @@ export async function freezeAccount(
   actor: AccountActor,
   accountId: string,
   reason: string,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.account.findUnique({
@@ -192,11 +193,17 @@ export async function freezeAccount(
     entityId: accountId,
     before: { status: existing.status },
     after: { status: AccountStatus.FROZEN, freezeReason: reason },
+    occurredAt: options?.occurredAt,
   });
   return account;
 }
 
-export async function unfreezeAccount(db: PrismaClient, actor: AccountActor, accountId: string) {
+export async function unfreezeAccount(
+  db: PrismaClient,
+  actor: AccountActor,
+  accountId: string,
+  options?: { occurredAt?: Date },
+) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.account.findUnique({
     where: { id: accountId },
@@ -218,6 +225,7 @@ export async function unfreezeAccount(db: PrismaClient, actor: AccountActor, acc
     entityId: accountId,
     before: { status: existing.status },
     after: { status: AccountStatus.ACTIVE },
+    occurredAt: options?.occurredAt,
   });
   return account;
 }
