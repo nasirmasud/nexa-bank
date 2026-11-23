@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { getRoleHome } from "@/lib/role-home";
 
 const navItems = [
   { href: "#features", label: "Features" },
@@ -22,6 +24,10 @@ const navItems = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const dashboardHref = getRoleHome(role);
+  const isLoggedIn = status === "authenticated" && !!dashboardHref;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -53,20 +59,44 @@ export function MobileNav() {
             </a>
           ))}
           <div className="mt-4 flex flex-col gap-2 border-t border-landing-border pt-4">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="rounded-[8px] border border-landing-border px-3 py-2.5 text-center text-sm font-semibold text-landing-ink hover:bg-landing-surface-low"
-            >
-              Login
-            </Link>
-            <a
-              href="#demo-credentials"
-              onClick={() => setOpen(false)}
-              className="rounded-[8px] bg-landing-primary px-3 py-2.5 text-center text-sm font-semibold text-landing-primary-foreground hover:opacity-95"
-            >
-              Explore Demo
-            </a>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href={dashboardHref}
+                  onClick={() => setOpen(false)}
+                  className="rounded-[8px] bg-landing-primary px-3 py-2.5 text-center text-sm font-semibold text-landing-primary-foreground hover:opacity-95"
+                >
+                  Go to Dashboard
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    void signOut({ callbackUrl: "/login" });
+                  }}
+                  className="rounded-[8px] border border-landing-border px-3 py-2.5 text-center text-sm font-semibold text-landing-ink hover:bg-landing-surface-low"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="rounded-[8px] border border-landing-border px-3 py-2.5 text-center text-sm font-semibold text-landing-ink hover:bg-landing-surface-low"
+                >
+                  Login
+                </Link>
+                <a
+                  href="#demo-credentials"
+                  onClick={() => setOpen(false)}
+                  className="rounded-[8px] bg-landing-primary px-3 py-2.5 text-center text-sm font-semibold text-landing-primary-foreground hover:opacity-95"
+                >
+                  Explore Demo
+                </a>
+              </>
+            )}
           </div>
         </nav>
       </SheetContent>
