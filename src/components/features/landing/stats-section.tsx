@@ -7,7 +7,7 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="border-y border-landing-border bg-landing-surface-low py-12 sm:py-14" aria-labelledby="stats-heading">
+    <section className="border-y border-landing-border bg-landing-surface-low py-16 sm:py-20 lg:py-24" aria-labelledby="stats-heading">
       <div className="landing-container">
         <h2 id="stats-heading" className="sr-only">
           Platform highlights
