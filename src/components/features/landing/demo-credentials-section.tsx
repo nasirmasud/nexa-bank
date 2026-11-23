@@ -20,7 +20,7 @@ export function DemoCredentialsSection() {
             Demo credentials
           </h2>
           <p className="mt-4 text-base leading-7 text-landing-muted">
-            Use these seeded demo accounts to explore role-based workflows. Interactive copy/show-hide will be enabled in a later step.
+            Use these seeded demo accounts to explore role-based workflows. The customer account includes a demo transaction PIN for transfer flows.
           </p>
         </div>
 
