@@ -17,7 +17,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexa?schema=public
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/nexa?schema=public
-      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexa?schema=public
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexa_test?schema=public
       AUTH_SECRET: dummy-auth-secret-for-ci
       NEXTAUTH_URL: http://localhost:3000
       BANK_TIMEZONE: Asia/Dhaka
@@ -61,6 +61,15 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Create test database
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE nexa_test;'
+
+      - name: Migrate test database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexa_test?schema=public
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/nexa_test?schema=public
+        run: npx prisma migrate deploy
 
       - name: Test
         run: npm run test
