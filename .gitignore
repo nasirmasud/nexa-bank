@@ -5,3 +5,6 @@ node_modules
 .env.example
 AGENTS.md
 tsconfig.tsbuildinfo
+screenshots/
+test-results/
+playwright-report/
