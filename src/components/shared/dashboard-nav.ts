@@ -19,18 +19,41 @@ export type NavItem = {
   icon: NavIcon;
 };
 
-export const adminNav: NavItem[] = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: "LayoutDashboard" },
-  { label: "Customers", href: "/admin/customers", icon: "Users" },
-  { label: "Accounts", href: "/admin/accounts", icon: "Wallet" },
-  { label: "Requests", href: "/admin/requests", icon: "ClipboardList" },
-  { label: "Transactions", href: "/admin/transactions", icon: "ArrowLeftRight" },
-  { label: "Suspicious", href: "/admin/suspicious", icon: "ShieldAlert" },
-  { label: "Loans", href: "/admin/loans", icon: "Landmark" },
-  { label: "Staff", href: "/admin/staff", icon: "UserCog" },
-  { label: "Settings", href: "/admin/settings", icon: "Settings" },
-  { label: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
+export type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+export const adminNavGroups: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [{ label: "Dashboard", href: "/admin/dashboard", icon: "LayoutDashboard" }],
+  },
+  {
+    label: "Banking",
+    items: [
+      { label: "Customers", href: "/admin/customers", icon: "Users" },
+      { label: "Accounts", href: "/admin/accounts", icon: "Wallet" },
+      { label: "Requests", href: "/admin/requests", icon: "ClipboardList" },
+      { label: "Transactions", href: "/admin/transactions", icon: "ArrowLeftRight" },
+      { label: "Loans", href: "/admin/loans", icon: "Landmark" },
+    ],
+  },
+  {
+    label: "Risk",
+    items: [{ label: "Suspicious", href: "/admin/suspicious", icon: "ShieldAlert" }],
+  },
+  {
+    label: "System",
+    items: [
+      { label: "Staff", href: "/admin/staff", icon: "UserCog" },
+      { label: "Settings", href: "/admin/settings", icon: "Settings" },
+      { label: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
+    ],
+  },
 ];
+
+export const adminNav: NavItem[] = adminNavGroups.flatMap((g) => g.items);
 
 export const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/staff/dashboard", icon: "LayoutDashboard" },
