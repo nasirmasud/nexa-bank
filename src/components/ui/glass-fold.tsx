@@ -18,6 +18,8 @@ export interface GlassFoldProps {
   /** Film grain, 0 to 0.5. */
   noise?: number;
   className?: string;
+  /** Called when WebGL context or shader compilation fails. */
+  onError?: () => void;
 }
 
 const VERTEX = `
@@ -109,9 +111,14 @@ function hexToVec3(hex: string): [number, number, number] {
 }
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
-  const shader = gl.createShader(type)!;
+  const shader = gl.createShader(type);
+  if (!shader) return null;
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    gl.deleteShader(shader);
+    return null;
+  }
   return shader;
 }
 
@@ -123,9 +130,15 @@ export function GlassFold({
   scale = 1,
   noise = 0.08,
   className,
+  onError,
 }: GlassFoldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const props = useRef({ color1, color2, color3, speed, scale, noise });
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   useEffect(() => {
     props.current = { color1, color2, color3, speed, scale, noise };
@@ -135,12 +148,39 @@ export function GlassFold({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
-    if (!gl) return;
+    if (!gl) {
+      onErrorRef.current?.();
+      return;
+    }
 
-    const program = gl.createProgram()!;
-    gl.attachShader(program, compile(gl, gl.VERTEX_SHADER, VERTEX));
-    gl.attachShader(program, compile(gl, gl.FRAGMENT_SHADER, FRAGMENT));
+    const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
+    const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
+    if (!vertex || !fragment) {
+      if (vertex) gl.deleteShader(vertex);
+      if (fragment) gl.deleteShader(fragment);
+      onErrorRef.current?.();
+      return;
+    }
+
+    const program = gl.createProgram();
+    if (!program) {
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
+      onErrorRef.current?.();
+      return;
+    }
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
     gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
+      gl.deleteProgram(program);
+      onErrorRef.current?.();
+      return;
+    }
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
     gl.useProgram(program);
 
     const buffer = gl.createBuffer();
