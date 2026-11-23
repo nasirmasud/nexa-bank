@@ -5,6 +5,7 @@ node_modules
 .env.local
 .env.*.local
 AGENTS.md
+DEPLOYMENT.md
 tsconfig.tsbuildinfo
 screenshots/
 test-results/
