@@ -1,10 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { HeroBackground } from "./hero-background";
+
+const trustPoints = [
+  "Server-side authorization",
+  "Atomic transfer design",
+  "Role-based access",
+];
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-[#06120f] py-16 text-white sm:py-20 lg:py-24" aria-labelledby="hero-heading">
+    <section
+      className="relative overflow-hidden bg-[#06120f] py-16 text-white sm:py-20 lg:py-24"
+      aria-labelledby="hero-heading"
+    >
       <HeroBackground />
       <div className="landing-container relative grid gap-12 lg:grid-cols-12 lg:items-center">
         <div className="lg:col-span-6">
@@ -12,65 +21,129 @@ export function HeroSection() {
             <span className="size-2 rounded-full bg-[#2fbf9f]" aria-hidden="true" />
             Role-based banking simulation
           </div>
-          <h1 id="hero-heading" className="mt-6 max-w-3xl font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Banking that moves <span className="text-[#2fbf9f]">as carefully</span> as your money.
+
+          <h1
+            id="hero-heading"
+            className="mt-6 max-w-3xl font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1]"
+          >
+            Banking that moves{" "}
+            <span className="text-[#2fbf9f]">as carefully</span> as your money.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-            An institutional-grade digital banking experience for learning and demonstration. Explore accounts, transfers, approvals, and loan workflows with clear role boundaries and transparent sample data.
+
+          <p className="mt-6 max-w-2xl text-base leading-7 text-white/82 sm:text-lg sm:leading-8 lg:max-w-xl">
+            Accounts, PIN-protected transfers and loans, built on atomic ledger
+            updates and server-enforced roles.
           </p>
+
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
+            <Link
               href="#demo-credentials"
-              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#0e7c66] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0a6b58] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2fbf9f]"
+              className="inline-flex items-center justify-center rounded-[8px] bg-landing-primary px-6 py-3.5 text-sm font-semibold text-landing-primary-foreground shadow-[0_12px_30px_rgba(14,124,102,0.35)] transition hover:bg-landing-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#06120f]"
             >
-              Explore Demo
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </a>
-            <a
-              href="#how-it-works"
-              className="inline-flex items-center justify-center rounded-[8px] border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2fbf9f]"
+              Try live demo
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-[8px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#06120f]"
             >
-              Inspect Workflow
-            </a>
+              Sign in
+            </Link>
           </div>
-          <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/75">
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4 text-[#2fbf9f]" aria-hidden="true" />Server-side authorization</span>
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4 text-[#2fbf9f]" aria-hidden="true" />Atomic transfer design</span>
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4 text-[#2fbf9f]" aria-hidden="true" />Role-based access</span>
+
+          <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/72">
+            <span className="font-medium text-white/86">Jump in as:</span>
+            <Link
+              href="/login?role=customer"
+              className="font-medium text-[#7bd7bd] underline decoration-[#7bd7bd]/40 underline-offset-4 transition hover:text-[#2fbf9f] hover:decoration-[#2fbf9f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#06120f] rounded-sm"
+            >
+              Customer
+            </Link>
+            <span aria-hidden="true" className="text-white/35">·</span>
+            <Link
+              href="/login?role=staff"
+              className="font-medium text-[#7bd7bd] underline decoration-[#7bd7bd]/40 underline-offset-4 transition hover:text-[#2fbf9f] hover:decoration-[#2fbf9f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#06120f] rounded-sm"
+            >
+              Staff
+            </Link>
+            <span aria-hidden="true" className="text-white/35">·</span>
+            <Link
+              href="/login?role=admin"
+              className="font-medium text-[#7bd7bd] underline decoration-[#7bd7bd]/40 underline-offset-4 transition hover:text-[#2fbf9f] hover:decoration-[#2fbf9f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#06120f] rounded-sm"
+            >
+              Admin
+            </Link>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-white/90 sm:text-base">
+            {trustPoints.map((point) => (
+              <div key={point} className="flex items-center gap-2.5">
+                <span
+                  className="size-2 rounded-full bg-[#2fbf9f] shadow-[0_0_0_4px_rgba(47,191,159,0.14)]"
+                  aria-hidden="true"
+                />
+                <span>{point}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="lg:col-span-6">
-          <div className="rounded-[12px] border border-white/12 bg-[#121821]/85 p-5 shadow-2xl backdrop-blur-md sm:p-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="rounded-[12px] border border-white/12 bg-[#0b1714]/72 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/55">Institutional Custody</p>
-                <p className="mt-1 font-heading text-lg font-semibold text-white">Available Balance</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7bd7bd]">
+                  Atomic transfer preview
+                </p>
+                <p className="mt-1 text-sm text-white/62">Ledger commit simulation</p>
               </div>
-              <span className="rounded-[4px] bg-[#2fbf9f]/15 px-2 py-1 text-[11px] font-semibold text-[#7bd7bd]">Sample data</span>
+              <span className="rounded-[4px] border border-white/12 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-white/55">
+                Sample data
+              </span>
             </div>
-            <p className="mt-5 font-heading text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl">
-              BDT 4,82,500<span className="text-[#2fbf9f]">.00</span>
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[12px] bg-white/5 p-4">
-                <p className="text-xs text-white/55">Primary Checking</p>
-                <p className="mt-1 font-mono text-sm text-white">**** **** 4829</p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
+              <div className="rounded-[12px] border border-white/10 bg-white/[0.04] p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                  From
+                </p>
+                <p className="mt-2 font-heading text-lg font-semibold text-white">Savings</p>
+                <p className="mt-1 font-mono text-xs tracking-wide text-white/50">•••• 4829</p>
+                <p className="mt-4 font-mono text-lg font-semibold tabular-nums text-[#ff8f8f] sm:text-xl">
+                  -৳12,500.00
+                </p>
               </div>
-              <div className="rounded-[12px] bg-white/5 p-4">
-                <p className="text-xs text-white/55">Recent transfer</p>
-                <p className="mt-1 font-mono text-sm text-white">BDT 12,500.00</p>
+
+              <div className="flex items-center justify-center py-1 sm:py-0" aria-hidden="true">
+                <div className="flex size-10 items-center justify-center rounded-full border border-white/12 bg-white/5 text-[#7bd7bd]">
+                  <ArrowRight className="size-5 rotate-90 sm:rotate-0" />
+                </div>
+              </div>
+
+              <div className="rounded-[12px] border border-[#2fbf9f]/20 bg-[#2fbf9f]/[0.06] p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                  To
+                </p>
+                <p className="mt-2 font-heading text-lg font-semibold text-white">Current</p>
+                <p className="mt-1 font-mono text-xs tracking-wide text-white/50">•••• 7731</p>
+                <p className="mt-4 font-mono text-lg font-semibold tabular-nums text-[#6ee7b7] sm:text-xl">
+                  +৳12,500.00
+                </p>
               </div>
             </div>
-            <div className="mt-4 rounded-[12px] border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-medium text-white/55">Status</p>
-              <p className="mt-1 text-sm font-semibold text-[#7bd7bd]">Transfer completed</p>
-              <p className="mt-1 font-mono text-xs text-white/55">Tx #NX-784910 · Sample data</p>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-3 text-xs text-white/65">
-              <Link href="/login?role=customer" className="underline underline-offset-4 hover:text-[#7bd7bd]">Customer demo</Link>
-              <Link href="/login?role=staff" className="underline underline-offset-4 hover:text-[#7bd7bd]">Staff demo</Link>
-              <Link href="/login?role=admin" className="underline underline-offset-4 hover:text-[#7bd7bd]">Admin demo</Link>
+
+            <div className="mt-5 rounded-[12px] border border-white/10 bg-black/10 p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="font-mono text-xs tracking-wide text-white/72 sm:text-sm">
+                  TXN-20261123-8K2M4QX7
+                </p>
+                <span className="inline-flex items-center rounded-[4px] border border-[#2fbf9f]/30 bg-[#2fbf9f]/12 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7bd7bd]">
+                  Completed
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/68">
+                Debit and credit are committed together. If any step fails, both
+                roll back.
+              </p>
             </div>
           </div>
         </div>
