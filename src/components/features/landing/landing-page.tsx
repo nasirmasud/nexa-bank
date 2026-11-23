@@ -1,15 +1,21 @@
+import { AdminPreviewSection } from "./admin-preview-section";
+import { ExperienceSection } from "./experience-section";
+import { Header } from "./header";
+import { HeroSection } from "./hero-section";
+import { StatsSection } from "./stats-section";
+import { TopBar } from "./top-bar";
+
 export function LandingPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-landing-bg text-landing-ink">
-      <div className="landing-container py-16">
-        <p className="font-mono text-sm text-landing-muted">NexaBank</p>
-        <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight">
-          Public landing page
-        </h1>
-        <p className="mt-4 max-w-2xl text-base text-landing-muted">
-          Landing sections will be implemented in the next steps.
-        </p>
-      </div>
-    </main>
+    <div className="min-h-screen bg-landing-bg text-landing-ink">
+      <TopBar />
+      <Header />
+      <main id="main-content">
+        <HeroSection />
+        <StatsSection />
+        <ExperienceSection />
+        <AdminPreviewSection />
+      </main>
+    </div>
   );
 }
