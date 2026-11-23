@@ -1,10 +1,14 @@
 export type DemoRole = "admin" | "staff" | "customer";
 
+export const DEMO_PASSWORD = "Password@123";
+export const DEMO_PIN = "123456";
+
 export type DemoCredential = {
   role: DemoRole;
   label: string;
   email: string;
   password: string;
+  pin?: string;
 };
 
 export const DEMO_CREDENTIALS: Record<DemoRole, DemoCredential> = {
@@ -12,19 +16,20 @@ export const DEMO_CREDENTIALS: Record<DemoRole, DemoCredential> = {
     role: "admin",
     label: "Admin",
     email: "admin@nexabank.com",
-    password: "Password@123",
+    password: DEMO_PASSWORD,
   },
   staff: {
     role: "staff",
     label: "Staff",
     email: "staff1@nexabank.com",
-    password: "Password@123",
+    password: DEMO_PASSWORD,
   },
   customer: {
     role: "customer",
     label: "Customer",
     email: "customer1@nexabank.com",
-    password: "Password@123",
+    password: DEMO_PASSWORD,
+    pin: DEMO_PIN,
   },
 };
 
