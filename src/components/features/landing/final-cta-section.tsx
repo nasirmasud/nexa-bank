@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 export function FinalCtaSection() {
   return (
-    <section className="bg-landing-inverse py-20 text-landing-inverse-foreground" aria-labelledby="final-cta-heading">
+    <section className="bg-landing-inverse py-24 sm:py-28 lg:py-32 text-landing-inverse-foreground" aria-labelledby="final-cta-heading">
       <div className="landing-container text-center">
         <h2 id="final-cta-heading" className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
           See NexaBank in action
