@@ -11,6 +11,7 @@ import {
   UserStatus,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEMO_PASSWORD, DEMO_PIN } from "../src/lib/demo-credentials";
 import { freezeAccount } from "../src/lib/services/accountService";
 import { updateCustomerKyc, updateCustomerStatus } from "../src/lib/services/customerService";
 import {
@@ -27,8 +28,6 @@ import { transfer } from "../src/lib/services/transferService";
 
 const prisma = new PrismaClient();
 
-const DEMO_PASSWORD = "Password@123";
-const DEMO_PIN = "123456";
 const MARKER = "[SEED_DEMO]";
 
 type Actor = { id: string; role: Role };
@@ -290,7 +289,7 @@ async function main() {
   console.log("seed:demo summary");
   console.table({ users: userCount, accounts: accountCount, transactions: txCount, requests: reqCount, loans: loanCount, flags: flagCount, notifications: notifCount, auditLogs: auditCount });
   console.log("Demo password:", DEMO_PASSWORD);
-  console.log("Demo PIN (internal, not shown in UI):", DEMO_PIN);
+  console.log("Demo PIN:", DEMO_PIN);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); }).finally(async () => { await prisma.$disconnect(); });
