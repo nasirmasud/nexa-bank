@@ -25,7 +25,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="bg-landing-surface-low py-20 scroll-mt-28" aria-labelledby="features-heading">
+    <section id="features" className="bg-landing-surface-low py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="features-heading">
       <div className="landing-container grid gap-10 lg:grid-cols-12 lg:items-center">
         <div className="lg:col-span-5">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Client Infrastructure</p>
