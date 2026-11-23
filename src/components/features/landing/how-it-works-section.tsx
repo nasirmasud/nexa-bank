@@ -1,3 +1,5 @@
+import { TransferStepper } from "./transfer-stepper";
+
 const steps = [
   {
     step: "01",
@@ -51,6 +53,8 @@ export function HowItWorksSection() {
             </article>
           ))}
         </div>
+
+        <TransferStepper />
       </div>
     </section>
   );
