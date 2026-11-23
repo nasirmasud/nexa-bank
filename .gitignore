@@ -5,6 +5,8 @@ node_modules
 .env.local
 .env.*.local
 AGENTS.md
+QA.md
+plan.md
 DEPLOYMENT.md
 tsconfig.tsbuildinfo
 screenshots/
