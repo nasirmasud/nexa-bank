@@ -172,7 +172,7 @@ export async function freezeAccount(
   reason: string,
   options?: { occurredAt?: Date },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can freeze accounts", 403);
   const existing = await db.account.findUnique({
     where: { id: accountId },
     select: { id: true, status: true },
@@ -204,7 +204,7 @@ export async function unfreezeAccount(
   accountId: string,
   options?: { occurredAt?: Date },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can unfreeze accounts", 403);
   const existing = await db.account.findUnique({
     where: { id: accountId },
     select: { id: true, status: true },
@@ -240,7 +240,7 @@ export async function updateAccountLimits(
     minBalance?: string | null;
   },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can update account limits", 403);
   const existing = await db.account.findUnique({
     where: { id: accountId },
     select: { id: true, dailyTransferLimit: true, perTxLimit: true, minBalance: true },
