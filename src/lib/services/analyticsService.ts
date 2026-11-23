@@ -10,12 +10,15 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
   if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Not authorized", 403);
 
   const now = new Date();
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const chartStart = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
   const [
     totalCustomers,
     totalAccounts,
     totalBalanceAgg,
+    totalDepositsAgg,
+    totalWithdrawalsAgg,
+    totalTransactions,
     pendingLoans,
     activeLoans,
     openFlags,
@@ -32,6 +35,15 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
       where: { type: { not: "SYSTEM" } },
       _sum: { balance: true },
     }),
+    db.transaction.aggregate({
+      where: { type: "DEPOSIT", status: "COMPLETED" },
+      _sum: { amount: true },
+    }),
+    db.transaction.aggregate({
+      where: { type: "WITHDRAWAL", status: "COMPLETED" },
+      _sum: { amount: true },
+    }),
+    db.transaction.count({ where: { status: "COMPLETED" } }),
     db.loan.count({ where: { status: { in: ["PENDING", "UNDER_REVIEW"] } } }),
     db.loan.count({ where: { status: "ACTIVE" } }),
     db.suspiciousFlag.count({ where: { status: "OPEN" } }),
@@ -50,7 +62,7 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
              COALESCE(SUM(amount), 0)::text AS volume,
              COUNT(*)::text AS count
       FROM "Transaction"
-      WHERE "createdAt" >= ${sixMonthsAgo} AND "status" = 'COMPLETED'
+      WHERE "createdAt" >= ${chartStart} AND "status" = 'COMPLETED'
       GROUP BY 1
       ORDER BY 1
     `,
@@ -59,7 +71,7 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
              COALESCE(SUM(CASE WHEN "type" = 'DEPOSIT' THEN amount ELSE 0 END), 0)::text AS deposits,
              COALESCE(SUM(CASE WHEN "type" = 'WITHDRAWAL' THEN amount ELSE 0 END), 0)::text AS withdrawals
       FROM "Transaction"
-      WHERE "createdAt" >= ${sixMonthsAgo} AND "status" = 'COMPLETED'
+      WHERE "createdAt" >= ${chartStart} AND "status" = 'COMPLETED'
       GROUP BY 1
       ORDER BY 1
     `,
@@ -68,7 +80,7 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
              COUNT(*)::text AS count,
              COALESCE(SUM(amount), 0)::text AS volume
       FROM "Transaction"
-      WHERE "createdAt" >= ${sixMonthsAgo}
+      WHERE "createdAt" >= ${chartStart} AND "status" = 'COMPLETED'
       GROUP BY 1
       ORDER BY 1
     `,
@@ -79,6 +91,9 @@ export async function getAdminAnalytics(db: PrismaClient, actor: AnalyticsActor)
       totalCustomers,
       totalAccounts,
       totalBalance: totalBalanceAgg._sum.balance?.toString() ?? "0.00",
+      totalDeposits: totalDepositsAgg._sum.amount?.toString() ?? "0.00",
+      totalWithdrawals: totalWithdrawalsAgg._sum.amount?.toString() ?? "0.00",
+      totalTransactions,
       pendingLoans,
       activeLoans,
       openFlags,
