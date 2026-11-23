@@ -2,7 +2,8 @@ docs/
 node_modules
 .next
 .env
-.env.example
+.env.local
+.env.*.local
 AGENTS.md
 tsconfig.tsbuildinfo
 screenshots/
