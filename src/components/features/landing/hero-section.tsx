@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { HeroShader } from "./hero-shader";
+import { HeroBackground } from "./hero-background";
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-[#06120f] py-16 text-white sm:py-20 lg:py-24" aria-labelledby="hero-heading">
-      <HeroShader />
+      <HeroBackground />
       <div className="landing-container relative grid gap-12 lg:grid-cols-12 lg:items-center">
         <div className="lg:col-span-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-[#7bd7bd] backdrop-blur-sm">
