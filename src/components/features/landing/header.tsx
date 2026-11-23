@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import { getRoleHome } from "@/lib/role-home";
 import { LandingLogo } from "./landing-logo";
 import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
@@ -12,6 +16,11 @@ const navItems = [
 ];
 
 export function Header() {
+  const { data: session, status } = useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const dashboardHref = getRoleHome(role);
+  const isLoggedIn = status === "authenticated" && !!dashboardHref;
+
   return (
     <header className="sticky top-0 z-50 border-b border-landing-border/80 bg-landing-bg/90 backdrop-blur-md">
       <a
@@ -39,18 +48,38 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle className="border-landing-border bg-landing-surface text-landing-ink hover:bg-landing-surface-mid" />
-          <Link
-            href="/login"
-            className="hidden rounded-[8px] px-3 py-2 text-sm font-semibold text-landing-ink transition hover:bg-landing-surface-mid sm:inline-flex"
-          >
-            Login
-          </Link>
-          <a
-            href="#demo-credentials"
-            className="hidden rounded-[8px] bg-landing-primary px-4 py-2 text-sm font-semibold text-landing-primary-foreground transition hover:opacity-95 sm:inline-flex"
-          >
-            Explore Demo
-          </a>
+          {isLoggedIn ? (
+            <>
+              <Link
+                href={dashboardHref}
+                className="hidden rounded-[8px] bg-landing-primary px-4 py-2 text-sm font-semibold text-landing-primary-foreground transition hover:opacity-95 sm:inline-flex"
+              >
+                Go to Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="hidden rounded-[8px] px-3 py-2 text-sm font-semibold text-landing-ink transition hover:bg-landing-surface-mid sm:inline-flex"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden rounded-[8px] px-3 py-2 text-sm font-semibold text-landing-ink transition hover:bg-landing-surface-mid sm:inline-flex"
+              >
+                Login
+              </Link>
+              <a
+                href="#demo-credentials"
+                className="hidden rounded-[8px] bg-landing-primary px-4 py-2 text-sm font-semibold text-landing-primary-foreground transition hover:opacity-95 sm:inline-flex"
+              >
+                Explore Demo
+              </a>
+            </>
+          )}
           <MobileNav />
         </div>
       </div>
