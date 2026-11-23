@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { MoonStar } from "lucide-react";
 import { LandingLogo } from "./landing-logo";
+import { ThemeToggle } from "./theme-toggle";
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -101,13 +101,7 @@ export function Footer() {
             >
               <LinkedInIcon className="size-4" />
             </a>
-            <button
-              type="button"
-              aria-label="Toggle theme"
-              className="inline-flex size-10 items-center justify-center rounded-[8px] border border-white/15 text-white/80 transition hover:bg-white/10 hover:text-white"
-            >
-              <MoonStar className="size-4" aria-hidden="true" />
-            </button>
+            <ThemeToggle className="border-white/15 bg-transparent text-white/80 hover:bg-white/10 hover:text-white" />
           </div>
         </div>
       </div>
