@@ -10,7 +10,7 @@ export function FinalCtaSection() {
     >
       <div className="absolute inset-0" aria-hidden="true">
         <MosaicShaderBackground
-          scene="prism"
+          scene="mosaic"
           accent="ice"
           interactive={false}
           height="100%"
