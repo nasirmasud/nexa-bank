@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LandingLogo } from "./landing-logo";
 import { ThemeToggle } from "./theme-toggle";
+import { FooterBackground } from "./footer-background";
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -48,8 +49,9 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="relative bg-[#06120f] text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,18,15,0.92),rgba(6,18,15,0.96))]" aria-hidden="true" />
+    <footer className="relative overflow-hidden bg-[#06120f] text-white">
+      <FooterBackground />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,18,15,0.72)_0%,rgba(6,18,15,0.82)_45%,rgba(6,18,15,0.92)_100%)]" aria-hidden="true" />
       <div className="landing-container relative py-14">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
