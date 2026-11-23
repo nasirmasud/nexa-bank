@@ -14,7 +14,7 @@ NexaBank is a role-based banking web application built with Next.js (App Router)
 - **Data**: Prisma ORM, Neon/Postgres
 - **Auth**: NextAuth (credentials)
 - **State/API**: Redux Toolkit, RTK Query
-- **UI**: Tailwind CSS, shadcn/ui, Lucide icons, Recharts
+- **UI**: Tailwind CSS, shadcn/ui, Lucide icons, Recharts, `@paper-design/shaders-react` (landing page shader backgrounds)
 - **PDF/Export**: `@react-pdf/renderer`, CSV export
 - **Testing**: Vitest, Testing Library
 
@@ -98,7 +98,15 @@ npx vitest run
 
 ## Demo Accounts (Seed)
 
-If you ran `npm run db:seed`, use the seeded demo credentials from your local seed data. Default seed/demo accounts include admin/staff/customer users (e.g. `admin@nexabank.com`, `staff1@nexabank.com`, `customer1@nexabank.com`) with the seeded development password. Treat these as local development credentials only.
+If you ran `npm run db:seed`, use these local development demo credentials (also defined in `src/lib/demo-credentials.ts`, used by the landing page and `/login?role=` prefill):
+
+| Role     | Email                 | Password       |
+| -------- | --------------------- | -------------- |
+| Admin    | `admin@nexabank.com`  | `Password@123` |
+| Staff    | `staff1@nexabank.com` | `Password@123` |
+| Customer | `customer1@nexabank.com` | `Password@123` |
+
+> Local development/demo only. Not real banking credentials. No real money involved.
 
 ## Deployment Notes
 
