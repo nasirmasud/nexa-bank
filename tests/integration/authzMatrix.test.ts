@@ -131,6 +131,7 @@ async function createPendingRequest(requesterId: string, accountId: string) {
 function expectForbidden(e: unknown) {
   expect(e).toBeInstanceOf(AppError);
   expect((e as AppError).status).toBe(403);
+  return true;
 }
 
 describe("authz matrix and ownership", () => {
