@@ -13,7 +13,7 @@ const items = [
 
 export function SecuritySection() {
   return (
-    <section id="security" className="bg-landing-surface-low py-20 scroll-mt-28" aria-labelledby="security-heading">
+    <section id="security" className="bg-landing-surface-low py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="security-heading">
       <div className="landing-container">
         <div className="mx-auto max-w-3xl text-center">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Zero Compromise</p>
