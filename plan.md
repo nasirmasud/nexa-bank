@@ -25,39 +25,39 @@
 
 ## Phase 0 — Cleanup (first)
 
-- [ ] **0.1** Delete `prisma/seed-history.ts` (redundant with `seed-demo.ts`). Commit: `chore: remove redundant seed history script`
-- [ ] **0.2** Remove `"db:seed:history"` from `package.json`; keep `seed:demo`. Commit: `chore: remove seed history npm script`
-- [ ] **0.3** `src/lib/demo-credentials.ts`: add one consistent demo PIN source (`DEMO_PIN = "123456"` / shared export). Expose PIN in login and landing demo credential panels (public demo value). Commit: `feat: add shared demo pin constant`
-- [ ] **0.4** `prisma/seed.ts`: use shared demo PIN source for customer1 (set `pinHash` via bcrypt; keep existing behavior otherwise). Commit: `chore: use shared demo pin in base seed`. **After commit, report exact command to apply demo PIN to existing DB without wiping data; do not run.**
-- [ ] **0.5** `prisma/seed-demo.ts`: replace local `DEMO_PIN` with shared demo PIN source. Commit: `chore: use shared demo pin in demo seed`
-- [ ] **Phase 0 verify:** `npm run lint`, `npm run typecheck`, `npm run build`
+- [x] **0.1** Delete `prisma/seed-history.ts` (redundant with `seed-demo.ts`). Commit: `chore: remove redundant seed history script`
+- [x] **0.2** Remove `"db:seed:history"` from `package.json`; keep `seed:demo`. Commit: `chore: remove seed history npm script`
+- [x] **0.3** `src/lib/demo-credentials.ts`: add one consistent demo PIN source (`DEMO_PIN = "123456"` / shared export). Expose PIN in login and landing demo credential panels (public demo value). Commit: `feat: add shared demo pin constant`
+- [x] **0.4** `prisma/seed.ts`: use shared demo PIN source for customer1 (set `pinHash` via bcrypt; keep existing behavior otherwise). Commit: `chore: use shared demo pin in base seed`. **After commit, report exact command to apply demo PIN to existing DB without wiping data; do not run.**
+- [x] **0.5** `prisma/seed-demo.ts`: replace local `DEMO_PIN` with shared demo PIN source. Commit: `chore: use shared demo pin in demo seed`
+- [x] **Phase 0 verify:** `npm run lint`, `npm run typecheck`, `npm run build`
 
 ## Phase 1 — Shared dashboard design system/components
 
 Styling source: landing tokens + `docs/design/home/DESIGN.md`. Manrope headings/big numbers, Inter body, JetBrains Mono IDs/account numbers, tabular numerals, `#0E7C66` emerald, `#1F3A5F` navy, `1px #E4E7EC` borders, radii cards 12px/buttons+inputs 8px/badges 4px, soft shadows only on overlays. Full dark mode. Backward-compatible defaults where already used.
 
-- [ ] **1.1** `src/components/shared/dashboard-nav.ts`: extend nav model for grouped sections. Admin groups: Overview (Dashboard), Banking (Customers, Accounts, Requests, Transactions, Loans), Risk (Suspicious), System (Staff, Settings, Audit Logs). Keep staff/customer compatible. Commit: `feat: add grouped dashboard navigation model`
-- [ ] **1.2** `src/components/shared/dashboard-shell.tsx`: redesign shell — navy sidebar logo mark+name, grouped nav, active left emerald bar+tinted bg, user card bottom, collapsible icon rail on tablet, drawer on mobile. Top bar: breadcrumb, global search UI, theme toggle, notification bell, avatar menu. Preserve skip link/a11y/sign-out/notifications. Backward-compatible for staff/customer. Commit: `feat: redesign shared dashboard shell`
-- [ ] **1.3** `src/components/shared/stat-card.tsx`: KPI redesign — icon chip, label, Manrope tabular value, optional delta/subtext, optional full-value tooltip, equal heights, no clipping; compact `৳` formatting support. Default-safe; featured variant support for Phase 3 (no shader yet). Commit: `feat: redesign shared stat card`
-- [ ] **1.4** `src/components/shared/status-badge.tsx`: align with DESIGN.md badge tokens (4px radius, semantic tinted backgrounds, AA contrast, dark mode). Commit: `feat: align status badge with design tokens`
-- [ ] **1.5** `src/components/shared/chart-card.tsx` *(new)*: title, one-line description, legend/range slot, consistent height, subtle gridlines, empty/loading, `rounded-[12px]` border card. Commit: `feat: add shared chart card component`
-- [ ] **1.6** `src/components/shared/data-table.tsx` *(new)*: responsive desktop table/mobile stacked cards, right-aligned numeric/৳, mono IDs, no horizontal page scroll, keyboard/focus styles. Commit: `feat: add shared responsive data table component`
-- [ ] **1.7** `src/components/shared/empty-state.tsx` *(new)*: clean “No data yet” with optional icon/description/action, dark mode. Commit: `feat: add shared empty state component`
-- [ ] **1.8** `src/components/shared/page-header.tsx` *(new)*: Manrope title, subtitle, breadcrumb slot, 3M/6M/12M selector, primary action slot. Date range emits value; client-side slicing only where honest. Commit: `feat: add shared dashboard page header`
-- [ ] **Phase 1 verify:** `npm run lint`, `npm run typecheck`, `npm run build`. Report shell prop/behavior changes for staff/customer smoke test.
+- [x] **1.1** `src/components/shared/dashboard-nav.ts`: extend nav model for grouped sections. Admin groups: Overview (Dashboard), Banking (Customers, Accounts, Requests, Transactions, Loans), Risk (Suspicious), System (Staff, Settings, Audit Logs). Keep staff/customer compatible. Commit: `feat: add grouped dashboard navigation model`
+- [x] **1.2** `src/components/shared/dashboard-shell.tsx`: redesign shell — navy sidebar logo mark+name, grouped nav, active left emerald bar+tinted bg, user card bottom, collapsible icon rail on tablet, drawer on mobile. Top bar: breadcrumb, global search UI, theme toggle, notification bell, avatar menu. Preserve skip link/a11y/sign-out/notifications. Backward-compatible for staff/customer. Commit: `feat: redesign shared dashboard shell`
+- [x] **1.3** `src/components/shared/stat-card.tsx`: KPI redesign — icon chip, label, Manrope tabular value, optional delta/subtext, optional full-value tooltip, equal heights, no clipping; compact `৳` formatting support. Default-safe; featured variant support for Phase 3 (no shader yet). Commit: `feat: redesign shared stat card`
+- [x] **1.4** `src/components/shared/status-badge.tsx`: align with DESIGN.md badge tokens (4px radius, semantic tinted backgrounds, AA contrast, dark mode). Commit: `feat: align status badge with design tokens`
+- [x] **1.5** `src/components/shared/chart-card.tsx` *(new)*: title, one-line description, legend/range slot, consistent height, subtle gridlines, empty/loading, `rounded-[12px]` border card. Commit: `feat: add shared chart card component`
+- [x] **1.6** `src/components/shared/data-table.tsx` *(new)*: responsive desktop table/mobile stacked cards, right-aligned numeric/৳, mono IDs, no horizontal page scroll, keyboard/focus styles. Commit: `feat: add shared responsive data table component`
+- [x] **1.7** `src/components/shared/empty-state.tsx` *(new)*: clean “No data yet” with optional icon/description/action, dark mode. Commit: `feat: add shared empty state component`
+- [x] **1.8** `src/components/shared/page-header.tsx` *(new)*: Manrope title, subtitle, breadcrumb slot, 3M/6M/12M selector, primary action slot. Date range emits value; client-side slicing only where honest. Commit: `feat: add shared dashboard page header`
+- [x] **Phase 1 verify:** `npm run lint`, `npm run typecheck`, `npm run build`. Report shell prop/behavior changes for staff/customer smoke test.
 
 ## Phase 2 — Admin dashboard redesign (pilot) — STOP AFTER THIS PHASE
 
 Functionality/RTK Query/data logic unchanged. Reuse existing endpoints only.
 
-- [ ] **2.1** `src/app/admin/dashboard/page.tsx`: full redesign.
+- [x] **2.1** `src/app/admin/dashboard/page.tsx`: full redesign.
   - **Header:** Manrope title/subtitle, breadcrumb, 3M/6M/12M selector, primary action.
   - **KPIs (all 7 mandatory):** Row 1 featured Total Bank Balance (wide, large number, small sparkline from real monthly volume data) + Total Deposits + Total Withdrawals. Row 2 Total Customers, Total Accounts, Total Transactions, Pending Loan Applications. Icon chips, tabular Manrope values, optional delta/subtext only if real MoM data supports it; omit otherwise. Compact `৳` when narrow + full value tooltip; `৳` everywhere, never `BDT` in UI. Secondary KPIs (Active Loans, Open Flags, Pending Requests) as compact stat chips/thin row.
   - **Charts:** ChartCard with title/description/legend/range; consistent height; subtle gridlines; brand palette; donut with center total + legend list counts/%; Loan Approval Statistics clear stacked/horizontal bar by status; Monthly Banking Activity multi-series area/line. No clipped shapes; clean “No data yet”. 3M/6M/12M client-side slice where honest; label if not sliceable.
   - **Work panels:** Suspicious queue (open flags, Review -> `/admin/suspicious`), Pending loan applications (applicant, amount, status badge, Review -> `/admin/loans`), Recent transactions table (mono ID, type, right-aligned ৳ amount, StatusBadge, “View all” -> `/admin/transactions`). Existing RTK Query endpoints only.
   - **States/a11y/responsive:** loading skeletons every card/chart/panel; error states; keyboard focus; WCAG AA light/dark. Responsive 1280/768/375; grids collapse cleanly; tables stacked cards on mobile; no horizontal page scroll.
   - Commit: `feat: redesign admin dashboard page`
-- [ ] **Phase 2 verify:** `npm run lint`, `npm run typecheck`, `npm run build`. **STOP and report.** Do not start Phase 3 until user reviews in browser.
+- [x] **Phase 2 verify:** `npm run lint`, `npm run typecheck`, `npm run build`. **STOP and report.** Do not start Phase 3 until user reviews in browser.
 
 ## Phase 3 — GlassFold accents (last, after user approval)
 
