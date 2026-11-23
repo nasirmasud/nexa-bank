@@ -17,10 +17,16 @@ import { TransferPipelineSection } from "./transfer-pipeline-section";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-landing-bg text-landing-ink">
+    <div className="min-h-screen overflow-x-clip bg-landing-bg text-landing-ink">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-[8px] focus:bg-landing-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-landing-primary-foreground"
+      >
+        Skip to content
+      </a>
       <TopBar />
       <Header />
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1} className="outline-none">
         <HeroSection />
         <StatsSection />
         <ExperienceSection />
