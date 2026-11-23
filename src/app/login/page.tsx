@@ -3,19 +3,16 @@
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-
-const demos = [
-  { label: "Admin", email: "admin@nexabank.com", password: "Password@123" },
-  { label: "Staff", email: "staff1@nexabank.com", password: "Password@123" },
-  { label: "Customer", email: "customer1@nexabank.com", password: "Password@123" },
-];
+import { DEMO_CREDENTIAL_LIST, getDemoCredential } from "@/lib/demo-credentials";
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/";
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const roleParam = params.get("role");
+  const roleDemo = getDemoCredential(roleParam);
+  const [email, setEmail] = useState(roleDemo?.email ?? "");
+  const [password, setPassword] = useState(roleDemo?.password ?? "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -81,9 +78,9 @@ function LoginForm() {
         <div className="mt-6 border-t border-slate-800 pt-4">
           <p className="text-xs text-slate-400 mb-2">Demo accounts</p>
           <div className="flex gap-2 flex-wrap">
-            {demos.map((d) => (
+            {DEMO_CREDENTIAL_LIST.map((d) => (
               <button
-                key={d.label}
+                key={d.role}
                 type="button"
                 onClick={() => {
                   setEmail(d.email);
