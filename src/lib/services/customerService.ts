@@ -136,6 +136,7 @@ export async function updateCustomerKyc(
   actor: CustomerActor,
   id: string,
   kycStatus: KycStatus,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.user.findFirst({
@@ -155,6 +156,7 @@ export async function updateCustomerKyc(
     entityId: existing.profile.id,
     before: { kycStatus: existing.profile.kycStatus },
     after: { kycStatus },
+    occurredAt: options?.occurredAt,
   });
 
   return getCustomerById(db, actor, id);
@@ -165,6 +167,7 @@ export async function updateCustomerStatus(
   actor: CustomerActor,
   id: string,
   status: UserStatus,
+  options?: { occurredAt?: Date },
 ) {
   if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Not authorized", 403);
   const existing = await db.user.findFirst({
@@ -187,6 +190,7 @@ export async function updateCustomerStatus(
     entityId: id,
     before: { status: existing.status },
     after: { status },
+    occurredAt: options?.occurredAt,
   });
 
   return getCustomerById(db, actor, id);
