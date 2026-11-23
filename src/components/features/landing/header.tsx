@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Menu } from "lucide-react";
 import { LandingLogo } from "./landing-logo";
+import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
@@ -51,13 +51,7 @@ export function Header() {
           >
             Explore Demo
           </a>
-          <button
-            type="button"
-            aria-label="Open menu"
-            className="inline-flex size-10 items-center justify-center rounded-[8px] border border-landing-border bg-landing-surface text-landing-ink transition hover:bg-landing-surface-mid lg:hidden"
-          >
-            <Menu className="size-5" aria-hidden="true" />
-          </button>
+          <MobileNav />
         </div>
       </div>
     </header>
