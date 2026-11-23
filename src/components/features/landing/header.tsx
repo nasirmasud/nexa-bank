@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Menu, MoonStar } from "lucide-react";
+import { Menu } from "lucide-react";
 import { LandingLogo } from "./landing-logo";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
   { href: "#features", label: "Features" },
@@ -37,13 +38,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Toggle theme"
-            className="inline-flex size-10 items-center justify-center rounded-[8px] border border-landing-border bg-landing-surface text-landing-ink transition hover:bg-landing-surface-mid"
-          >
-            <MoonStar className="size-4" aria-hidden="true" />
-          </button>
+          <ThemeToggle className="border-landing-border bg-landing-surface text-landing-ink hover:bg-landing-surface-mid" />
           <Link
             href="/login"
             className="hidden rounded-[8px] px-3 py-2 text-sm font-semibold text-landing-ink transition hover:bg-landing-surface-mid sm:inline-flex"
