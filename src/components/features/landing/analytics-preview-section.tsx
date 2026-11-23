@@ -2,7 +2,7 @@ const bars = [45, 60, 72, 66, 88];
 
 export function AnalyticsPreviewSection() {
   return (
-    <section className="bg-landing-surface-low py-20 scroll-mt-28" aria-labelledby="analytics-heading">
+    <section className="bg-landing-surface-low py-24 sm:py-28 lg:py-32 scroll-mt-28" aria-labelledby="analytics-heading">
       <div className="landing-container grid gap-8 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-landing-primary">Insights</p>
