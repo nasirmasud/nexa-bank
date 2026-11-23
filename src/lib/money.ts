@@ -21,13 +21,14 @@ export const gtMoney = (a: string | number | Decimal, b: string | number | Decim
 
 export const isPositiveMoney = (value: string | number | Decimal) => toDecimal(value).gt(0);
 
-export const formatBDT = (value: string | number | Decimal) =>
-  new Intl.NumberFormat("en-BD", {
-    style: "currency",
-    currency: "BDT",
+export const formatBDT = (value: string | number | Decimal) => {
+  const amount = toDecimal(value).toNumber();
+  const formatted = new Intl.NumberFormat("en-BD", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(toDecimal(value).toNumber());
+  }).format(Math.abs(amount));
+  return `${amount < 0 ? "-" : ""}৳${formatted}`;
+};
 
 export const calcTransferFee = (
   amount: string | number | Decimal,
