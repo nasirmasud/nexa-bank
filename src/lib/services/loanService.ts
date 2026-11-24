@@ -415,6 +415,20 @@ export async function applyLoan(
     throw new AppError("FORBIDDEN", "Only customers can apply for loans", 403);
   }
 
+  const applicant = await db.user.findUnique({
+    where: { id: actor.id },
+    select: { id: true, profile: { select: { kycStatus: true } } },
+  });
+  if (applicant?.profile?.kycStatus !== "VERIFIED") {
+    throw new AppError(
+      "KYC_NOT_VERIFIED",
+      "Customer KYC must be verified before applying for a loan.",
+      400,
+      undefined,
+      { customerId: actor.id },
+    );
+  }
+
   const account = await db.account.findUnique({
     where: { id: input.disbursementAccountId },
     select: { id: true, ownerId: true, status: true },
