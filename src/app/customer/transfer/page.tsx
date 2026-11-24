@@ -204,7 +204,7 @@ export default function CustomerTransferPage() {
           <CardContent>
             {receipt ? (
               <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-[#15803D] dark:text-[#4ADE80]">
                   <CheckCircle2 className="size-4" />
                   <span className="font-medium">Transfer successful</span>
                 </div>
