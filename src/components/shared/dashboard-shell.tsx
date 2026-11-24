@@ -406,7 +406,7 @@ export function DashboardShell({ children, navItems, navGroups, roleLabel, user 
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => signOut({ callbackUrl: "/login" })}>
+              <DropdownMenuItem variant="destructive" onClick={() => signOut({ callbackUrl: "/" })}>
                 <LogOut className="size-4" aria-hidden="true" />
                 Sign out
               </DropdownMenuItem>
