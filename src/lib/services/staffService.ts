@@ -32,6 +32,7 @@ export async function createStaff(db: PrismaClient, actor: StaffActor, input: Cr
         phone: input.phone ?? null,
         role: Role.STAFF,
         status: UserStatus.ACTIVE,
+        mustChangePassword: true,
         createdById: actor.id,
       },
       select: staffSelect,
