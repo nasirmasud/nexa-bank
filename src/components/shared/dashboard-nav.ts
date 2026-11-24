@@ -33,6 +33,7 @@ export const adminNavGroups: NavGroup[] = [
     label: "Banking",
     items: [
       { label: "Customers", href: "/admin/customers", icon: "Users" },
+      { label: "Staff", href: "/admin/staff", icon: "UserCog" },
       { label: "Accounts", href: "/admin/accounts", icon: "Wallet" },
       { label: "Requests", href: "/admin/requests", icon: "ClipboardList" },
       { label: "Transactions", href: "/admin/transactions", icon: "ArrowLeftRight" },
