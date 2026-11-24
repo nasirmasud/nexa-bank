@@ -22,8 +22,14 @@ const statusVariant = (s: string): "success" | "danger" | "warning" | "neutral" 
 
 export default function AdminCustomersPage() {
   const [q, setQ] = useState("");
-  const { data, isLoading } = useListCustomersQuery({ page: 1, pageSize: 20, q: q || undefined });
+  const { data, isLoading, isError, error, refetch } = useListCustomersQuery({
+    page: 1,
+    pageSize: 20,
+    q: q || undefined,
+  });
   const items = data?.data ?? [];
+  const errorMessage =
+    (error as { message?: string } | undefined)?.message ?? "Failed to load customers.";
 
   return (
     <div className="space-y-6">
@@ -48,6 +54,15 @@ export default function AdminCustomersPage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
+            </div>
+          ) : isError ? (
+            <div className="space-y-3">
+              <p className="text-sm text-destructive" role="alert">
+                {errorMessage}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Retry
+              </Button>
             </div>
           ) : items.length === 0 ? (
             <p className="text-sm text-muted-foreground">No customers found.</p>
