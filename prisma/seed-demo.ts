@@ -106,7 +106,7 @@ function dec(s: Prisma.Decimal | string | number) {
 }
 
 async function verifyInvariant() {
-  const accounts = await prisma.account.findMany({ select: { id: true, accountNumber: true, balance: true } });
+  const accounts = await prisma.account.findMany({ select: { id: true, accountNumber: true, balance: true, type: true } });
   const balanceSum = accounts.reduce((acc, a) => acc.add(dec(a.balance)), new Prisma.Decimal(0));
   const ledger = await prisma.ledgerEntry.groupBy({ by: ["direction"], _sum: { amount: true } });
   const debit = dec((ledger.find((l) => l.direction === "DEBIT")?._sum.amount ?? 0).toString());
@@ -123,11 +123,7 @@ async function verifyInvariant() {
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       select: { id: true, direction: true, amount: true, balanceAfter: true, createdAt: true },
     });
-    const ledgerNet = entries.reduce((acc, e) => {
-      const amt = dec(e.amount);
-      return e.direction === "CREDIT" ? acc.add(amt) : acc.sub(amt);
-    }, new Prisma.Decimal(0));
-    const opening = dec(a.balance).sub(ledgerNet);
+    const opening = a.type === AccountType.SYSTEM ? new Prisma.Decimal("100000000.00") : new Prisma.Decimal("0.00");
     let running = opening;
     for (const e of entries) {
       const amt = dec(e.amount);
