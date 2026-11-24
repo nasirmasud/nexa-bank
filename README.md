@@ -70,6 +70,37 @@ Key capabilities include customer onboarding, account management, deposits/withd
 
 **Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`) + UI hiding for restricted actions.
 
+## Typical Workflow (How the system is used)
+
+> **Demo note:** `customer1@nexabank.com` has seeded accounts and demo data. A newly registered customer starts with **no account**; staff/admin must open an account before the customer can request deposits, transfer, or apply for loans tied to an account.
+
+1. **Staff registers a customer.** Customers cannot self-register. Admin/Staff create the customer record from the customer management flow; the customer receives credentials for login.
+2. **Staff or Admin opens an account.** An account is created for the customer and the account number is generated at creation time. A newly onboarded customer has no accounts until this step is completed.
+3. **Customer logs in and sets a transaction PIN.** From Customer Settings, the customer sets/updates their transaction PIN. The PIN is required for PIN-gated money actions such as transfers.
+4. **Customer requests a deposit (or withdrawal).** The customer submits a deposit/withdrawal request. Staff/Admin reviews and approves or rejects it; self-approval is blocked. On approval, the balance/transaction/ledger records are updated atomically.
+5. **Customer transfers money.** The customer transfers from an owned active account using their transaction PIN. The system enforces ownership, limits, fees, sufficient funds/min balance, idempotency, serializable DB transaction, row locks, and ledger entries. Receipt PDF and account statements are available for transaction history.
+6. **Customer applies for a loan.** Staff can add notes and forward the loan for review; **only Admin can approve or reject** (and not their own loan). Admin approval/disbursement creates the disbursement transaction/ledger entries. The customer repays installments from their account.
+7. **Staff flags suspicious transactions; Admin resolves them.** Staff/Admin can flag suspicious activity. Only Admin can resolve/dismiss/escalate suspicious flags.
+
+```mermaid
+flowchart TD
+  A[Staff/Admin registers customer] --> B["Staff/Admin opens account<br/>account number generated"]
+  B --> C[Customer logs in\nsets transaction PIN in Settings]
+  C --> D[Customer requests deposit/withdrawal]
+  D --> E{"Staff/Admin reviews<br/>no self-approval"}
+  E -->|Approve| F[Balance + transaction + ledger updated]
+  E -->|Reject| G[Request rejected]
+  F --> H["Customer transfers funds<br/>PIN, limits, fees, atomic tx + ledger"]
+  H --> I[Receipt PDF / statements]
+  H --> J[Customer applies for loan]
+  J --> K[Staff adds notes / forwards]
+  K --> L{"Admin approves/rejects<br/>no self-decision"}
+  L -->|Approve| M[Disbursement tx + ledger created]
+  M --> N[Customer repays installments]
+  H --> O[Staff flags suspicious transaction]
+  O --> P[Admin resolves/dismisses/escalates flag]
+```
+
 ## 4. Authentication Strategy
 
 - **Auth library:** NextAuth v5 (`next-auth@beta`) with **Credentials** provider (`src/lib/auth.ts`).
