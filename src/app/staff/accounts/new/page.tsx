@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,10 +15,7 @@ export default function StaffCreateAccountPage() {
   const [createAccount, createState] = useCreateAccountMutation();
   const customers = customersData?.data ?? [];
 
-  const [ownerId, setOwnerId] = useState("");
-  useEffect(() => {
-    if (ownerIdParam) setOwnerId(ownerIdParam);
-  }, [ownerIdParam]);
+  const [ownerId, setOwnerId] = useState(ownerIdParam);
   const [type, setType] = useState<"SAVINGS" | "CURRENT" | "BUSINESS">("SAVINGS");
   const [nickname, setNickname] = useState("");
   const [createdNumber, setCreatedNumber] = useState<string | null>(null);
