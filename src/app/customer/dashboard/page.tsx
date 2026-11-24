@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ArrowDownLeft, ArrowUpRight, Landmark, Wallet } from "lucide-react";
 import {
   Bar,
@@ -15,20 +15,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+import { ChartCard } from "@/components/shared/chart-card";
+import { DataTable } from "@/components/shared/data-table";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { formatBDT } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import { useListAccountsQuery } from "@/store/api/accountsApi";
 import { useListLoansQuery } from "@/store/api/loansApi";
 import { useListTransactionsQuery } from "@/store/api/transactionsApi";
@@ -47,6 +44,24 @@ function monthLabel(key: string) {
   const [y, m] = key.split("-");
   const d = new Date(Number(y), Number(m) - 1, 1);
   return d.toLocaleString("en-US", { month: "short" });
+}
+
+function formatAxisBDT(value: number | string) {
+  const n = Number(value ?? 0);
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 10_000_000) return `${sign}৳${(abs / 10_000_000).toFixed(1)}Cr`;
+  if (abs >= 100_000) return `${sign}৳${(abs / 100_000).toFixed(1)}L`;
+  if (abs >= 1_000) return `${sign}৳${(abs / 1_000).toFixed(1)}K`;
+  return `${sign}৳${abs.toFixed(0)}`;
+}
+
+function statusVariant(status: string): "success" | "warning" | "danger" | "info" | "neutral" {
+  const s = status.toUpperCase();
+  if (["COMPLETED", "APPROVED", "ACTIVE", "VERIFIED"].includes(s)) return "success";
+  if (["PENDING", "UNDER_REVIEW", "REVERSED"].includes(s)) return "warning";
+  if (["FAILED", "REJECTED", "BLOCKED", "FROZEN"].includes(s)) return "danger";
+  return "neutral";
 }
 
 const PIE_COLORS = ["#0E7C66", "#1F3A5F", "#D97706", "#2FBF9F", "#B91C1C"];
@@ -74,244 +89,229 @@ export default function CustomerDashboard() {
   const activeLoans = loans.filter((l) => l.status === "ACTIVE");
 
   const totalBalance = accounts.reduce((sum, a) => sum + toNumber(a.balance), 0);
-  const deposits = txs
-    .filter((t) => t.type === "DEPOSIT")
-    .reduce((s, t) => s + toNumber(t.amount), 0);
-  const withdrawals = txs
-    .filter((t) => t.type === "WITHDRAWAL")
-    .reduce((s, t) => s + toNumber(t.amount), 0);
+  const deposits = txs.filter((t) => t.type === "DEPOSIT").reduce((s, t) => s + toNumber(t.amount), 0);
+  const withdrawals = txs.filter((t) => t.type === "WITHDRAWAL").reduce((s, t) => s + toNumber(t.amount), 0);
 
-  const spendingByMonth = new Map<string, number>();
-  const depositsByMonth = new Map<string, number>();
-  const typeCounts = new Map<string, number>();
-
-  for (const t of txs) {
-    const key = monthKey(t.createdAt);
-    if (t.type === "WITHDRAWAL" || t.type === "TRANSFER") {
-      spendingByMonth.set(key, (spendingByMonth.get(key) ?? 0) + toNumber(t.amount) + toNumber(t.fee));
+  const spendingChart = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of txs) {
+      if (t.type === "WITHDRAWAL" || t.type === "TRANSFER") {
+        const key = monthKey(t.createdAt);
+        map.set(key, (map.get(key) ?? 0) + toNumber(t.amount) + toNumber(t.fee));
+      }
     }
-    if (t.type === "DEPOSIT") {
-      depositsByMonth.set(key, (depositsByMonth.get(key) ?? 0) + toNumber(t.amount));
-    }
-    typeCounts.set(t.type.replace(/_/g, " "), (typeCounts.get(t.type.replace(/_/g, " ")) ?? 0) + 1);
-  }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([k, amount]) => ({ month: monthLabel(k), amount }));
+  }, [txs]);
 
-  const spendingChart = useMemo(
-    () =>
-      Array.from(spendingByMonth.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .slice(-6)
-        .map(([k, amount]) => ({ month: monthLabel(k), amount })),
-    [txs],
-  );
-  const depositChart = useMemo(
-    () =>
-      Array.from(depositsByMonth.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .slice(-6)
-        .map(([k, amount]) => ({ month: monthLabel(k), amount })),
-    [txs],
-  );
-  const distributionChart = useMemo(
-    () => Array.from(typeCounts.entries()).map(([name, value]) => ({ name, value })),
-    [txs],
-  );
+  const depositChart = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of txs) {
+      if (t.type === "DEPOSIT") {
+        const key = monthKey(t.createdAt);
+        map.set(key, (map.get(key) ?? 0) + toNumber(t.amount));
+      }
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([k, amount]) => ({ month: monthLabel(k), amount }));
+  }, [txs]);
+
+  const distributionChart = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of txs) {
+      const name = t.type.replace(/_/g, " ");
+      map.set(name, (map.get(name) ?? 0) + 1);
+    }
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  }, [txs]);
 
   const loading = accountsQuery.isLoading || txQuery.isLoading || recentTxQuery.isLoading || loansQuery.isLoading;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your balances, recent activity, and quick actions.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {accounts.length > 1 && (
-            <select
-              aria-label="Select account"
-              className="h-9 rounded-md border bg-background px-3 text-sm"
-              value={selectedAccount?.id ?? ""}
-              onChange={(e) => setSelectedAccountId(e.target.value)}
-            >
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.type} • {a.accountNumber}
-                </option>
-              ))}
-            </select>
-          )}
-          <Button render={<Link href="/customer/accounts" />} nativeButton={false} variant="outline">
-            Accounts
-          </Button>
-          <Button render={<Link href="/customer/transfer" />} nativeButton={false}>Transfer</Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Your balances, recent activity, loans, and account insights."
+        breadcrumb={<span>Workspace / Dashboard</span>}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {accounts.length > 1 && (
+              <select
+                aria-label="Select account"
+                className="h-9 rounded-[8px] border border-input bg-background px-3 text-sm text-foreground"
+                value={selectedAccount?.id ?? ""}
+                onChange={(e) => setSelectedAccountId(e.target.value)}
+              >
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.type} • {a.accountNumber}
+                  </option>
+                ))}
+              </select>
+            )}
+            <Link href="/customer/accounts" className={cn(buttonVariants({ variant: "outline" }), "rounded-[8px]")}>
+              Accounts
+            </Link>
+            <Link href="/customer/transfer" className={cn(buttonVariants(), "rounded-[8px] bg-[#0E7C66] text-white hover:bg-[#0E7C66]/90")}>
+              Transfer
+            </Link>
+          </div>
+        }
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Key performance indicators" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[132px] w-full rounded-[12px]" />)
         ) : (
           <>
-            <StatCard title="Total Balance" value={formatBDT(totalBalance)} icon={<Wallet className="size-4" />} />
-            <StatCard title="Total Deposits" value={formatBDT(deposits)} icon={<ArrowDownLeft className="size-4" />} />
-            <StatCard title="Total Withdrawals" value={formatBDT(withdrawals)} icon={<ArrowUpRight className="size-4" />} />
-            <StatCard title="Active Loans" value={activeLoans.length} icon={<Landmark className="size-4" />} />
+            <StatCard title="Total Balance" value={formatBDT(totalBalance)} icon={<Wallet className="size-4" aria-hidden="true" />} />
+            <StatCard title="Total Deposits" value={formatBDT(deposits)} icon={<ArrowDownLeft className="size-4" aria-hidden="true" />} description="Selected account history" />
+            <StatCard title="Total Withdrawals" value={formatBDT(withdrawals)} icon={<ArrowUpRight className="size-4" aria-hidden="true" />} description="Selected account history" />
+            <StatCard title="Active Loans" value={activeLoans.length} icon={<Landmark className="size-4" aria-hidden="true" />} />
           </>
         )}
-      </div>
+      </section>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentTxQuery.isLoading ? (
-              <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-            ) : recentTxs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No transactions yet.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentTxs.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.reference}</TableCell>
-                      <TableCell>{t.type}</TableCell>
-                      <TableCell>
-                        <StatusBadge variant={t.status === "COMPLETED" ? "success" : t.status === "FAILED" ? "danger" : t.status === "REVERSED" ? "warning" : "neutral"}>
-                          {t.status}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell className="text-right">{formatBDT(t.amount)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Info</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {accountsQuery.isLoading ? (
-              <Skeleton className="h-24 w-full" />
-            ) : !selectedAccount ? (
-              <p className="text-muted-foreground">No account found.</p>
-            ) : (
-              <>
-                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Account</span><span className="font-medium">{selectedAccount.accountNumber}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Type</span><span className="font-medium">{selectedAccount.type}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Status</span><span className="font-medium">{selectedAccount.status}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Balance</span><span className="font-medium">{formatBDT(selectedAccount.balance)}</span></div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Card>
-          <CardHeader><CardTitle>Monthly Spending</CardTitle></CardHeader>
-          <CardContent>
-            {txQuery.isLoading ? <Skeleton className="h-56 w-full" /> : spendingChart.length === 0 ? <p className="text-sm text-muted-foreground">No spending data yet.</p> : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={spendingChart}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} width={48} />
-                    <Tooltip formatter={(value) => formatBDT(Number(value ?? 0))} />
-                    <Bar dataKey="amount" fill="currentColor" className="fill-primary" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Monthly Deposit History</CardTitle></CardHeader>
-          <CardContent>
-            {txQuery.isLoading ? <Skeleton className="h-56 w-full" /> : depositChart.length === 0 ? <p className="text-sm text-muted-foreground">No deposit data yet.</p> : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={depositChart}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} width={48} />
-                    <Tooltip formatter={(value) => formatBDT(Number(value ?? 0))} />
-                    <Bar dataKey="amount" fill="#0E7C66" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Transaction Distribution</CardTitle></CardHeader>
-          <CardContent>
-            {txQuery.isLoading ? <Skeleton className="h-56 w-full" /> : distributionChart.length === 0 ? <p className="text-sm text-muted-foreground">No transaction data yet.</p> : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={distributionChart} dataKey="value" nameKey="name" outerRadius={80} innerRadius={45}>
-                      {distributionChart.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader><CardTitle>Active Loans</CardTitle></CardHeader>
-        <CardContent>
-          {loansQuery.isLoading ? (
-            <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-          ) : activeLoans.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active loans.</p>
+      <section aria-label="Recent activity and account" className="grid gap-4 xl:grid-cols-3">
+        <ChartCard title="Recent Transactions" description="Latest transactions for the selected account." className="xl:col-span-2">
+          {recentTxQuery.isLoading ? (
+            <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : recentTxs.length === 0 ? (
+            <EmptyState title="No transactions yet" description="Your recent transactions will appear here." className="min-h-[180px]" />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Loan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Approved</TableHead>
-                  <TableHead className="text-right">EMI</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeLoans.map((l) => (
-                  <TableRow key={l.id}>
-                    <TableCell className="font-medium">{l.loanNo}</TableCell>
-                    <TableCell><StatusBadge variant="success">{l.status}</StatusBadge></TableCell>
-                    <TableCell className="text-right">{formatBDT(l.approvedAmount ?? l.requestedAmount)}</TableCell>
-                    <TableCell className="text-right">{l.emiAmount ? formatBDT(l.emiAmount) : "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={[
+                { key: "reference", header: "Reference", cell: (t) => <span className="font-mono text-xs text-foreground">{t.reference}</span> },
+                { key: "type", header: "Type", cell: (t) => <span className="text-xs text-muted-foreground">{t.type.replace(/_/g, " ")}</span> },
+                { key: "status", header: "Status", cell: (t) => <StatusBadge variant={statusVariant(t.status)}>{t.status}</StatusBadge> },
+                {
+                  key: "amount",
+                  header: "Amount",
+                  headerClassName: "text-right",
+                  className: "text-right",
+                  cell: (t) => <span className="font-mono text-xs tabular-nums text-foreground">{formatBDT(t.amount)}</span>,
+                },
+              ]}
+              rows={recentTxs}
+              rowKey={(t) => t.id}
+            />
           )}
-        </CardContent>
-      </Card>
+        </ChartCard>
+
+        <ChartCard title="Account Info" description="Selected account details.">
+          {accountsQuery.isLoading ? (
+            <Skeleton className="h-40 w-full" />
+          ) : !selectedAccount ? (
+            <EmptyState title="No account found" description="Your account information will appear here." className="min-h-[180px]" />
+          ) : (
+            <div className="space-y-3 text-sm">
+              <InfoRow label="Account" value={selectedAccount.accountNumber} />
+              <InfoRow label="Type" value={selectedAccount.type} />
+              <InfoRow label="Status" value={<StatusBadge variant={statusVariant(selectedAccount.status)}>{selectedAccount.status}</StatusBadge>} />
+              <InfoRow label="Balance" value={formatBDT(selectedAccount.balance)} />
+            </div>
+          )}
+        </ChartCard>
+      </section>
+
+      <section aria-label="Charts" className="grid gap-4 xl:grid-cols-3">
+        <ChartCard title="Monthly Spending" description="Withdrawals and transfers by month (selected account).">
+          {txQuery.isLoading ? <Skeleton className="h-64 w-full" /> : spendingChart.length === 0 ? (
+            <EmptyState title="No spending data yet" description="Spending activity will appear here." className="min-h-[220px]" />
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={spendingChart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <YAxis tickFormatter={formatAxisBDT} tick={{ fontSize: 12 }} width={72} tickLine={false} axisLine={false} />
+                  <Tooltip formatter={(value) => formatBDT(Number(value ?? 0))} />
+                  <Bar dataKey="amount" fill="#0E7C66" radius={[6, 6, 0, 0]} maxBarSize={44} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Monthly Deposit History" description="Deposits by month (selected account).">
+          {txQuery.isLoading ? <Skeleton className="h-64 w-full" /> : depositChart.length === 0 ? (
+            <EmptyState title="No deposit data yet" description="Deposit history will appear here." className="min-h-[220px]" />
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={depositChart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <YAxis tickFormatter={formatAxisBDT} tick={{ fontSize: 12 }} width={72} tickLine={false} axisLine={false} />
+                  <Tooltip formatter={(value) => formatBDT(Number(value ?? 0))} />
+                  <Bar dataKey="amount" fill="#1F3A5F" radius={[6, 6, 0, 0]} maxBarSize={44} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Transaction Distribution" description="Transaction types for selected account.">
+          {txQuery.isLoading ? <Skeleton className="h-64 w-full" /> : distributionChart.length === 0 ? (
+            <EmptyState title="No transaction data yet" description="Transaction distribution will appear here." className="min-h-[220px]" />
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={distributionChart} dataKey="value" nameKey="name" outerRadius={84} innerRadius={48} paddingAngle={2}>
+                    {distributionChart.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </ChartCard>
+      </section>
+
+      <ChartCard title="Active Loans" description="Loans currently active on your account.">
+        {loansQuery.isLoading ? (
+          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+        ) : activeLoans.length === 0 ? (
+          <EmptyState title="No active loans" description="Your active loans will appear here." className="min-h-[180px]" />
+        ) : (
+          <DataTable
+            columns={[
+              { key: "loan", header: "Loan", cell: (l) => <span className="font-medium text-foreground">{l.loanNo}</span> },
+              { key: "status", header: "Status", cell: (l) => <StatusBadge variant="success">{l.status}</StatusBadge> },
+              {
+                key: "approved",
+                header: "Approved",
+                headerClassName: "text-right",
+                className: "text-right",
+                cell: (l) => <span className="font-mono text-xs tabular-nums">{formatBDT(l.approvedAmount ?? l.requestedAmount)}</span>,
+              },
+              {
+                key: "emi",
+                header: "EMI",
+                headerClassName: "text-right",
+                className: "text-right",
+                cell: (l) => <span className="font-mono text-xs tabular-nums">{l.emiAmount ? formatBDT(l.emiAmount) : "—"}</span>,
+              },
+            ]}
+            rows={activeLoans}
+            rowKey={(l) => l.id}
+          />
+        )}
+      </ChartCard>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-medium text-foreground">{value}</span>
     </div>
   );
 }
