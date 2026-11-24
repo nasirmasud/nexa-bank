@@ -1,12 +1,13 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Landmark, Lock, ShieldCheck, Zap } from "lucide-react";
 import { ThemeToggle } from "@/components/features/landing/theme-toggle";
 import { DEMO_CREDENTIAL_LIST, getDemoCredential, type DemoRole } from "@/lib/demo-credentials";
+import { getRoleHome } from "@/lib/role-home";
 
 function NexaMark({ light = false }: { light?: boolean }) {
   return (
@@ -45,7 +46,11 @@ function LoginForm() {
       setError("Invalid credentials or account disabled.");
       return;
     }
-    router.push(res?.url || "/");
+    const session = await getSession();
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    const home = getRoleHome(role);
+    const target = callbackUrl && callbackUrl !== "/" ? callbackUrl : home || "/";
+    router.push(target);
     router.refresh();
   }
 
