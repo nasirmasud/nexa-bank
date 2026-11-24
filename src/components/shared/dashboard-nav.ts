@@ -57,7 +57,7 @@ export const adminNav: NavItem[] = adminNavGroups.flatMap((g) => g.items);
 export const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/staff/dashboard", icon: "LayoutDashboard" },
   { label: "Customers", href: "/staff/customers", icon: "Users" },
-  { label: "Accounts", href: "/staff/accounts/new", icon: "CreditCard" },
+  { label: "Accounts", href: "/staff/accounts", icon: "Wallet" },
   { label: "Requests", href: "/staff/requests", icon: "ClipboardList" },
   { label: "Transactions", href: "/staff/transactions", icon: "ArrowLeftRight" },
   { label: "Suspicious", href: "/staff/suspicious", icon: "ShieldAlert" },
