@@ -143,14 +143,22 @@ export default function StaffCustomerDetailPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Accounts</CardTitle>
+          <Button render={<Link href={`/staff/accounts/new?ownerId=${id}`} />} nativeButton={false} size="sm" variant="outline">
+            Open account
+          </Button>
         </CardHeader>
         <CardContent>
           {accountsLoading ? (
             <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : accounts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No accounts found.</p>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">No accounts found for this customer.</p>
+              <Button render={<Link href={`/staff/accounts/new?ownerId=${id}`} />} nativeButton={false} size="sm">
+                Open account
+              </Button>
+            </div>
           ) : (
             <Table>
               <TableHeader>
