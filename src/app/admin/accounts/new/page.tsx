@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,11 +9,16 @@ import { useCreateAccountMutation } from "@/store/api/accountsApi";
 import { useListCustomersQuery } from "@/store/api/customersApi";
 
 export default function AdminCreateAccountPage() {
+  const searchParams = useSearchParams();
+  const ownerIdParam = searchParams.get("ownerId") ?? "";
   const { data: customersData } = useListCustomersQuery({ page: 1, pageSize: 100 });
   const [createAccount, createState] = useCreateAccountMutation();
   const customers = customersData?.data ?? [];
 
   const [ownerId, setOwnerId] = useState("");
+  useEffect(() => {
+    if (ownerIdParam) setOwnerId(ownerIdParam);
+  }, [ownerIdParam]);
   const [type, setType] = useState<"SAVINGS" | "CURRENT" | "BUSINESS">("SAVINGS");
   const [nickname, setNickname] = useState("");
   const [createdNumber, setCreatedNumber] = useState<string | null>(null);
