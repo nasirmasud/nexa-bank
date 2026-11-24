@@ -5,7 +5,7 @@ import { updateProfileSchema } from "@/lib/validators/profile";
 import { getMyProfile, updateMyProfile } from "@/lib/services/profileService";
 
 export const GET = withApi(async () => {
-  const user = await requireAuth();
+  const user = await requireAuth({ allowPasswordChangeRequired: true });
   const profile = await getMyProfile(prisma, user);
   return Response.json({ data: profile });
 });
