@@ -18,6 +18,8 @@ export default async function StaffLayout({ children }: { children: React.ReactN
     throw e;
   }
 
+  if (user.mustChangePassword) redirect("/change-password");
+
   return (
     <DashboardShell
       navItems={staffNav}
