@@ -14,7 +14,7 @@ import {
 
 const prisma = createTestPrisma();
 
-async function createUser(email: string, password = "Password@123") {
+async function createUser(email: string, password = "Password@123", mustChangePassword = false) {
   return prisma.user.create({
     data: {
       email,
@@ -22,6 +22,7 @@ async function createUser(email: string, password = "Password@123") {
       passwordHash: await bcrypt.hash(password, 4),
       role: Role.CUSTOMER,
       status: UserStatus.ACTIVE,
+      mustChangePassword,
     },
   });
 }
@@ -98,5 +99,33 @@ describe("profileService", () => {
     expect(tfa.twoFactorEnabled).toBe(true);
     const theme = await updateMyTheme(prisma, { id: u.id, role: Role.CUSTOMER }, "dark");
     expect(theme.theme).toBe("dark");
+  });
+
+  it("clears mustChangePassword on successful password change and rejects same password", async () => {
+    const u = await createUser("u@test.com", "TempPass@123", true);
+    await expect(
+      changeMyPassword(
+        prisma,
+        { id: u.id, role: Role.CUSTOMER },
+        { currentPassword: "TempPass@123", newPassword: "TempPass@123" },
+      ),
+    ).rejects.toSatisfy((e: unknown) => e instanceof AppError && e.code === "VALIDATION_ERROR");
+
+    const res = await changeMyPassword(
+      prisma,
+      { id: u.id, role: Role.CUSTOMER },
+      { currentPassword: "TempPass@123", newPassword: "NewPass@123" },
+    );
+    expect(res.ok).toBe(true);
+    const dbUser = await prisma.user.findUniqueOrThrow({ where: { id: u.id } });
+    expect(dbUser.mustChangePassword).toBe(false);
+    expect(dbUser.sessionVersion).toBe(1);
+    expect(await bcrypt.compare("NewPass@123", dbUser.passwordHash)).toBe(true);
+  });
+
+  it("does not set mustChangePassword for normal users", async () => {
+    const u = await createUser("u@test.com", "Password@123", false);
+    const dbUser = await prisma.user.findUniqueOrThrow({ where: { id: u.id } });
+    expect(dbUser.mustChangePassword).toBe(false);
   });
 });
