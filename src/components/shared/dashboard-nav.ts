@@ -46,7 +46,6 @@ export const adminNavGroups: NavGroup[] = [
   {
     label: "System",
     items: [
-      { label: "Staff", href: "/admin/staff", icon: "UserCog" },
       { label: "Settings", href: "/admin/settings", icon: "Settings" },
       { label: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
     ],
