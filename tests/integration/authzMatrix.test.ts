@@ -3,6 +3,7 @@ import {
   AccountStatus,
   AccountType,
   EntryDirection,
+  FlagStatus,
   KycStatus,
   LoanStatus,
   LoanType,
@@ -19,6 +20,7 @@ import { freezeAccount, lookupAccountByNumber, unfreezeAccount, updateAccountLim
 import { updateCustomerStatus } from "@/lib/services/customerService";
 import { approveLoan, getLoanById, rejectLoan } from "@/lib/services/loanService";
 import { cancelRequest, getRequestById } from "@/lib/services/requestService";
+import { resolveSuspiciousFlag } from "@/lib/services/suspiciousFlagService";
 import { getTransactionById, reverseTransaction } from "@/lib/services/transactionService";
 import { createTestPrisma, resetDb } from "../helpers/db";
 
@@ -124,6 +126,17 @@ async function createPendingRequest(requesterId: string, accountId: string) {
       accountId,
       requesterId,
       amount: new Prisma.Decimal("100.00"),
+    },
+  });
+}
+
+async function createOpenFlag(txId: string, reporterId: string) {
+  return prisma.suspiciousFlag.create({
+    data: {
+      transactionId: txId,
+      reportedById: reporterId,
+      reason: "Test flag",
+      status: FlagStatus.OPEN,
     },
   });
 }
@@ -265,6 +278,35 @@ describe("authz matrix and ownership", () => {
 
     const reversal = await reverseTransaction(prisma, { id: admin.id, role: Role.ADMIN }, tx.id);
     expect(reversal.reversalOfId).toBe(tx.id);
+  });
+
+  it("suspicious flag resolution: STAFF/CUSTOMER forbidden, ADMIN succeeds", async () => {
+    const admin = await createUser("admin@test.com", Role.ADMIN);
+    const staff = await createUser("staff@test.com", Role.STAFF);
+    const u1 = await createCustomerWithProfile("u1@test.com");
+    const u2 = await createCustomerWithProfile("u2@test.com");
+    const a1 = await createAccount({ ownerId: u1.id, number: "100000000071", balance: "1000.00" });
+    const a2 = await createAccount({ ownerId: u2.id, number: "100000000072", balance: "1000.00" });
+    const tx = await createCompletedTransfer(a1.id, a2.id, "100.00");
+
+    const flagForStaff = await createOpenFlag(tx.id, staff.id);
+    await expect(
+      resolveSuspiciousFlag(prisma, { id: staff.id, role: Role.STAFF }, flagForStaff.id, { status: FlagStatus.DISMISSED, resolutionNote: "ok" }),
+    ).rejects.toSatisfy(expectForbidden);
+
+    const flagForCustomer = await createOpenFlag(tx.id, staff.id);
+    await expect(
+      resolveSuspiciousFlag(prisma, { id: u1.id, role: Role.CUSTOMER }, flagForCustomer.id, { status: FlagStatus.DISMISSED, resolutionNote: "ok" }),
+    ).rejects.toSatisfy(expectForbidden);
+
+    const flagForAdmin = await createOpenFlag(tx.id, staff.id);
+    const resolved = await resolveSuspiciousFlag(
+      prisma,
+      { id: admin.id, role: Role.ADMIN },
+      flagForAdmin.id,
+      { status: FlagStatus.DISMISSED, resolutionNote: "Verified" },
+    );
+    expect(resolved.status).toBe(FlagStatus.DISMISSED);
   });
 
   it("customer cannot read another customer's account, transaction, loan, or request", async () => {
