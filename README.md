@@ -2,6 +2,8 @@
 
 NexaBank is a role-based digital banking simulation web application built with Next.js (App Router), TypeScript, Prisma, Neon/Postgres, NextAuth v5, Redux Toolkit/RTK Query, Tailwind CSS, and shadcn/ui.
 
+**GitHub:** [nasirmasud/nexa-bank](https://github.com/nasirmasud/nexa-bank)
+
 > **Simulation only.** No real money, real banking rails, or real payment processing. Do not enter real personal or banking data.
 
 ## 1. Project Overview
@@ -52,7 +54,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 |---|:---:|:---:|:---:|
 | Login / session-based access | Yes | Yes | Yes |
 | View own profile/notifications/settings | Yes | Yes | Yes |
-| Register customers / create accounts | Yes | Yes | No |
+| Register customers / create accounts (customer KYC must be VERIFIED before account creation) | Yes | Yes | No |
 | View customers list/detail | Yes | Yes | No (own only where applicable) |
 | Update KYC | Yes | Yes | No |
 | View accounts / transactions / loans (operational) | Yes | Yes (read/support scope) | Own only |
@@ -67,7 +69,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 | **Manage staff accounts** | **Yes** | **No** | **No** |
 | Deposit/withdraw request approve/reject | Yes | Yes (not self) | No |
 | Create deposit/withdraw request | No | No | Yes |
-| Transfer funds / repay loan / apply loan | No | No | Yes (own accounts) |
+| Transfer funds / repay loan / apply loan (loan application requires KYC VERIFIED) | No | No | Yes (own accounts) |
 
 **Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`, `staffService`) + UI hiding for restricted actions.
 
@@ -176,45 +178,46 @@ Key capabilities include customer onboarding, account management, deposits/withd
 
 ## Typical Workflow (How the system is used)
 
-> **Demo note:** `customer1@nexabank.com` has seeded accounts and demo data. A newly registered customer starts with **no account**; staff/admin must open an account before the customer can request deposits, transfer, or apply for loans tied to an account.
+> **Demo note:** `customer1@nexabank.com` has seeded accounts and demo data. A newly registered customer starts with **no account**; staff/admin must verify KYC and open an account before the customer can request deposits, transfer, or apply for loans tied to an account.
 
-1. **Staff registers a customer.** Customers cannot self-register. Admin/Staff create the customer record from the customer management flow; the customer receives credentials for login.
-2. **Staff or Admin opens an account.** An account is created for the customer and the account number is generated at creation time. A newly onboarded customer has no accounts until this step is completed.
-3. **Customer logs in and sets a transaction PIN.** From Customer Settings, the customer sets/updates their transaction PIN. The PIN is required for PIN-gated money actions such as transfers.
-4. **Customer requests a deposit (or withdrawal).** The customer submits a deposit/withdrawal request. Staff/Admin reviews and approves or rejects it; self-approval is blocked. On approval, the balance/transaction/ledger records are updated atomically.
-5. **Customer transfers money.** The customer transfers from an owned active account using their transaction PIN. The system enforces ownership, limits, fees, sufficient funds/min balance, idempotency, serializable DB transaction, row locks, and ledger entries. Receipt PDF and account statements are available for transaction history.
-6. **Customer applies for a loan.** Staff can add notes and forward the loan for review; **only Admin can approve or reject** (and not their own loan). Admin approval/disbursement creates the disbursement transaction/ledger entries. The customer repays installments from their account.
-7. **Staff flags suspicious transactions; Admin resolves them.** Staff/Admin can flag suspicious activity. Only Admin can resolve/dismiss/escalate suspicious flags.
+1. **Staff/Admin registers a customer.** Customers cannot self-register. Admin/Staff create the customer record; newly created users receive a temporary password and must change it at first login.
+2. **Staff/Admin verifies KYC.** Customer KYC status is reviewed/updated. Account creation and loan application require KYC **VERIFIED**.
+3. **Staff/Admin opens an account.** An account is created for the verified customer and the account number is generated at creation time.
+4. **Customer logs in and sets a transaction PIN.** From Customer Settings, the customer sets/updates their transaction PIN. The PIN is required for PIN-gated money actions such as transfers.
+5. **Customer requests a deposit (or withdrawal); Staff/Admin approves.** The customer submits a deposit/withdrawal request. Staff/Admin reviews and approves or rejects it; self-approval is blocked. On approval, balance/transaction/ledger records are updated atomically.
+6. **Customer transfers money.** The customer transfers from an owned active account using their transaction PIN. The system enforces ownership, limits, fees, sufficient funds/min balance, idempotency, serializable DB transaction, row locks, and ledger entries. Receipt PDF and account statements are available.
+7. **Loan lifecycle.** The verified customer applies for a loan. Staff can add notes and forward the loan for review; **only Admin can approve or reject** (and not their own loan). Admin approval/disbursement creates disbursement transaction/ledger entries. The customer repays installments from their account.
+8. **Staff flags suspicious transactions; Admin resolves them.** Staff/Admin can flag suspicious activity. Only Admin can resolve/dismiss/escalate suspicious flags.
 
 ```mermaid
 flowchart TD
-  A[Staff/Admin registers customer] --> B["Staff/Admin opens account<br/>account number generated"]
-  B --> C[Customer logs in\nsets transaction PIN in Settings]
-  C --> D[Customer requests deposit/withdrawal]
-  D --> E{"Staff/Admin reviews<br/>no self-approval"}
-  E -->|Approve| F[Balance + transaction + ledger updated]
-  E -->|Reject| G[Request rejected]
-  F --> H["Customer transfers funds<br/>PIN, limits, fees, atomic tx + ledger"]
-  H --> I[Receipt PDF / statements]
-  H --> J[Customer applies for loan]
-  J --> K[Staff adds notes / forwards]
-  K --> L{"Admin approves/rejects<br/>no self-decision"}
-  L -->|Approve| M[Disbursement tx + ledger created]
-  M --> N[Customer repays installments]
-  H --> O[Staff flags suspicious transaction]
-  O --> P[Admin resolves/dismisses/escalates flag]
+  A[Staff/Admin registers customer] --> B["Staff/Admin verifies KYC<br/>must be VERIFIED"]
+  B --> C["Staff/Admin opens account<br/>account number generated"]
+  C --> D[Customer logs in\nsets transaction PIN in Settings]
+  D --> E[Customer requests deposit/withdrawal]
+  E --> F{"Staff/Admin reviews<br/>no self-approval"}
+  F -->|Approve| G[Balance + transaction + ledger updated]
+  F -->|Reject| H[Request rejected]
+  G --> I["Customer transfers funds<br/>PIN, limits, fees, atomic tx + ledger"]
+  I --> J[Receipt PDF / statements]
+  I --> K[Customer applies for loan - KYC VERIFIED]
+  K --> L[Staff adds notes / forwards]
+  L --> M{"Admin approves/rejects<br/>no self-decision"}
+  M -->|Approve| N[Disbursement tx + ledger created]
+  N --> O[Customer repays installments]
+  I --> P[Staff flags suspicious transaction]
+  P --> Q[Admin resolves/dismisses/escalates flag]
 ```
 
-## 4. Authentication Strategy
+## 4. Security & Authentication
 
-- **Auth library:** NextAuth v5 (`next-auth@beta`) with **Credentials** provider (`src/lib/auth.ts`).
-- **Session strategy:** JWT session. JWT/session includes `id`, `role`, `sessionVersion`.
-- **Login protections:** password verified with bcrypt; failed login counter; lockout after 5 failed attempts for 15 minutes; inactive/blocked users cannot sign in.
-- **Session invalidation field:** `User.sessionVersion` exists and is included in token; guards check DB user status/role on protected server calls. (Session version comparison is not fully enforced in every guard path.)
-- **Route protection:** `src/proxy.ts` protects `/admin`, `/staff`, `/customer`, and `/api` (except `/api/auth`), redirects unauthenticated page requests to `/login?callbackUrl=...`, returns 401 JSON for protected API requests, and enforces role-area access.
-- **Server-side guards:** `requireAuth` / `requireRole` in `src/lib/guards.ts`; layouts catch UNAUTHORIZED/FORBIDDEN for safe redirects.
-- **Transaction PIN:** customer transfer flow verifies hashed PIN (`pinHash`), tracks failed PIN attempts, locks PIN for 15 minutes after 3 failures.
-- **2FA:** `twoFactorEnabled` field exists; full TOTP 2FA flow is not implemented yet (demo accounts should be treated as 2FA off).
+- **Auth library / session:** NextAuth v5 (`next-auth@beta`) Credentials provider (`src/lib/auth.ts`). JWT sessions include `id`, `role`, and `sessionVersion`.
+- **Forced password change:** Users created with a temporary/generated password are flagged with `mustChangePassword=true`. `requireAuth` blocks normal APIs for flagged users with `403 PASSWORD_CHANGE_REQUIRED` (except `GET /api/me`, `POST /api/me/password`, and sign-out). Dashboard layouts redirect flagged users to `/change-password`. Password change reuses the existing password flow with lockout/rate-limit behavior, requires the new password to differ from the current/temp password, clears the flag on success, bumps `sessionVersion`, and writes an audit log. The client re-signs in after a successful change because the session version changes.
+- **Session invalidation (`sessionVersion`):** `requireAuth` reads the DB user on every request and rejects stale JWTs when token `sessionVersion` does not match DB `sessionVersion` (401). Password changes and security-relevant status changes (e.g., deactivation) bump `sessionVersion` to invalidate existing sessions.
+- **Server-side role checks:** `src/proxy.ts` protects `/admin`, `/staff`, `/customer`, and `/api` (except `/api/auth`), redirects unauthenticated page requests to `/login?callbackUrl=...`, returns 401 JSON for protected API requests, and enforces role-area access. `requireAuth` / `requireRole` in `src/lib/guards.ts` enforce authentication, active status, role, and forced-password state; service-layer checks enforce ownership/role/business rules even if UI is bypassed.
+- **Login protections:** Passwords verified with bcrypt; failed login counter; lockout after 5 failed attempts for 15 minutes; inactive/blocked users cannot sign in.
+- **Transaction PIN lockout:** Customer money actions (e.g., transfer) verify hashed PIN (`pinHash`), track failed PIN attempts, and lock PIN for 15 minutes after 3 failures.
+- **2FA:** `twoFactorEnabled` field exists; full TOTP 2FA enrollment/enforcement is not implemented yet (demo accounts should be treated as 2FA off).
 
 ## 5. Redux Toolkit Architecture
 
@@ -393,7 +396,7 @@ npm install
 ### Prisma
 ```bash
 npx prisma generate
-npx prisma migrate dev
+npx prisma migrate deploy
 ```
 
 ### Seed demo data
@@ -447,6 +450,8 @@ From `src/lib/demo-credentials.ts` and seed scripts:
 | Customer | `customer1@nexabank.com` | `Password@123` | `123456` |
 
 > Demo/simulation only. Not real credentials. No real money.
+>
+> **Newly created users:** Staff/Admin-created users receive a temporary password that **must be changed at first login** before normal dashboard/API access is allowed.
 
 ## 14. Additional Libraries Used
 
@@ -465,17 +470,27 @@ From `src/lib/demo-credentials.ts` and seed scripts:
 
 ## 15. Screenshots
 
-No committed screenshot assets are included in this repository at the moment. You can generate local screenshots with Playwright (e.g. `npm run screenshots` for landing screenshots, or project e2e specs) and add them to a `docs/screenshots/` or `public/screenshots/` folder if desired (ensure no secrets/real data are visible).
+Current redesigned UI screenshots (demo data):
+
+### Landing
+![NexaBank landing page](screenshots/landing-1280x720-light.png)
+
+### Customer Dashboard
+![Customer dashboard](screenshots/customer-dashboard-1280x900-light.png)
+
+### Staff Dashboard
+![Staff dashboard](screenshots/staff-dashboard-1280x900-light.png)
+
+### Admin Dashboard
+![Admin dashboard](screenshots/admin-dashboard-1280x900-light.png)
 
 ## 16. Known Limitations / Simulated Parts
 
-- **No real payments/banking rails.** All money movement is simulated in the app database.
-- **Deposits/withdrawals are request + approval workflows**, not real bank transfers.
-- **2FA is not fully implemented** (field exists; TOTP enrollment/enforcement not complete).
-- **Forced password change UX:** after a forced password change, the current session is re-established by signing in again because password changes bump `sessionVersion`.
-- **Baseline security headers** are configured in `next.config.ts`; review CSP/frame/embed needs for your final deployment environment.
+- **No real payments/banking rails.** All money movement is simulated in the app database; deposits/withdrawals are request + approval workflows, not real bank transfers.
+- **No real email sending.** Credential sharing uses mailto/copy flows; there is no server-side email provider integration.
+- **2FA not fully implemented.** `twoFactorEnabled` field/state exists, but full TOTP enrollment/enforcement is not implemented.
+- **Simulated/demo environment.** Demo credentials and seeded data are for evaluation only; do not use real personal or banking data.
 - **Build warning noise:** production build may emit pre-existing `HANGING_PROMISE_REJECTION`/`headers()` prerender warnings for some API routes during static generation; evaluate before deployment.
-- **Visual verification** should be done manually in browser for responsive/dark-mode final signoff before submission.
 
 ## CI
 
