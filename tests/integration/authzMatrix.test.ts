@@ -3,6 +3,7 @@ import {
   AccountStatus,
   AccountType,
   EntryDirection,
+  FlagSource,
   FlagStatus,
   KycStatus,
   LoanStatus,
@@ -130,11 +131,12 @@ async function createPendingRequest(requesterId: string, accountId: string) {
   });
 }
 
-async function createOpenFlag(txId: string, reporterId: string) {
+async function createOpenFlag(txId: string, raisedById: string) {
   return prisma.suspiciousFlag.create({
     data: {
       transactionId: txId,
-      reportedById: reporterId,
+      raisedById,
+      source: FlagSource.STAFF,
       reason: "Test flag",
       status: FlagStatus.OPEN,
     },
