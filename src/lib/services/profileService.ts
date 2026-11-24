@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { PrismaClient, Role } from "@prisma/client";
 import { AppError } from "@/lib/errors";
+import { recordAuditLog } from "@/lib/audit";
 import type {
   ChangePasswordInput,
   SetPinInput,
@@ -67,17 +68,34 @@ export async function changeMyPassword(
 ) {
   const user = await db.user.findUnique({
     where: { id: actor.id },
-    select: { id: true, passwordHash: true },
+    select: { id: true, passwordHash: true, mustChangePassword: true },
   });
   if (!user) throw new AppError("NOT_FOUND", "User not found", 404);
 
   const ok = await bcrypt.compare(input.currentPassword, user.passwordHash);
   if (!ok) throw new AppError("INVALID_PASSWORD", "Current password is incorrect", 400);
 
+  const sameAsCurrent = await bcrypt.compare(input.newPassword, user.passwordHash);
+  if (sameAsCurrent) {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      "New password must be different from your current password",
+      400,
+    );
+  }
+
   const passwordHash = await bcrypt.hash(input.newPassword, 12);
   await db.user.update({
     where: { id: actor.id },
-    data: { passwordHash, sessionVersion: { increment: 1 } },
+    data: { passwordHash, sessionVersion: { increment: 1 }, mustChangePassword: false },
+  });
+  await recordAuditLog(db, {
+    actorId: actor.id,
+    action: "PASSWORD_CHANGED",
+    entityType: "User",
+    entityId: actor.id,
+    before: { mustChangePassword: user.mustChangePassword },
+    after: { mustChangePassword: false },
   });
   return { ok: true };
 }
