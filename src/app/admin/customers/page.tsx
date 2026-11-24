@@ -209,10 +209,10 @@ export default function AdminCustomersPage() {
               )}
               {step === 3 && (
                 <div className="space-y-3">
-                  <p className="text-muted-foreground">The customer has no account yet. Open an account so they can use banking features.</p>
+                  <p className="text-muted-foreground">KYC must be verified before opening an account. Verify KYC on the customer details page, then open an account so they can use banking features.</p>
                   <div className="flex flex-col gap-2">
-                    <Button render={<Link href={`/admin/accounts/new?ownerId=${created.id}`} />} nativeButton={false}>Create account for {created.name}</Button>
-                    <Button render={<Link href={`/admin/customers/${created.id}`} />} nativeButton={false} variant="outline">Go to customer details</Button>
+                    <Button render={<Link href={`/admin/customers/${created.id}`} />} nativeButton={false}>Go to customer details (verify KYC)</Button>
+                    <Button render={<Link href={`/admin/accounts/new?ownerId=${created.id}`} />} nativeButton={false} variant="outline">Create account for {created.name}</Button>
                     <Button type="button" variant="ghost" onClick={() => { setOpen(false); resetCreateState(); }}>Done</Button>
                   </div>
                   <div><Button type="button" variant="ghost" onClick={() => setStep(2)}>Back</Button></div>
