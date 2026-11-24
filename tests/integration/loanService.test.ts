@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   AccountType,
   EmploymentStatus,
+  KycStatus,
   LoanStatus,
   LoanType,
   Role,
@@ -22,7 +23,26 @@ const prisma = createTestPrisma();
 
 async function createUser(email: string, role: Role = Role.CUSTOMER) {
   return prisma.user.create({
-    data: { email, name: email, passwordHash: "hash", role, status: UserStatus.ACTIVE },
+    data: {
+      email,
+      name: email,
+      passwordHash: "hash",
+      role,
+      status: UserStatus.ACTIVE,
+      ...(role === Role.CUSTOMER
+        ? {
+            profile: {
+              create: {
+                customerNo: `CUS-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+                nid: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+                dateOfBirth: new Date("1990-01-01"),
+                presentAddress: "Test Address",
+                kycStatus: KycStatus.VERIFIED,
+              },
+            },
+          }
+        : {}),
+    },
   });
 }
 async function createAccount(params: {
