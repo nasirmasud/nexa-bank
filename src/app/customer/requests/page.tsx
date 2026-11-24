@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,7 @@ const statusVariant = (s: string): "success" | "danger" | "warning" | "neutral" 
         : "neutral";
 
 export default function CustomerRequestsPage() {
-  const { data: accountsData } = useListAccountsQuery({ page: 1, pageSize: 50 });
+  const { data: accountsData, isLoading: accountsLoading } = useListAccountsQuery({ page: 1, pageSize: 50 });
   const [status, setStatus] = useState<string>("");
   const { data, isLoading } = useListRequestsQuery({
     page: 1,
@@ -43,7 +44,8 @@ export default function CustomerRequestsPage() {
   const [createRequest, createState] = useCreateRequestMutation();
   const [cancelRequest, cancelState] = useCancelRequestMutation();
 
-  const accounts = (accountsData?.data ?? []).filter((a) => a.status === "ACTIVE");
+  const allAccounts = accountsData?.data ?? [];
+  const accounts = allAccounts.filter((a) => a.status === "ACTIVE");
   const requests = data?.data ?? [];
 
   const [type, setType] = useState<"DEPOSIT" | "WITHDRAWAL">("DEPOSIT");
@@ -64,6 +66,18 @@ export default function CustomerRequestsPage() {
       setAmount("");
       setDescription("");
     } catch {}
+  }
+
+  if (!accountsLoading && allAccounts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">Requests</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Create deposit/withdrawal requests and track their status.</p>
+        </div>
+        <EmptyState title="No account yet" description="Your bank staff will open an account for you." className="min-h-[240px]" />
+      </div>
+    );
   }
 
   return (
