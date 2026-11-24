@@ -18,6 +18,8 @@ export default async function CustomerLayout({ children }: { children: React.Rea
     throw e;
   }
 
+  if (user.mustChangePassword) redirect("/change-password");
+
   return (
     <DashboardShell
       navItems={customerNav}
