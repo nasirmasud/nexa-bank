@@ -468,23 +468,7 @@ From `src/lib/demo-credentials.ts` and seed scripts:
 - **@paper-design/shaders-react** — landing page shader backgrounds.
 - **vitest + testing-library + playwright** — unit/integration/e2e testing.
 
-## 15. Screenshots
-
-Current redesigned UI screenshots (demo data):
-
-### Landing
-![NexaBank landing page](screenshots/landing-1280x720-light.png)
-
-### Customer Dashboard
-![Customer dashboard](screenshots/customer-dashboard-1280x900-light.png)
-
-### Staff Dashboard
-![Staff dashboard](screenshots/staff-dashboard-1280x900-light.png)
-
-### Admin Dashboard
-![Admin dashboard](screenshots/admin-dashboard-1280x900-light.png)
-
-## 16. Known Limitations / Simulated Parts
+## 15. Known Limitations / Simulated Parts
 
 - **No real payments/banking rails.** All money movement is simulated in the app database; deposits/withdrawals are request + approval workflows, not real bank transfers.
 - **No real email sending.** Credential sharing uses mailto/copy flows; there is no server-side email provider integration.
