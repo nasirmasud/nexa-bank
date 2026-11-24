@@ -41,7 +41,10 @@ export default function CustomerAccountsPage() {
               ))}
             </div>
           ) : accounts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No accounts found.</p>
+            <div className="rounded-md border border-dashed p-6 text-center">
+              <p className="font-medium">No account yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">Your bank staff will open an account for you.</p>
+            </div>
           ) : (
             <Table>
               <TableHeader>
