@@ -36,9 +36,18 @@ export default auth((req) => {
   }
 
   if (role) {
-    const isAdminArea = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
-    const isStaffArea = pathname.startsWith("/staff") || pathname.startsWith("/api/staff");
-    const isCustomerArea = pathname.startsWith("/customer") || pathname.startsWith("/api/customer");
+    const isAdminArea =
+      pathname.startsWith("/admin") ||
+      pathname === "/api/admin" ||
+      pathname.startsWith("/api/admin/");
+    const isStaffArea =
+      pathname.startsWith("/staff") ||
+      pathname === "/api/staff" ||
+      pathname.startsWith("/api/staff/");
+    const isCustomerArea =
+      pathname.startsWith("/customer") ||
+      pathname === "/api/customer" ||
+      pathname.startsWith("/api/customer/");
 
     if (isAdminArea && role !== "ADMIN") {
       if (isApi) {
