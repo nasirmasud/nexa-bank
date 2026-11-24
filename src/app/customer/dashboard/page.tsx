@@ -131,6 +131,23 @@ export default function CustomerDashboard() {
 
   const loading = accountsQuery.isLoading || txQuery.isLoading || recentTxQuery.isLoading || loansQuery.isLoading;
 
+  if (!accountsQuery.isLoading && accounts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Dashboard"
+          description="Your balances, recent activity, loans, and account insights."
+          breadcrumb={<span>Workspace / Dashboard</span>}
+        />
+        <EmptyState
+          title="No account yet"
+          description="Your bank staff will open an account for you."
+          className="min-h-[240px]"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
