@@ -269,13 +269,13 @@ export default function StaffCustomersPage() {
 
               {step === 3 && (
                 <div className="space-y-3">
-                  <p className="text-muted-foreground">The customer has no account yet. Open an account so they can use banking features.</p>
+                  <p className="text-muted-foreground">KYC must be verified before opening an account. Verify KYC on the customer details page, then open an account so they can use banking features.</p>
                   <div className="flex flex-col gap-2">
-                    <Button render={<Link href={`/staff/accounts/new?ownerId=${created.id}`} />} nativeButton={false}>
-                      Create account for {created.name}
+                    <Button render={<Link href={`/staff/customers/${created.id}`} />} nativeButton={false}>
+                      Go to customer details (verify KYC)
                     </Button>
-                    <Button render={<Link href={`/staff/customers/${created.id}`} />} nativeButton={false} variant="outline">
-                      Go to customer details
+                    <Button render={<Link href={`/staff/accounts/new?ownerId=${created.id}`} />} nativeButton={false} variant="outline">
+                      Create account for {created.name}
                     </Button>
                     <Button type="button" variant="ghost" onClick={() => { setOpen(false); resetCreateState(); }}>Done</Button>
                   </div>
