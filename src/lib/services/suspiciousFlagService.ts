@@ -69,7 +69,7 @@ export async function resolveSuspiciousFlag(
   input: ResolveFlagInput,
   options?: { occurredAt?: Date },
 ) {
-  if (actor.role === Role.CUSTOMER) throw new AppError("FORBIDDEN", "Not authorized", 403);
+  if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Only admins can resolve suspicious flags", 403);
   const at = options?.occurredAt ?? new Date();
   const existing = await db.suspiciousFlag.findUnique({
     where: { id },
