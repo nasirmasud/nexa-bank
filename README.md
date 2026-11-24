@@ -1,136 +1,345 @@
 # NexaBank
 
-NexaBank is a role-based banking web application built with Next.js (App Router), Prisma, Neon/Postgres, NextAuth, Redux Toolkit/RTK Query, Tailwind, and shadcn/ui.
+NexaBank is a role-based digital banking simulation web application built with Next.js (App Router), TypeScript, Prisma, Neon/Postgres, NextAuth v5, Redux Toolkit/RTK Query, Tailwind CSS, and shadcn/ui.
 
-## Roles
+> **Simulation only.** No real money, real banking rails, or real payment processing. Do not enter real personal or banking data.
 
-- **ADMIN**: analytics, customer/account management, requests, loans, suspicious activity, audit logs, settings.
-- **STAFF**: dashboard, request review, customer/account support, transactions, suspicious flags, loans.
-- **CUSTOMER**: accounts, transfers, requests, transactions, loans, notifications, profile/settings.
+## 1. Project Overview
 
-## Tech Stack
+NexaBank simulates core banking workflows for three roles: **Admin**, **Staff**, and **Customer**. It focuses on secure role-based access, auditable money operations, and a modern dashboard UI.
 
-- **Framework**: Next.js 16 (App Router), React 19, TypeScript
-- **Data**: Prisma ORM, Neon/Postgres
-- **Auth**: NextAuth (credentials)
-- **State/API**: Redux Toolkit, RTK Query
-- **UI**: Tailwind CSS, shadcn/ui, Lucide icons, Recharts, `@paper-design/shaders-react` (landing page shader backgrounds)
-- **PDF/Export**: `@react-pdf/renderer`, CSV export
-- **Testing**: Vitest, Testing Library
+Key capabilities include customer onboarding, account management, deposits/withdrawals via approval workflow, customer-to-customer transfers with PIN verification, loan application/review/disbursement/repayment, suspicious transaction flagging, notifications, audit logs, and admin analytics/settings.
 
-## Prerequisites
+## 2. Application Features
 
-- Node.js 20+ (recommended)
+### Admin
+- Dashboard analytics (KPIs, charts, work queues).
+- Customer management and customer detail view (profile, KYC, accounts, recent transactions).
+- Account creation and account controls (freeze/unfreeze, limits).
+- Customer status management (activate/deactivate/block).
+- Deposit/withdrawal request review (approve/reject, self-approval blocked).
+- Loan review: forward/note, approve/reject, disbursement tracking, installment visibility.
+- Transaction monitoring, flagging, and admin-only reversal.
+- Suspicious flag review/resolution (admin-only resolution).
+- Audit logs and bank-wide settings (limits/fees/loan rates).
+
+### Staff
+- Staff dashboard and operational queues.
+- Register customers, verify/update KYC, view customer details.
+- Create accounts and view customer/account/transaction context.
+- Review deposit/withdrawal requests (approve/reject, self-approval blocked).
+- Flag suspicious transactions; view suspicious queue (resolution by admin).
+- Assist loans with notes/forwarding (no approve/reject).
+
+### Customer
+- Dashboard with balance/activity summary, account switcher (multi-account), active loans, and charts.
+- Account list/detail and statement/receipt downloads (where available).
+- Transfer funds with transaction PIN and idempotency protection.
+- Deposit/withdrawal requests and request tracking.
+- Loan application, loan details, installment repayment.
+- Notifications and profile/settings (password/PIN/theme/2FA placeholder state).
+
+### Bonus / Implemented Extras
+- Atomic transfer flow with serializable retry, row locks, ledger entries, idempotency keys.
+- Transaction PIN lockout and login lockout.
+- Receipts (PDF) and statements (CSV/PDF).
+- Dark mode support.
+- Admin-configurable banking limits/fees.
+
+## 3. User Roles & Permissions
+
+| Action | ADMIN | STAFF | CUSTOMER |
+|---|:---:|:---:|:---:|
+| Login / session-based access | Yes | Yes | Yes |
+| View own profile/notifications/settings | Yes | Yes | Yes |
+| Register customers / create accounts | Yes | Yes | No |
+| View customers list/detail | Yes | Yes | No (own only where applicable) |
+| Update KYC | Yes | Yes | No |
+| View accounts / transactions / loans (operational) | Yes | Yes (read/support scope) | Own only |
+| Flag suspicious transactions | Yes | Yes | No |
+| **Resolve/dismiss/escalate suspicious flags** | **Yes** | **No** | **No** |
+| Loan note / forward to review | Yes | Yes | No |
+| **Loan approve / reject** | **Yes** (not own loan) | **No** | **No** |
+| **Account freeze / unfreeze / set limits** | **Yes** | **No** | **No** |
+| **Customer activate/deactivate/block** | **Yes** | **No** | **No** |
+| **Transaction reverse** | **Yes** | **No** | **No** |
+| **Bank-wide settings / audit logs** | **Yes** | **No** | **No** |
+| Deposit/withdraw request approve/reject | Yes | Yes (not self) | No |
+| Create deposit/withdraw request | No | No | Yes |
+| Transfer funds / repay loan / apply loan | No | No | Yes (own accounts) |
+
+**Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`) + UI hiding for restricted actions.
+
+## 4. Authentication Strategy
+
+- **Auth library:** NextAuth v5 (`next-auth@beta`) with **Credentials** provider (`src/lib/auth.ts`).
+- **Session strategy:** JWT session. JWT/session includes `id`, `role`, `sessionVersion`.
+- **Login protections:** password verified with bcrypt; failed login counter; lockout after 5 failed attempts for 15 minutes; inactive/blocked users cannot sign in.
+- **Session invalidation field:** `User.sessionVersion` exists and is included in token; guards check DB user status/role on protected server calls. (Session version comparison is not fully enforced in every guard path.)
+- **Route protection:** `src/proxy.ts` protects `/admin`, `/staff`, `/customer`, and `/api` (except `/api/auth`), redirects unauthenticated page requests to `/login?callbackUrl=...`, returns 401 JSON for protected API requests, and enforces role-area access.
+- **Server-side guards:** `requireAuth` / `requireRole` in `src/lib/guards.ts`; layouts catch UNAUTHORIZED/FORBIDDEN for safe redirects.
+- **Transaction PIN:** customer transfer flow verifies hashed PIN (`pinHash`), tracks failed PIN attempts, locks PIN for 15 minutes after 3 failures.
+- **2FA:** `twoFactorEnabled` field exists; full TOTP 2FA flow is not implemented yet (demo accounts should be treated as 2FA off).
+
+## 5. Redux Toolkit Architecture
+
+### Store setup
+- Store factory: `src/store/index.ts` (`makeStore`).
+- Typed hooks/types: `RootState`, `AppDispatch`, `AppStore`.
+- RTK Query API reducer mounted as `[baseApi.reducerPath]`.
+
+### Slices
+Located in `src/store/slices/`:
+- `authSlice`
+- `uiSlice`
+- `accountSlice`
+- `transactionSlice`
+- `loanSlice`
+- `notificationSlice`
+
+### Middleware
+- `baseApi.middleware` (RTK Query)
+- `loadingMiddleware` (`src/store/middleware/loadingMiddleware.ts`) for request loading state handling.
+
+### Folder tree (state/API)
+```text
+src/store/
+  index.ts
+  api/
+    baseApi.ts
+    accountsApi.ts
+    analyticsApi.ts
+    auditLogsApi.ts
+    customersApi.ts
+    loansApi.ts
+    notificationsApi.ts
+    profileApi.ts
+    requestsApi.ts
+    settingsApi.ts
+    suspiciousFlagsApi.ts
+    transactionsApi.ts
+  middleware/
+    loadingMiddleware.ts
+  slices/
+    accountSlice.ts
+    authSlice.ts
+    loanSlice.ts
+    notificationSlice.ts
+    transactionSlice.ts
+    uiSlice.ts
+```
+
+## 6. RTK Query Implementation
+
+- **Base API:** `src/store/api/baseApi.ts` using `createApi` + `fetchBaseQuery`.
+- **Base URL:** `/api`, `credentials: "include"`.
+- **Custom base query:** wraps errors into `{ status, code, message, fields }`; shows toast errors (Sonner); on 401 in browser, shows session-expired toast and signs out to `/login`.
+- **Tag types:** `Account`, `Transaction`, `Request`, `Loan`, `Notification`, `Customer`, `Analytics`, `Settings`, `Profile`, `SuspiciousFlag`, `AuditLog`.
+- **Invalidation pattern:** mutations invalidate relevant tags/lists (e.g., transfer/request/loan actions invalidate account/transaction/request/loan/notification tags as applicable in endpoint files).
+- **401 handling:** centralized in base query; protected pages/layouts also redirect on UNAUTHORIZED where needed.
+
+## 7. Transaction Processing Logic
+
+### Transfer flow (step-by-step)
+1. **Auth & role:** customer-only endpoint/service (`POST /api/transfers`, `transferService.transfer`).
+2. **Input validation:** Zod schema validates amount, source account, recipient account number, PIN, idempotency key.
+3. **Idempotency (fast path):** check existing `IdempotencyKey` for user+key; return stored response if present.
+4. **PIN verification:** bcrypt compare against `pinHash`; failed attempts tracked; lock after 3 failures (15 min).
+5. **Serializable transaction:** run in Prisma transaction with serializable retry helper (`withSerializableRetry`).
+6. **Idempotency inside tx:** re-check/create key to handle races; duplicate in-progress returns conflict.
+7. **Load & validate accounts:** source owned by customer, recipient exists, not same account, both ACTIVE, owners ACTIVE.
+8. **Deterministic row locks:** `SELECT ... FOR UPDATE` on both account IDs in sorted order.
+9. **Business rules:** per-tx limit, daily limit, sufficient funds, minimum balance, fee calculation (same-owner transfer fee waived).
+10. **Atomic updates:** update balances, create `Transaction` (COMPLETED), create `LedgerEntry` rows (DEBIT/CREDIT), create SYSTEM fee credit ledger if fee > 0.
+11. **Notifications:** create sender/recipient notifications.
+12. **Idempotency store:** save response JSON in `IdempotencyKey`.
+
+### Other money/request flows
+- **Deposits/withdrawals:** customer creates request; admin/staff approve/reject; approval executes money movement in service layer with ledger/transaction records. Self-approval blocked.
+- **Loan disbursement:** admin approves loan; disbursement creates transaction/ledger entries.
+- **Loan repayment:** customer repays installment; creates repayment transaction/ledger and updates installment/loan state.
+- **Reversal:** admin-only; creates reversal transaction and compensating ledger entries (service-layer enforced).
+- **Audit logging:** important actions write `AuditLog` records.
+
+## 8. Database Structure
+
+### Main models
+- **User / CustomerProfile:** identity, role/status, auth/PIN fields, KYC profile.
+- **Account:** account number, owner, type/status, balance, limits/min balance.
+- **Transaction / LedgerEntry:** immutable money records; ledger is source of account movement history.
+- **IdempotencyKey:** prevents duplicate transfer processing.
+- **DepositWithdrawRequest:** approval workflow for deposits/withdrawals.
+- **Loan / LoanInstallment / LoanNote:** loan lifecycle, schedule, repayment, review notes.
+- **SuspiciousFlag:** staff/admin/system flags for transactions.
+- **Notification:** in-app user notifications.
+- **AuditLog:** actor/action/entity/before-after trace.
+- **Settings:** bank-wide configurable limits/fees/rates.
+
+### Mermaid ER diagram (simplified)
+```mermaid
+erDiagram
+  User ||--o| CustomerProfile : has
+  User ||--o{ Account : owns
+  User ||--o{ DepositWithdrawRequest : requests
+  User ||--o{ DepositWithdrawRequest : reviews
+  User ||--o{ Loan : applies
+  User ||--o{ Loan : reviews
+  User ||--o{ LoanNote : writes
+  User ||--o{ Notification : receives
+  User ||--o{ AuditLog : acts
+  User ||--o{ IdempotencyKey : creates
+  User ||--o{ SuspiciousFlag : raises
+  User ||--o{ SuspiciousFlag : resolves
+
+  Account ||--o{ Transaction : fromAccount
+  Account ||--o{ Transaction : toAccount
+  Account ||--o{ LedgerEntry : has
+  Account ||--o{ DepositWithdrawRequest : for
+  Account ||--o{ Loan : disbursesTo
+
+  Transaction ||--o{ LedgerEntry : creates
+  Transaction ||--o{ SuspiciousFlag : flaggedBy
+  Transaction ||--o| DepositWithdrawRequest : fulfills
+  Transaction ||--o| Loan : disbursement
+  Transaction ||--o| LoanInstallment : payment
+  Transaction ||--o| Transaction : reversalOf
+
+  Loan ||--o{ LoanInstallment : schedules
+  Loan ||--o{ LoanNote : notes
+```
+
+## 9. Security Implementation
+
+- **Route protection:** `src/proxy.ts` enforces auth and role-area access; API returns 401/403 JSON.
+- **Server-side authz:** `requireAuth`/`requireRole` in API routes and layouts; service-layer role checks for sensitive actions.
+- **Ownership checks:** account/transaction/loan/request access scoped by role and owner where applicable.
+- **Sensitive action restrictions:** admin-only for loan approve/reject, freeze/unfreeze/limits, customer status, tx reverse, suspicious-flag resolution, settings/audit.
+- **Self-approval guard:** `assertNotSelf` prevents approving/rejecting own request and self loan decisions.
+- **PIN security:** bcrypt-hashed PIN, failed-attempt tracking, temporary PIN lockout.
+- **Login lockout:** failed login count + temporary lock.
+- **Atomic money ops:** serializable transactions, deterministic row locks, ledger entries, idempotency keys.
+- **Audit logs:** critical operations recorded.
+- **Input validation:** Zod schemas in API/service boundaries.
+- **Secrets:** no secrets committed; `.env*` ignored; `.env.example` committed.
+- **Known hardening gaps:** no explicit security headers in `next.config.ts`; full sessionVersion enforcement/2FA not complete.
+
+## 10. Environment Variables
+
+| Name | Required | Description | Example |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | Primary Postgres/Neon connection string (pooled/runtime recommended). | `postgresql://...` |
+| `DIRECT_URL` | Yes | Direct Postgres connection for Prisma migrations/introspection. | `postgresql://...` |
+| `TEST_DATABASE_URL` | Yes (tests) | Separate Postgres DB for integration tests. | `postgresql://.../nexa_test?schema=public` |
+| `AUTH_SECRET` | Yes | NextAuth secret for signing/encryption. | `long-random-secret` |
+| `NEXTAUTH_URL` | Yes | App base URL used by auth in deployed/local env. | `http://localhost:3000` |
+| `BANK_TIMEZONE` | Optional | Banking timezone for date logic where used. | `Asia/Dhaka` |
+
+See `.env.example`. Never commit real `.env` values.
+
+## 11. Local Setup Instructions
+
+### Prerequisites
+- Node.js 20+ (recommended 22)
 - npm
-- Neon/Postgres database (or compatible Postgres)
-- Separate test database for integration tests (`TEST_DATABASE_URL`)
+- Postgres database (Neon or local Postgres)
+- Separate test database for integration tests
 
-## Setup
+### Install
+```bash
+npm install
+```
 
-1. Install dependencies:
+### Configure environment
+1. Copy `.env.example` to `.env`.
+2. Fill required values (do not commit `.env`).
 
+### Prisma
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+### Seed demo data
+```bash
+npm run db:seed
+npm run seed:demo
+```
+
+> For Neon/remote, use `DIRECT_URL` as `DATABASE_URL` per command only if needed; do not print credentials.
+
+### Run app
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000).
+
+### Tests/checks
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+## 12. Deployment Instructions (Vercel + Neon)
+
+1. **Create Neon DB** (or branch). Get pooled `DATABASE_URL` and direct `DIRECT_URL`.
+2. **Import repo into Vercel**.
+3. **Set env vars** in Vercel: `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `NEXTAUTH_URL` (production URL), `BANK_TIMEZONE`. Do **not** set `TEST_DATABASE_URL` in Vercel.
+4. **Deploy**. Ensure build runs Prisma generation (CI does `npx prisma generate`; Vercel may need `postinstall`/build hook as appropriate).
+5. **Run migrations** against production DB:
    ```bash
-   npm install
+   npx prisma migrate deploy
    ```
-
-2. Create a local `.env` file (see **Environment Variables** below). Do not commit secrets.
-
-3. Generate Prisma client and run migrations:
-
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev
-   ```
-
-4. Seed demo data (optional, for local development):
-
+6. **Seed demo data** (optional, after Neon backup branch):
    ```bash
    npm run db:seed
+   npm run seed:demo
    ```
+7. **Verify** login for all demo roles and key flows on live URL.
 
-5. Start the dev server:
+## 13. Demo Credentials
 
-   ```bash
-   npm run dev
-   ```
+From `src/lib/demo-credentials.ts` and seed scripts:
 
-   Open [http://localhost:3000](http://localhost:3000).
-
-## Environment Variables
-
-Configure these in `.env` (names only; use real values locally/deployment):
-
-| Variable            | Purpose                                               |
-| ------------------- | ----------------------------------------------------- |
-| `DATABASE_URL`      | Primary Postgres connection string                    |
-| `DIRECT_URL`        | Direct Postgres connection string (Prisma/migrations) |
-| `TEST_DATABASE_URL` | Separate test database for integration tests          |
-| `AUTH_SECRET`       | NextAuth secret                                       |
-| `NEXTAUTH_URL`      | App base URL (e.g. `http://localhost:3000`)           |
-| `BANK_TIMEZONE`     | Banking timezone (default: `Asia/Dhaka`)              |
-
-> `.env.example` may exist locally as a template, but `.env*` secrets must never be committed.
-
-## Scripts
-
-```bash
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run start        # Start production server
-npm run lint         # ESLint
-npm run format       # Prettier write
-npm run format:check # Prettier check
-npm run test         # Vitest run
-npm run test:watch   # Vitest watch
-npm run db:migrate   # Prisma migrate dev
-npm run db:seed      # Prisma seed
-```
-
-## Testing
-
-- Unit/integration tests use **Vitest**.
-- Integration tests should use `TEST_DATABASE_URL`, separate from `DATABASE_URL`.
-- Do not weaken tests to make them pass; fix the underlying issue or environment.
-
-```bash
-npx vitest run
-```
-
-## Demo Accounts (Seed)
-
-If you ran `npm run db:seed`, use these local development demo credentials (also defined in `src/lib/demo-credentials.ts`, used by the landing page and `/login?role=` prefill):
-
-| Role     | Email                    | Password       | Demo PIN |
-| -------- | ------------------------ | -------------- | -------- |
-| Admin    | `admin@nexabank.com`     | `Password@123` | —        |
-| Staff    | `staff1@nexabank.com`    | `Password@123` | —        |
+| Role | Email | Password | Transaction PIN |
+|---|---|---|---|
+| Admin | `admin@nexabank.com` | `Password@123` | — |
+| Staff | `staff1@nexabank.com` | `Password@123` | — |
 | Customer | `customer1@nexabank.com` | `Password@123` | `123456` |
 
-> Local development/demo only. Not real banking credentials. No real money involved.
+> Demo/simulation only. Not real credentials. No real money.
 
-## Deployment Notes
+## 14. Additional Libraries Used
 
-- **App**: Deploy Next.js app (e.g. Vercel). Set all required env vars in deployment environment.
-- **Database**: Use Neon/Postgres. Run migrations before/with deploy (`prisma migrate deploy` in CI/CD as appropriate).
-- **Auth**: Set `AUTH_SECRET` and `NEXTAUTH_URL` to production values.
-- **Tests**: Keep `TEST_DATABASE_URL` separate from production/dev DB.
-- **Docs**: `docs/` is local-only and gitignored; do not commit planning/internal docs.
+- **@prisma/client / prisma** — ORM, migrations, typed DB access.
+- **next-auth** — credentials auth, JWT session.
+- **bcryptjs** — password/PIN hashing.
+- **zod** — runtime input validation.
+- **decimal.js** — precise money arithmetic.
+- **@reduxjs/toolkit + react-redux** — state management and RTK Query.
+- **@react-pdf/renderer** — PDF receipt/statement generation.
+- **recharts** — dashboard charts.
+- **sonner** — toast notifications.
+- **lucide-react** — icons.
+- **@paper-design/shaders-react** — landing page shader backgrounds.
+- **vitest + testing-library + playwright** — unit/integration/e2e testing.
+
+## 15. Screenshots
+
+No committed screenshot assets are included in this repository at the moment. You can generate local screenshots with Playwright (e.g. `npm run screenshots` for landing screenshots, or project e2e specs) and add them to a `docs/screenshots/` or `public/screenshots/` folder if desired (ensure no secrets/real data are visible).
+
+## 16. Known Limitations / Simulated Parts
+
+- **No real payments/banking rails.** All money movement is simulated in the app database.
+- **Deposits/withdrawals are request + approval workflows**, not real bank transfers.
+- **2FA is not fully implemented** (field exists; TOTP enrollment/enforcement not complete).
+- **Session version invalidation is partial** (token has `sessionVersion`; guards do not fully compare it on every request).
+- **No explicit security headers** configured in `next.config.ts` yet.
+- **Build warning noise:** production build may emit pre-existing `HANGING_PROMISE_REJECTION`/`headers()` prerender warnings for some API routes during static generation; evaluate before deployment.
+- **`/staff/accounts` list/detail UI** may be incomplete depending on current step status; staff can still operate via existing flows where implemented.
+- **Visual verification** should be done manually in browser for responsive/dark-mode final signoff.
 
 ## CI
 
-GitHub Actions workflow: `.github/workflows/ci.yml` runs lint, typecheck, tests, and build on push/PR.
-
-Configure repository secrets (names only, no values committed):
-
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `TEST_DATABASE_URL`
-- `AUTH_SECRET`
-- `NEXTAUTH_URL`
-- `BANK_TIMEZONE` (optional)
-
-## Project Notes
-
-- Make changes in small, approved steps; commit each changed file separately.
-- Do not print connection strings or secrets.
-- Keep `docs/` local-only.
+GitHub Actions (`.github/workflows/ci.yml`) runs on push/PR to `main`: install, Prisma generate/migrate, lint, typecheck, migrate test DB, test, build. Configure repository secrets: `DATABASE_URL`, `DIRECT_URL`, `TEST_DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, optional `BANK_TIMEZONE`. Never commit secret values.
