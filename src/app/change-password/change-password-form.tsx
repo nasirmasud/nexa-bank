@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 type Props = {
   email: string;
@@ -90,7 +89,7 @@ export function ChangePasswordForm({ email, name, role }: Props) {
           </p>
           <form className="space-y-4" onSubmit={onSubmit}>
             <div className="space-y-1">
-              <Label htmlFor="current-password">Current (temporary) password</Label>
+              <label className="text-sm font-medium" htmlFor="current-password">Current (temporary) password</label>
               <Input
                 id="current-password"
                 type="password"
@@ -101,7 +100,7 @@ export function ChangePasswordForm({ email, name, role }: Props) {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="new-password">New password</Label>
+              <label className="text-sm font-medium" htmlFor="new-password">New password</label>
               <Input
                 id="new-password"
                 type="password"
@@ -115,7 +114,7 @@ export function ChangePasswordForm({ email, name, role }: Props) {
               <p className="text-xs text-muted-foreground">Use 8-100 characters.</p>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <label className="text-sm font-medium" htmlFor="confirm-password">Confirm new password</label>
               <Input
                 id="confirm-password"
                 type="password"
