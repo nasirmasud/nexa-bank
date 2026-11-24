@@ -58,7 +58,7 @@ export function Header() {
               </Link>
               <button
                 type="button"
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="hidden rounded-[8px] px-3 py-2 text-sm font-semibold text-landing-ink transition hover:bg-landing-surface-mid sm:inline-flex"
               >
                 Logout
