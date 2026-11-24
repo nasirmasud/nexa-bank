@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ export default function StaffCustomersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Customer No</TableHead>
                   <TableHead>KYC</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -148,6 +150,11 @@ export default function StaffCustomersPage() {
                           <option value="REJECTED">REJECTED</option>
                         </select>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button render={<Link href={`/staff/customers/${c.id}`} />} nativeButton={false} size="sm" variant="outline">
+                        View
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
