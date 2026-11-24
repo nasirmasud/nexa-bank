@@ -17,7 +17,7 @@ import {
   UserStatus,
 } from "@prisma/client";
 import { AppError } from "@/lib/errors";
-import { freezeAccount, lookupAccountByNumber, unfreezeAccount, updateAccountLimits } from "@/lib/services/accountService";
+import { freezeAccount, getAccountById, lookupAccountByNumber, unfreezeAccount, updateAccountLimits } from "@/lib/services/accountService";
 import { updateCustomerStatus } from "@/lib/services/customerService";
 import { approveLoan, getLoanById, rejectLoan } from "@/lib/services/loanService";
 import { cancelRequest, getRequestById } from "@/lib/services/requestService";
@@ -309,6 +309,20 @@ describe("authz matrix and ownership", () => {
       { status: FlagStatus.DISMISSED, resolutionNote: "Verified" },
     );
     expect(resolved.status).toBe(FlagStatus.DISMISSED);
+  });
+
+  it("account details: STAFF can read; CUSTOMER cannot read another customer's account", async () => {
+    const staff = await createUser("staff@test.com", Role.STAFF);
+    const owner = await createCustomerWithProfile("owner@test.com");
+    const other = await createCustomerWithProfile("other@test.com");
+    const acc = await createAccount({ ownerId: owner.id, number: "100000000081", balance: "500.00" });
+
+    const staffView = await getAccountById(prisma, { id: staff.id, role: Role.STAFF }, acc.id);
+    expect(staffView.id).toBe(acc.id);
+
+    await expect(getAccountById(prisma, { id: other.id, role: Role.CUSTOMER }, acc.id)).rejects.toSatisfy(
+      (e: unknown) => e instanceof AppError && [403, 404].includes(e.status),
+    );
   });
 
   it("customer cannot read another customer's account, transaction, loan, or request", async () => {
