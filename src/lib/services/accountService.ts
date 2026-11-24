@@ -59,13 +59,22 @@ export async function createAccount(
 
   const owner = await db.user.findUnique({
     where: { id: input.ownerId },
-    select: { id: true, role: true, status: true },
+    select: { id: true, role: true, status: true, profile: { select: { kycStatus: true } } },
   });
   if (!owner || owner.status !== "ACTIVE") {
     throw new AppError("NOT_FOUND", "Owner not found", 404);
   }
   if (owner.role !== Role.CUSTOMER) {
     throw new AppError("VALIDATION_ERROR", "Owner must be a customer", 422);
+  }
+  if (owner.profile?.kycStatus !== "VERIFIED") {
+    throw new AppError(
+      "KYC_NOT_VERIFIED",
+      "Customer KYC must be verified before opening an account.",
+      400,
+      undefined,
+      { customerId: owner.id },
+    );
   }
 
   const accountNumber = await generateUniqueAccountNumber(db);
