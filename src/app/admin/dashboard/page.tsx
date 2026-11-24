@@ -186,11 +186,12 @@ export default function AdminDashboard() {
               description="Monthly transaction volume trend"
               delta={kpiDeltas.volume ?? undefined}
               deltaTone={kpiDeltas.volume?.startsWith("+") ? "positive" : kpiDeltas.volume?.startsWith("-") ? "negative" : "neutral"}
+              featured
               className="min-h-[168px]"
               valueClassName="text-4xl sm:text-5xl"
               contentClassName="p-6"
             />
-            <div className="mt-3 h-14 rounded-[10px] border border-border bg-card px-3 py-2">
+            <div className="mt-3 h-14 rounded-[10px] border border-[#0E7C66]/20 bg-[#0E7C66]/[0.04] px-3 py-2 dark:bg-[#0E7C66]/10">
               {balanceSparkline.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={balanceSparkline} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
