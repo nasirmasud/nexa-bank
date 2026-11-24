@@ -29,12 +29,14 @@ import { transfer } from "../src/lib/services/transferService";
 const prisma = new PrismaClient();
 
 const MARKER = "[SEED_DEMO]";
+const NOW = new Date();
 
 type Actor = { id: string; role: Role };
 type Acct = { id: string; accountNumber: string; ownerId: string | null };
+type SeedOp = { at: Date; seq: number; label: string; run: (at: Date) => Promise<void> };
 
 function monthsAgo(months: number, day = 15, hour = 10) {
-  const d = new Date();
+  const d = new Date(NOW);
   d.setUTCMonth(d.getUTCMonth() - months, day);
   d.setUTCHours(hour, (months * 7) % 60, 0, 0);
   return d;
@@ -96,50 +98,56 @@ async function getCtx() {
     select: { id: true, accountNumber: true, ownerId: true },
   });
   const byNum = Object.fromEntries(accounts.map((a) => [a.accountNumber, a]));
-  const byOwner = accounts.reduce<Record<string, Acct[]>>((acc, a) => {
-    if (!a.ownerId) return acc;
-    acc[a.ownerId] ??= [];
-    acc[a.ownerId].push(a);
-    return acc;
-  }, {});
-  return { byEmail, byNum, byOwner };
+  return { byEmail, byNum };
 }
 
-async function dep(admin: Actor, customer: Actor, accountId: string, amount: string, at: Date, desc: string) {
-  const req = await createRequest(prisma, customer, { type: RequestType.DEPOSIT, accountId, amount, description: `${MARKER} ${desc}` }, { occurredAt: at });
-  await approveRequest(prisma, admin, req.id, { occurredAt: at });
-}
-
-async function wd(admin: Actor, customer: Actor, accountId: string, amount: string, at: Date, desc: string) {
-  const req = await createRequest(prisma, customer, { type: RequestType.WITHDRAWAL, accountId, amount, description: `${MARKER} ${desc}` }, { occurredAt: at });
-  await approveRequest(prisma, admin, req.id, { occurredAt: at });
-}
-
-async function wdReject(staff: Actor, customer: Actor, accountId: string, amount: string, at: Date, desc: string, reason: string) {
-  const req = await createRequest(prisma, customer, { type: RequestType.WITHDRAWAL, accountId, amount, description: `${MARKER} ${desc}` }, { occurredAt: at });
-  await rejectRequest(prisma, staff, req.id, reason, { occurredAt: at });
-}
-
-async function tr(from: Actor, fromAccountId: string, toAccountNumber: string, amount: string, at: Date, desc: string, key: string) {
-  await transfer(prisma, from, { fromAccountId, toAccountNumber, amount, pin: DEMO_PIN, description: `${MARKER} ${desc}`, idempotencyKey: key }, { occurredAt: at });
+function dec(s: Prisma.Decimal | string | number) {
+  return new Prisma.Decimal(s.toString());
 }
 
 async function verifyInvariant() {
   const accounts = await prisma.account.findMany({ select: { id: true, accountNumber: true, balance: true } });
-  const balanceSum = accounts.reduce((acc, a) => acc.add(new Prisma.Decimal(a.balance.toString())), new Prisma.Decimal(0));
+  const balanceSum = accounts.reduce((acc, a) => acc.add(dec(a.balance)), new Prisma.Decimal(0));
   const ledger = await prisma.ledgerEntry.groupBy({ by: ["direction"], _sum: { amount: true } });
-  const debit = new Prisma.Decimal((ledger.find((l) => l.direction === "DEBIT")?._sum.amount ?? 0).toString());
-  const credit = new Prisma.Decimal((ledger.find((l) => l.direction === "CREDIT")?._sum.amount ?? 0).toString());
+  const debit = dec((ledger.find((l) => l.direction === "DEBIT")?._sum.amount ?? 0).toString());
+  const credit = dec((ledger.find((l) => l.direction === "CREDIT")?._sum.amount ?? 0).toString());
   const mismatches: string[] = [];
+
   if (!debit.equals(credit)) mismatches.push(`Ledger not balanced DEBIT=${debit} CREDIT=${credit}`);
-  for (const a of accounts) {
-    const last = await prisma.ledgerEntry.findFirst({ where: { accountId: a.id }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { balanceAfter: true } });
-    if (last && !new Prisma.Decimal(a.balance.toString()).equals(new Prisma.Decimal(last.balanceAfter.toString()))) {
-      mismatches.push(`Account ${a.accountNumber} balance ${a.balance} != ledger ${last.balanceAfter}`);
-    }
-  }
   if (!balanceSum.equals(new Prisma.Decimal("100000000.00"))) mismatches.push(`Total balances ${balanceSum} != 100000000.00`);
   if (!credit.sub(debit).equals(0)) mismatches.push(`Ledger net ${credit.sub(debit)} != 0`);
+
+  for (const a of accounts) {
+    const entries = await prisma.ledgerEntry.findMany({
+      where: { accountId: a.id },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      select: { id: true, direction: true, amount: true, balanceAfter: true, createdAt: true },
+    });
+    const ledgerNet = entries.reduce((acc, e) => {
+      const amt = dec(e.amount);
+      return e.direction === "CREDIT" ? acc.add(amt) : acc.sub(amt);
+    }, new Prisma.Decimal(0));
+    const opening = dec(a.balance).sub(ledgerNet);
+    let running = opening;
+    for (const e of entries) {
+      const amt = dec(e.amount);
+      running = e.direction === "CREDIT" ? running.add(amt) : running.sub(amt);
+      if (!running.equals(dec(e.balanceAfter))) {
+        mismatches.push(
+          `Account ${a.accountNumber} entry ${e.id} at ${e.createdAt.toISOString()} balanceAfter ${e.balanceAfter} != replay ${running}`,
+        );
+        break;
+      }
+    }
+    if (!running.equals(dec(a.balance))) {
+      mismatches.push(`Account ${a.accountNumber} final replay ${running} != balance ${a.balance}`);
+    }
+    const last = entries[entries.length - 1];
+    if (last && !dec(a.balance).equals(dec(last.balanceAfter))) {
+      mismatches.push(`Account ${a.accountNumber} balance ${a.balance} != last createdAt/id balanceAfter ${last.balanceAfter}`);
+    }
+  }
+
   console.log(`Invariant: debit=${debit} credit=${credit} net=${credit.sub(debit)} totalBalances=${balanceSum}`);
   if (mismatches.length) throw new Error(`Invariant failed:\n${mismatches.join("\n")}`);
 }
@@ -172,7 +180,24 @@ async function main() {
   const a701 = a("100000000701"), a702 = a("100000000702");
   const a801 = a("100000000801"), a802 = a("100000000802");
 
-  // 12 months history with seasonal shape (all 8 customers active in the market)
+  const ops: SeedOp[] = [];
+  let seq = 0;
+  const push = (at: Date, label: string, run: (at: Date) => Promise<void>) => {
+    ops.push({ at, seq: seq++, label, run });
+  };
+
+  const ref = <T>() => {
+    let value: T | undefined;
+    return {
+      set(v: T) { value = v; },
+      get(): T {
+        if (value === undefined) throw new Error(`Seed ref not set: ${String(value)}`);
+        return value;
+      },
+      tryGet() { return value; },
+    };
+  };
+
   const plan = [
     { m: 11, deps: [[c1,a101,"120000"],[c2,a201,"90000"],[c3,a301,"65000"],[c4,a401,"150000"],[c5,a501,"80000"],[c6,a601,"50000"],[c7,a701,"110000"],[c8,a801,"70000"]] },
     { m: 10, deps: [[c1,a101,"85000"],[c2,a202,"70000"],[c3,a301,"55000"],[c4,a402,"120000"],[c5,a501,"75000"],[c7,a702,"85000"]] },
@@ -194,16 +219,32 @@ async function main() {
     for (const [cust, acct, amt] of row.deps) {
       op++;
       const scaled = String(Math.round(Number(amt) * factor));
-      await dep(admin, cust as Actor, (acct as Acct).id, scaled, monthsAgo(row.m, 3 + (op % 20), 9 + (op % 10)), `deposit m-${row.m}`);
+      const at = monthsAgo(row.m, 3 + (op % 20), 9 + (op % 10));
+      const reqRef = ref<string>();
+      push(at, `dep-req-${row.m}-${op}`, async (runAt) => {
+        const req = await createRequest(prisma, cust as Actor, { type: RequestType.DEPOSIT, accountId: (acct as Acct).id, amount: scaled, description: `${MARKER} deposit m-${row.m}` }, { occurredAt: runAt });
+        reqRef.set(req.id);
+      });
+      push(at, `dep-approve-${row.m}-${op}`, async (runAt) => {
+        await approveRequest(prisma, admin, reqRef.get(), { occurredAt: runAt });
+      });
     }
-    // withdrawals (fewer, smaller)
+
     const wdTargets = row.deps.slice(0, row.m % 2 === 0 ? 3 : 2);
     for (const [cust, acct, amt] of wdTargets) {
       op++;
       const wAmt = String(Math.round(Number(amt) * 0.18 * factor));
-      await wd(admin, cust as Actor, (acct as Acct).id, wAmt, monthsAgo(row.m, 20 + (op % 7), 13 + (op % 6)), `withdrawal m-${row.m}`);
+      const at = monthsAgo(row.m, 20 + (op % 7), 13 + (op % 6));
+      const reqRef = ref<string>();
+      push(at, `wd-req-${row.m}-${op}`, async (runAt) => {
+        const req = await createRequest(prisma, cust as Actor, { type: RequestType.WITHDRAWAL, accountId: (acct as Acct).id, amount: wAmt, description: `${MARKER} withdrawal m-${row.m}` }, { occurredAt: runAt });
+        reqRef.set(req.id);
+      });
+      push(at, `wd-approve-${row.m}-${op}`, async (runAt) => {
+        await approveRequest(prisma, admin, reqRef.get(), { occurredAt: runAt });
+      });
     }
-    // transfers
+
     const trPairs: Array<[Actor, Acct, Acct, string]> = [
       [c1, a101, a102, String(Math.round(12000 * factor))],
       [c2, a201, a202, String(Math.round(9000 * factor))],
@@ -212,67 +253,178 @@ async function main() {
     for (let i = 0; i < (row.m % 3 === 0 ? 3 : 2); i++) {
       const [fromC, fromA, toA, amt] = trPairs[i];
       op++;
-      await tr(fromC, fromA.id, toA.accountNumber, amt, monthsAgo(row.m, 12 + i * 3, 11 + (op % 5)), `transfer m-${row.m}`, `seed-demo-tr-${row.m}-${i}-${op}`);
+      const at = monthsAgo(row.m, 12 + i * 3, 11 + (op % 5));
+      push(at, `tr-${row.m}-${i}-${op}`, async (runAt) => {
+        await transfer(prisma, fromC, { fromAccountId: fromA.id, toAccountNumber: toA.accountNumber, amount: amt, pin: DEMO_PIN, description: `${MARKER} transfer m-${row.m}`, idempotencyKey: `seed-demo-tr-${row.m}-${i}-${op}` }, { occurredAt: runAt });
+      });
     }
   }
 
   // extra customer1 activity (3 accounts, transfers to other seeded customers)
-  await tr(c1, a101.id, a201.accountNumber, "8500", monthsAgo(2, 14, 14), "to Ayesha", "seed-demo-c1-ext-1");
-  await tr(c1, a102.id, a301.accountNumber, "6500", monthsAgo(1, 18, 15), "to Tanvir", "seed-demo-c1-ext-2");
-  await tr(c2, a201.id, a101.accountNumber, "5000", monthsAgo(1, 20, 16), "to Demo Customer", "seed-demo-c2-c1-1");
+  push(monthsAgo(2, 14, 14), "tr-c1-ext-1", async (runAt) => {
+    await transfer(prisma, c1, { fromAccountId: a101.id, toAccountNumber: a201.accountNumber, amount: "8500", pin: DEMO_PIN, description: `${MARKER} to Ayesha`, idempotencyKey: "seed-demo-c1-ext-1" }, { occurredAt: runAt });
+  });
+  push(monthsAgo(1, 18, 15), "tr-c1-ext-2", async (runAt) => {
+    await transfer(prisma, c1, { fromAccountId: a102.id, toAccountNumber: a301.accountNumber, amount: "6500", pin: DEMO_PIN, description: `${MARKER} to Tanvir`, idempotencyKey: "seed-demo-c1-ext-2" }, { occurredAt: runAt });
+  });
+  push(monthsAgo(1, 20, 16), "tr-c2-c1-1", async (runAt) => {
+    await transfer(prisma, c2, { fromAccountId: a201.id, toAccountNumber: a101.accountNumber, amount: "5000", pin: DEMO_PIN, description: `${MARKER} to Demo Customer`, idempotencyKey: "seed-demo-c2-c1-1" }, { occurredAt: runAt });
+  });
 
   // Customer1: 1 pending deposit request and 1 rejected withdrawal request
-  await createRequest(prisma, c1, { type: RequestType.DEPOSIT, accountId: a101.id, amount: "25000", description: `${MARKER} Pending deposit request` }, { occurredAt: monthsAgo(0, 2, 9) });
-  await wdReject(staff1, c1, a103.id, "40000", monthsAgo(0, 5, 10), "Rejected withdrawal request", "Insufficient supporting documentation.");
+  push(monthsAgo(0, 2, 9), "c1-pending-deposit", async (runAt) => {
+    await createRequest(prisma, c1, { type: RequestType.DEPOSIT, accountId: a101.id, amount: "25000", description: `${MARKER} Pending deposit request` }, { occurredAt: runAt });
+  });
+  {
+    const at = monthsAgo(0, 5, 10);
+    const reqRef = ref<string>();
+    push(at, "c1-rejected-wd-req", async (runAt) => {
+      const req = await createRequest(prisma, c1, { type: RequestType.WITHDRAWAL, accountId: a103.id, amount: "40000", description: `${MARKER} Rejected withdrawal request` }, { occurredAt: runAt });
+      reqRef.set(req.id);
+    });
+    push(at, "c1-rejected-wd-reject", async (runAt) => {
+      await rejectRequest(prisma, staff1, reqRef.get(), "Insufficient supporting documentation.", { occurredAt: runAt });
+    });
+  }
 
   // Staff: 3-4 pending deposit/withdrawal requests
-  await createRequest(prisma, c2, { type: RequestType.DEPOSIT, accountId: a201.id, amount: "18000", description: `${MARKER} Staff pending deposit` }, { occurredAt: monthsAgo(0, 3, 9) });
-  await createRequest(prisma, c4, { type: RequestType.WITHDRAWAL, accountId: a401.id, amount: "22000", description: `${MARKER} Staff pending withdrawal` }, { occurredAt: monthsAgo(0, 3, 11) });
-  await createRequest(prisma, c5, { type: RequestType.DEPOSIT, accountId: a501.id, amount: "30000", description: `${MARKER} Staff pending deposit 2` }, { occurredAt: monthsAgo(0, 4, 10) });
-  await createRequest(prisma, c7, { type: RequestType.WITHDRAWAL, accountId: a701.id, amount: "15000", description: `${MARKER} Staff pending withdrawal 2` }, { occurredAt: monthsAgo(0, 4, 12) });
+  push(monthsAgo(0, 3, 9), "staff-pending-dep-1", async (runAt) => {
+    await createRequest(prisma, c2, { type: RequestType.DEPOSIT, accountId: a201.id, amount: "18000", description: `${MARKER} Staff pending deposit` }, { occurredAt: runAt });
+  });
+  push(monthsAgo(0, 3, 11), "staff-pending-wd-1", async (runAt) => {
+    await createRequest(prisma, c4, { type: RequestType.WITHDRAWAL, accountId: a401.id, amount: "22000", description: `${MARKER} Staff pending withdrawal` }, { occurredAt: runAt });
+  });
+  push(monthsAgo(0, 4, 10), "staff-pending-dep-2", async (runAt) => {
+    await createRequest(prisma, c5, { type: RequestType.DEPOSIT, accountId: a501.id, amount: "30000", description: `${MARKER} Staff pending deposit 2` }, { occurredAt: runAt });
+  });
+  push(monthsAgo(0, 4, 12), "staff-pending-wd-2", async (runAt) => {
+    await createRequest(prisma, c7, { type: RequestType.WITHDRAWAL, accountId: a701.id, amount: "15000", description: `${MARKER} Staff pending withdrawal 2` }, { occurredAt: runAt });
+  });
 
   // Staff: 2-3 customers with KYC pending
-  await updateCustomerKyc(prisma, staff1, c3.id, KycStatus.PENDING, { occurredAt: monthsAgo(0, 6) });
-  await updateCustomerKyc(prisma, staff1, c6.id, KycStatus.PENDING, { occurredAt: monthsAgo(0, 6) });
-  await updateCustomerKyc(prisma, staff2, c8.id, KycStatus.PENDING, { occurredAt: monthsAgo(0, 7) });
+  push(monthsAgo(0, 6, 9), "kyc-c3", async (runAt) => { await updateCustomerKyc(prisma, staff1, c3.id, KycStatus.PENDING, { occurredAt: runAt }); });
+  push(monthsAgo(0, 6, 10), "kyc-c6", async (runAt) => { await updateCustomerKyc(prisma, staff1, c6.id, KycStatus.PENDING, { occurredAt: runAt }); });
+  push(monthsAgo(0, 7, 9), "kyc-c8", async (runAt) => { await updateCustomerKyc(prisma, staff2, c8.id, KycStatus.PENDING, { occurredAt: runAt }); });
 
-  // Loans: all statuses
-  // Pending
-  await applyLoan(prisma, c3, { type: LoanType.PERSONAL, requestedAmount: "150000", durationMonths: 12, monthlyIncome: "60000", employmentStatus: EmploymentStatus.BUSINESS_OWNER, description: `${MARKER} Pending loan`, disbursementAccountId: a301.id }, { occurredAt: monthsAgo(0, 6) });
-  // Under Review with internal note
-  const loanReview = await applyLoan(prisma, c6, { type: LoanType.EDUCATION, requestedAmount: "80000", durationMonths: 12, monthlyIncome: "30000", employmentStatus: EmploymentStatus.STUDENT, description: `${MARKER} Under review loan`, disbursementAccountId: a601.id }, { occurredAt: monthsAgo(0, 8) });
-  await forwardLoan(prisma, staff1, loanReview.id, "Internal note: verify enrollment documents before approval.", { occurredAt: monthsAgo(0, 7) });
-  // Approved/Active with part installments paid (customer1)
-  const loanActive = await applyLoan(prisma, c1, { type: LoanType.HOME, requestedAmount: "300000", durationMonths: 12, monthlyIncome: "120000", employmentStatus: EmploymentStatus.EMPLOYED, description: `${MARKER} Active loan`, disbursementAccountId: a101.id }, { occurredAt: monthsAgo(6, 10) });
-  await approveLoan(prisma, admin, loanActive.id, { disbursementAccountId: a101.id }, { occurredAt: monthsAgo(6, 9) });
-  const activeInst = await prisma.loanInstallment.findMany({ where: { loanId: loanActive.id }, orderBy: { number: "asc" } });
-  for (let i = 0; i < Math.min(3, activeInst.length); i++) {
-    await payLoanInstallment(prisma, c1, loanActive.id, activeInst[i].id, { occurredAt: monthsAgo(5 - i, 12) });
+  // Loans
+  push(monthsAgo(0, 6, 11), "loan-pending", async (runAt) => {
+    await applyLoan(prisma, c3, { type: LoanType.PERSONAL, requestedAmount: "150000", durationMonths: 12, monthlyIncome: "60000", employmentStatus: EmploymentStatus.BUSINESS_OWNER, description: `${MARKER} Pending loan`, disbursementAccountId: a301.id }, { occurredAt: runAt });
+  });
+
+  {
+    const loanReviewRef = ref<string>();
+    push(monthsAgo(0, 8, 9), "loan-review-apply", async (runAt) => {
+      const loan = await applyLoan(prisma, c6, { type: LoanType.EDUCATION, requestedAmount: "80000", durationMonths: 12, monthlyIncome: "30000", employmentStatus: EmploymentStatus.STUDENT, description: `${MARKER} Under review loan`, disbursementAccountId: a601.id }, { occurredAt: runAt });
+      loanReviewRef.set(loan.id);
+    });
+    push(monthsAgo(0, 8, 10), "loan-review-forward", async (runAt) => {
+      await forwardLoan(prisma, staff1, loanReviewRef.get(), "Internal note: verify enrollment documents before approval.", { occurredAt: runAt });
+    });
   }
-  // Rejected
-  const loanRejected = await applyLoan(prisma, c8, { type: LoanType.BUSINESS, requestedAmount: "500000", durationMonths: 24, monthlyIncome: "35000", employmentStatus: EmploymentStatus.SELF_EMPLOYED, description: `${MARKER} Rejected loan`, disbursementAccountId: a801.id }, { occurredAt: monthsAgo(3, 11) });
-  await rejectLoan(prisma, admin, loanRejected.id, "Insufficient income for requested amount.", { occurredAt: monthsAgo(3, 10) });
-  // Completed
-  const loanCompleted = await applyLoan(prisma, c5, { type: LoanType.PERSONAL, requestedAmount: "50000", durationMonths: 3, monthlyIncome: "70000", employmentStatus: EmploymentStatus.EMPLOYED, description: `${MARKER} Completed loan`, disbursementAccountId: a501.id }, { occurredAt: monthsAgo(8, 10) });
-  await approveLoan(prisma, admin, loanCompleted.id, { disbursementAccountId: a501.id }, { occurredAt: monthsAgo(8, 9) });
-  const compInst = await prisma.loanInstallment.findMany({ where: { loanId: loanCompleted.id }, orderBy: { number: "asc" } });
-  for (let i = 0; i < compInst.length; i++) {
-    await payLoanInstallment(prisma, c5, loanCompleted.id, compInst[i].id, { occurredAt: monthsAgo(7 - i, 15) });
+
+  {
+    const loanActiveRef = ref<string>();
+    push(monthsAgo(6, 10, 9), "loan-active-apply", async (runAt) => {
+      const loan = await applyLoan(prisma, c1, { type: LoanType.HOME, requestedAmount: "300000", durationMonths: 12, monthlyIncome: "120000", employmentStatus: EmploymentStatus.EMPLOYED, description: `${MARKER} Active loan`, disbursementAccountId: a101.id }, { occurredAt: runAt });
+      loanActiveRef.set(loan.id);
+    });
+    push(monthsAgo(6, 10, 10), "loan-active-approve", async (runAt) => {
+      await approveLoan(prisma, admin, loanActiveRef.get(), { disbursementAccountId: a101.id }, { occurredAt: runAt });
+    });
+    for (let i = 0; i < 3; i++) {
+      const at = monthsAgo(5 - i, 12, 10);
+      push(at, `loan-active-pay-${i}`, async (runAt) => {
+        const inst = await prisma.loanInstallment.findMany({ where: { loanId: loanActiveRef.get() }, orderBy: { number: "asc" } });
+        if (inst[i]) await payLoanInstallment(prisma, c1, loanActiveRef.get(), inst[i].id, { occurredAt: runAt });
+      });
+    }
+  }
+
+  {
+    const loanRejectedRef = ref<string>();
+    push(monthsAgo(3, 11, 9), "loan-rejected-apply", async (runAt) => {
+      const loan = await applyLoan(prisma, c8, { type: LoanType.BUSINESS, requestedAmount: "500000", durationMonths: 24, monthlyIncome: "35000", employmentStatus: EmploymentStatus.SELF_EMPLOYED, description: `${MARKER} Rejected loan`, disbursementAccountId: a801.id }, { occurredAt: runAt });
+      loanRejectedRef.set(loan.id);
+    });
+    push(monthsAgo(3, 11, 10), "loan-rejected-reject", async (runAt) => {
+      await rejectLoan(prisma, admin, loanRejectedRef.get(), "Insufficient income for requested amount.", { occurredAt: runAt });
+    });
+  }
+
+  {
+    const loanCompletedRef = ref<string>();
+    push(monthsAgo(8, 10, 9), "loan-completed-apply", async (runAt) => {
+      const loan = await applyLoan(prisma, c5, { type: LoanType.PERSONAL, requestedAmount: "50000", durationMonths: 3, monthlyIncome: "70000", employmentStatus: EmploymentStatus.EMPLOYED, description: `${MARKER} Completed loan`, disbursementAccountId: a501.id }, { occurredAt: runAt });
+      loanCompletedRef.set(loan.id);
+    });
+    push(monthsAgo(8, 10, 10), "loan-completed-approve", async (runAt) => {
+      await approveLoan(prisma, admin, loanCompletedRef.get(), { disbursementAccountId: a501.id }, { occurredAt: runAt });
+    });
+    for (let i = 0; i < 3; i++) {
+      const at = monthsAgo(7 - i, 15, 10);
+      push(at, `loan-completed-pay-${i}`, async (runAt) => {
+        const inst = await prisma.loanInstallment.findMany({ where: { loanId: loanCompletedRef.get() }, orderBy: { number: "asc" } });
+        if (inst[i]) await payLoanInstallment(prisma, c5, loanCompletedRef.get(), inst[i].id, { occurredAt: runAt });
+      });
+    }
   }
 
   // Suspicious flags: 2 open, 1 dismissed, 1 escalated
-  const flagTx = await prisma.transaction.findMany({ where: { status: "COMPLETED", type: { in: ["TRANSFER", "WITHDRAWAL"] } }, orderBy: { createdAt: "desc" }, take: 6, select: { id: true } });
-  if (flagTx[0]) await flagTransaction(prisma, staff1, flagTx[0].id, "Unusual transfer pattern", { occurredAt: monthsAgo(0, 2) });
-  if (flagTx[1]) await flagTransaction(prisma, staff2, flagTx[1].id, "Rapid withdrawal activity", { occurredAt: monthsAgo(0, 3) });
-  if (flagTx[2]) { const f = await flagTransaction(prisma, staff1, flagTx[2].id, "High-value transfer to new recipient", { occurredAt: monthsAgo(1, 5) }); await resolveSuspiciousFlag(prisma, admin, f.id, { status: FlagStatus.DISMISSED, resolutionNote: "Verified with customer." }, { occurredAt: monthsAgo(1, 4) }); }
-  if (flagTx[3]) { const f = await flagTransaction(prisma, staff2, flagTx[3].id, "Repeated failed-like behavior pattern", { occurredAt: monthsAgo(2, 7) }); await resolveSuspiciousFlag(prisma, admin, f.id, { status: FlagStatus.ESCALATED, resolutionNote: "Escalated for compliance review." }, { occurredAt: monthsAgo(2, 6) }); }
+  push(monthsAgo(0, 2, 8), "flag-open-1", async (runAt) => {
+    const tx = await prisma.transaction.findMany({ where: { status: "COMPLETED", type: { in: ["TRANSFER", "WITHDRAWAL"] } }, orderBy: { createdAt: "desc" }, take: 6, select: { id: true } });
+    if (tx[0]) await flagTransaction(prisma, staff1, tx[0].id, "Unusual transfer pattern", { occurredAt: runAt });
+  });
+  push(monthsAgo(0, 3, 8), "flag-open-2", async (runAt) => {
+    const tx = await prisma.transaction.findMany({ where: { status: "COMPLETED", type: { in: ["TRANSFER", "WITHDRAWAL"] } }, orderBy: { createdAt: "desc" }, take: 6, select: { id: true } });
+    if (tx[1]) await flagTransaction(prisma, staff2, tx[1].id, "Rapid withdrawal activity", { occurredAt: runAt });
+  });
+  {
+    const flagRef = ref<string>();
+    push(monthsAgo(1, 5, 9), "flag-dismiss-create", async (runAt) => {
+      const tx = await prisma.transaction.findMany({ where: { status: "COMPLETED", type: { in: ["TRANSFER", "WITHDRAWAL"] } }, orderBy: { createdAt: "desc" }, take: 6, select: { id: true } });
+      if (tx[2]) { const f = await flagTransaction(prisma, staff1, tx[2].id, "High-value transfer to new recipient", { occurredAt: runAt }); flagRef.set(f.id); }
+    });
+    push(monthsAgo(1, 5, 10), "flag-dismiss-resolve", async (runAt) => {
+      const id = flagRef.tryGet();
+      if (id) await resolveSuspiciousFlag(prisma, admin, id, { status: FlagStatus.DISMISSED, resolutionNote: "Verified with customer." }, { occurredAt: runAt });
+    });
+  }
+  {
+    const flagRef = ref<string>();
+    push(monthsAgo(2, 7, 9), "flag-escalate-create", async (runAt) => {
+      const tx = await prisma.transaction.findMany({ where: { status: "COMPLETED", type: { in: ["TRANSFER", "WITHDRAWAL"] } }, orderBy: { createdAt: "desc" }, take: 6, select: { id: true } });
+      if (tx[3]) { const f = await flagTransaction(prisma, staff2, tx[3].id, "Repeated failed-like behavior pattern", { occurredAt: runAt }); flagRef.set(f.id); }
+    });
+    push(monthsAgo(2, 7, 10), "flag-escalate-resolve", async (runAt) => {
+      const id = flagRef.tryGet();
+      if (id) await resolveSuspiciousFlag(prisma, admin, id, { status: FlagStatus.ESCALATED, resolutionNote: "Escalated for compliance review." }, { occurredAt: runAt });
+    });
+  }
 
   // Frozen/blocked accounts
-  await freezeAccount(prisma, admin, a601.id, "Suspicious activity review", { occurredAt: monthsAgo(0, 9) });
-  await freezeAccount(prisma, admin, a802.id, "Customer request pending verification", { occurredAt: monthsAgo(0, 8) });
-  // blocked customer
-  await updateCustomerStatus(prisma, admin, c8.id, UserStatus.BLOCKED, { occurredAt: monthsAgo(0, 10) });
-  // ensure c8 still has KYC pending as requested? staff KYC pending was set above for c8; blocked is ok for management screens
+  push(monthsAgo(0, 9, 9), "freeze-a601", async (runAt) => { await freezeAccount(prisma, admin, a601.id, "Suspicious activity review", { occurredAt: runAt }); });
+  push(monthsAgo(0, 8, 9), "freeze-a802", async (runAt) => { await freezeAccount(prisma, admin, a802.id, "Customer request pending verification", { occurredAt: runAt }); });
+  push(monthsAgo(0, 10, 9), "block-c8", async (runAt) => { await updateCustomerStatus(prisma, admin, c8.id, UserStatus.BLOCKED, { occurredAt: runAt }); });
+
+  // Clamp future occurredAt to <= NOW while preserving relative order among clamped items.
+  const futureOps = ops.filter((o) => o.at.getTime() > NOW.getTime()).sort((a, b) => a.at.getTime() - b.at.getTime() || a.seq - b.seq);
+  if (futureOps.length > 0) {
+    const end = NOW.getTime() - 1000;
+    const start = end - futureOps.length * 1000;
+    futureOps.forEach((o, i) => {
+      o.at = new Date(start + i * 1000);
+    });
+  }
+  // Final safety: nothing completed in future
+  for (const opItem of ops) {
+    if (opItem.at.getTime() > Date.now()) opItem.at = new Date(Date.now() - 1000);
+  }
+
+  ops.sort((a, b) => a.at.getTime() - b.at.getTime() || a.seq - b.seq);
+
+  for (const opItem of ops) {
+    await opItem.run(opItem.at);
+  }
 
   await verifyInvariant();
 
