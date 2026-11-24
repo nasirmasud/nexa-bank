@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -35,6 +35,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GlassFold } from "@/components/ui/glass-fold";
 import { formatBDT } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { useGetAdminAnalyticsQuery } from "@/store/api/analyticsApi";
@@ -100,6 +101,14 @@ function KpiSkeleton() {
 
 export default function AdminDashboard() {
   const [range, setRange] = useState<DateRange>("12M");
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const { data, isLoading, error } = useGetAdminAnalyticsQuery();
   const flags = useListSuspiciousFlagsQuery({ page: 1, pageSize: 5, status: "OPEN" });
   const pendingLoans = useListLoansQuery({ page: 1, pageSize: 5, status: "PENDING" });
@@ -187,6 +196,11 @@ export default function AdminDashboard() {
               delta={kpiDeltas.volume ?? undefined}
               deltaTone={kpiDeltas.volume?.startsWith("+") ? "positive" : kpiDeltas.volume?.startsWith("-") ? "negative" : "neutral"}
               featured
+              background={
+                <div className="h-full w-full opacity-70">
+                  <GlassFold speed={isMobile ? 0 : 0.2} scale={1.2} noise={0.06} />
+                </div>
+              }
               className="min-h-[168px]"
               valueClassName="text-4xl sm:text-5xl"
               contentClassName="p-6"
