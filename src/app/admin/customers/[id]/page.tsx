@@ -21,6 +21,7 @@ import { useListAccountsQuery } from "@/store/api/accountsApi";
 import {
   useGetCustomerQuery,
   useGetCustomerTransactionsQuery,
+  useUpdateCustomerKycMutation,
   useUpdateCustomerStatusMutation,
 } from "@/store/api/customersApi";
 
@@ -41,8 +42,10 @@ export default function AdminCustomerDetailPage() {
     { skip: !id },
   );
   const [updateStatus, statusState] = useUpdateCustomerStatusMutation();
+  const [updateKyc, kycState] = useUpdateCustomerKycMutation();
   const [nextStatus, setNextStatus] = useState<"ACTIVE" | "INACTIVE" | "BLOCKED" | "">("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [kycError, setKycError] = useState<string | null>(null);
 
   if (isLoading)
     return (
@@ -86,6 +89,16 @@ export default function AdminCustomerDetailPage() {
     }
   }
 
+  async function onKycChange(kycStatus: "PENDING" | "VERIFIED" | "REJECTED") {
+    setKycError(null);
+    try {
+      await updateKyc({ id, kycStatus }).unwrap();
+    } catch (e: unknown) {
+      const er = e as { data?: { error?: { message?: string } } };
+      setKycError(er?.data?.error?.message ?? "Failed to update KYC");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -104,6 +117,7 @@ export default function AdminCustomerDetailPage() {
       </div>
 
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+      {kycError && <p className="text-sm text-destructive">{kycError}</p>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -117,8 +131,40 @@ export default function AdminCustomerDetailPage() {
             <Row label="Customer No">{customer.profile?.customerNo ?? "—"}</Row>
             <Row label="Phone">{customer.phone ?? "—"}</Row>
             <Row label="NID">{customer.profile?.nid ?? "—"}</Row>
-            <Row label="KYC">{customer.profile?.kycStatus ?? "—"}</Row>
             <Row label="Address">{customer.profile?.presentAddress ?? "—"}</Row>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>KYC</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <StatusBadge
+                variant={
+                  customer.profile?.kycStatus === "VERIFIED"
+                    ? "success"
+                    : customer.profile?.kycStatus === "REJECTED"
+                      ? "danger"
+                      : "warning"
+                }
+              >
+                {customer.profile?.kycStatus ?? "—"}
+              </StatusBadge>
+              <select
+                aria-label={`KYC status for ${customer.name}`}
+                className="h-9 rounded-md border bg-background px-3 text-sm"
+                value={customer.profile?.kycStatus ?? "PENDING"}
+                disabled={kycState.isLoading}
+                onChange={(e) => onKycChange(e.target.value as "PENDING" | "VERIFIED" | "REJECTED")}
+              >
+                <option value="PENDING">PENDING</option>
+                <option value="VERIFIED">VERIFIED</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+            <p className="text-xs text-muted-foreground">KYC must be verified before opening an account or applying for a loan.</p>
           </CardContent>
         </Card>
 
