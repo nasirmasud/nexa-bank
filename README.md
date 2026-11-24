@@ -70,6 +70,106 @@ Key capabilities include customer onboarding, account management, deposits/withd
 
 **Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`) + UI hiding for restricted actions.
 
+## Role Responsibilities
+
+### ADMIN
+
+**Purpose:** Platform administrator responsible for oversight, approvals, sensitive controls, configuration, and auditability.
+
+**What they can do**
+- **Dashboard & analytics:** View platform KPIs, charts, and work queues (`/admin/dashboard`).
+- **Customer management:** View/search customer list and customer detail, review KYC/profile data, and update customer account status (ACTIVE/INACTIVE/BLOCKED) (`/admin/customers`, `/admin/customers/[id]`).
+- **Account management:** View accounts, open new accounts for customers, view account details, freeze/unfreeze accounts, and set account limits (`/admin/accounts`, `/admin/accounts/new`, `/admin/accounts/[id]`).
+- **Requests:** Review deposit/withdrawal requests and approve/reject them (`/admin/requests`). Self-approval is blocked.
+- **Transactions:** View/monitor transactions and perform admin-only reversal where allowed (`/admin/transactions`).
+- **Loans:** Review loans, add notes/forward, and approve/reject loans (not own loan decision) (`/admin/loans`, `/admin/loans/[id]`).
+- **Suspicious activity:** View flags and resolve/dismiss/escalate suspicious flags (`/admin/suspicious`).
+- **System controls:** Manage bank-wide settings and view audit logs (`/admin/settings`, `/admin/audit-logs`).
+
+**What they cannot do (server-enforced, not UI-only)**
+- Cannot approve/reject their own deposit/withdrawal request (`assertNotSelf` / service checks in request flow).
+- Cannot approve/reject their own loan decision (loan service self-decision guard).
+- Cannot bypass route/API role guards: `/admin/*` and `/api/admin/*` are restricted by `src/proxy.ts`; APIs also enforce `requireRole`/service checks.
+- Sensitive actions remain enforced in service layer even if UI is manipulated.
+
+**Dashboard (`/admin/dashboard`)**
+- **KPIs:** Total Bank Balance (with sparkline), Total Deposits, Total Withdrawals, Total Customers, Total Accounts, Total Transactions, Pending Loan Applications.
+- **Secondary chips:** Active Loans, Open Flags, Pending Requests.
+- **Charts:** Monthly Transaction Volume, Deposit vs Withdrawal, Account Distribution, Loan Approval Statistics, Monthly Banking Activity (3M/6M/12M range).
+- **Work queues:** Suspicious queue (open flags), Pending loan applications (PENDING/UNDER_REVIEW), Recent transactions.
+
+### STAFF
+
+**Purpose:** Operations/support role for customer onboarding, account assistance, request review, and risk/loan triage.
+
+**What they can do**
+- **Dashboard & operations:** View operational KPIs and work queues (`/staff/dashboard`).
+- **Customer management:** Register customers, search/view customer list and detail, update KYC status (`/staff/customers`, `/staff/customers/[id]`).
+- **Account management:** View accounts, open new accounts for customers, view account details (`/staff/accounts`, `/staff/accounts/new`, `/staff/accounts/[id]`).
+- **Requests:** Review deposit/withdrawal requests and approve/reject them (`/staff/requests`). Self-approval is blocked.
+- **Transactions:** View transactions in staff scope (`/staff/transactions`).
+- **Suspicious activity:** Flag suspicious transactions and view suspicious queue (`/staff/suspicious`, transaction flag actions). Resolution is admin-only.
+- **Loans:** View loans and assist with notes/forwarding (`/staff/loans`, `/staff/loans/[id]`); cannot approve/reject.
+
+**What they cannot do (server-enforced, not UI-only)**
+- Cannot approve/reject loans (`loanService` admin-only checks).
+- Cannot resolve/dismiss/escalate suspicious flags (`suspiciousFlagService` admin-only resolution).
+- Cannot freeze/unfreeze accounts or set account limits (`accountService` admin-only checks).
+- Cannot update customer account status / block-deactivate-activate (`customerService` admin-only check).
+- Cannot reverse transactions (`transactionService` admin-only check).
+- Cannot access bank-wide settings or audit logs (no staff nav; route/API/service guards restrict admin areas).
+- Cannot approve/reject own request (self-approval guard).
+
+**Dashboard (`/staff/dashboard`)**
+- **KPIs:** Pending Requests, Pending Loans, Open Suspicious Flags, Recent Transactions.
+- **Work queues/panels:** Pending requests, Suspicious queue (open flags), Loans needing attention (PENDING/UNDER_REVIEW), Recent transactions.
+
+### CUSTOMER
+
+**Purpose:** End-user banking role for managing own accounts and performing self-service banking actions.
+
+**What they can do**
+- **Dashboard:** View own balances/activity summary, account switcher (multi-account), charts, and active loans (`/customer/dashboard`).
+- **Accounts:** View own accounts and account details/statements where available (`/customer/accounts`, `/customer/accounts/[id]`).
+- **Transfers:** Transfer funds from own active accounts with PIN and idempotency protection (`/customer/transfer`).
+- **Requests:** Create deposit/withdrawal requests and track/cancel own pending requests (`/customer/requests`).
+- **Transactions:** View own transactions and receipt/statement downloads where available (`/customer/transactions`, `/customer/transactions/[id]`).
+- **Loans:** Apply for loans, view loan details, and repay installments (`/customer/loans`, `/customer/loans/apply`, `/customer/loans/[id]`).
+- **Notifications & settings:** View notifications and manage profile/password/PIN/theme/2FA placeholder state (`/customer/notifications`, `/customer/settings`).
+
+**What they cannot do (server-enforced, not UI-only)**
+- Cannot access admin/staff areas (`src/proxy.ts` role-area checks; layout/API guards).
+- Cannot view/manage other customers' resources; ownership checks restrict accounts/transactions/loans/requests.
+- Cannot create customers/accounts, review requests, flag/resolve suspicious as staff/admin workflow, approve/reject loans, freeze/limits, reverse transactions, or change bank settings.
+- Cannot bypass PIN/validation/idempotency/business-rule checks on money actions (service-layer enforcement).
+
+**Dashboard (`/customer/dashboard`)**
+- **KPIs:** Total Balance, Total Deposits, Total Withdrawals, Active Loans.
+- **Sections:** Recent Transactions, Account Info (selected account), Monthly Spending chart, Monthly Deposit History chart, Transaction Distribution chart, Active Loans table.
+- **Controls:** Account switcher (when multiple accounts), quick links to Accounts/Transfer.
+
+## Who approves what
+
+| Action | Who performs | Who approves / resolves | Restriction / note |
+|---|---|---|---|
+| Customer registration | Staff or Admin | N/A (created directly) | Customers cannot self-register; enforced by role/route/service restrictions. |
+| Open account | Staff or Admin | N/A (created directly) | Account number generated on creation; account tied to customer owner. |
+| Deposit/withdrawal request | Customer creates | Staff or Admin approves/rejects | Requester cannot approve/reject own request (`assertNotSelf`); approval executes money movement atomically with ledger/audit records. |
+| Loan application | Customer applies | Admin only approves/rejects | Staff may add notes/forward; admin cannot approve/reject own loan decision; disbursement creates transaction/ledger entries. |
+| Loan installment repayment | Customer repays | N/A (customer action) | Ownership/balance/business rules enforced in service layer. |
+| Suspicious flag | Staff or Admin raises (and system/flow can create flags) | Admin resolves/dismisses/escalates | Staff can flag/view but cannot resolve; enforced in `suspiciousFlagService`. |
+| Account freeze/unfreeze/limits | Admin only | Admin only | Enforced in `accountService` and route guards. |
+| Customer status (activate/deactivate/block) | Admin only | Admin only | Enforced in `customerService`; status change can bump session version. |
+| Transaction reversal | Admin only | Admin only | Enforced in `transactionService`; creates compensating reversal/ledger records. |
+| Bank settings / audit log access | Admin only | Admin only | `/admin/settings`, `/admin/audit-logs`, admin APIs/services. |
+
+## Checks and balances
+
+- **No self-approval / no self-decision:** `assertNotSelf` and service checks prevent approving/rejecting own deposit/withdrawal requests and making own loan approval decisions.
+- **Role separation:** Staff supports operations (onboarding, KYC, requests, flagging, loan notes/forwarding) but cannot perform admin-only sensitive actions (loan approve/reject, suspicious resolution, freeze/limits, customer status, reversal, settings/audit).
+- **Server-side enforcement:** `src/proxy.ts` enforces auth/role areas; `requireAuth`/`requireRole` guard APIs/layouts; service-layer checks enforce ownership, role, and business rules even if UI is bypassed.
+- **Auditability:** Critical actions write audit logs (`AuditLog` / audit service paths), supporting traceability for administrative and money-related operations.
+
 ## Typical Workflow (How the system is used)
 
 > **Demo note:** `customer1@nexabank.com` has seeded accounts and demo data. A newly registered customer starts with **no account**; staff/admin must open an account before the customer can request deposits, transfer, or apply for loans tied to an account.
