@@ -27,7 +27,7 @@ type ListResponse<T> = {
 
 export const accountsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    listAccounts: build.query<ListResponse<Account>, { page?: number; pageSize?: number } | void>({
+    listAccounts: build.query<ListResponse<Account>, { page?: number; pageSize?: number; ownerId?: string } | void>({
       query: (params) => ({ url: "/accounts", params: params ?? undefined }),
       providesTags: (result) =>
         result?.data
