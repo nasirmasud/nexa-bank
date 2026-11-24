@@ -328,13 +328,19 @@ describe("authz matrix and ownership", () => {
   it("customer cannot read another customer's account, transaction, loan, or request", async () => {
     const owner = await createCustomerWithProfile("owner@test.com");
     const other = await createCustomerWithProfile("other@test.com");
+    const stranger = await createCustomerWithProfile("stranger@test.com");
     const ownerAcc = await createAccount({ ownerId: owner.id, number: "100000000041", balance: "500.00" });
     const otherAcc = await createAccount({ ownerId: other.id, number: "100000000042", balance: "500.00" });
     const tx = await createCompletedTransfer(ownerAcc.id, otherAcc.id, "50.00");
     const loan = await createPendingLoan(owner.id, ownerAcc.id);
     const req = await createPendingRequest(owner.id, ownerAcc.id);
 
-    await expect(getTransactionById(prisma, { id: other.id, role: Role.CUSTOMER }, tx.id)).rejects.toSatisfy((e: unknown) => e instanceof AppError && [403, 404].includes(e.status));
+    // other is the receiver (toAccount owner) and is a legitimate party to tx.
+    const txView = await getTransactionById(prisma, { id: other.id, role: Role.CUSTOMER }, tx.id);
+    expect(txView.id).toBe(tx.id);
+
+    // stranger is unrelated to tx/loan/request/ownerAcc and must not read them.
+    await expect(getTransactionById(prisma, { id: stranger.id, role: Role.CUSTOMER }, tx.id)).rejects.toSatisfy((e: unknown) => e instanceof AppError && [403, 404].includes(e.status));
     await expect(getLoanById(prisma, { id: other.id, role: Role.CUSTOMER }, loan.id)).rejects.toSatisfy((e: unknown) => e instanceof AppError && [403, 404].includes(e.status));
     await expect(getRequestById(prisma, { id: other.id, role: Role.CUSTOMER }, req.id)).rejects.toSatisfy((e: unknown) => e instanceof AppError && [403, 404].includes(e.status));
 
