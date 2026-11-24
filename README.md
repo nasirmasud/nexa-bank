@@ -286,7 +286,8 @@ npm run build
 1. **Create Neon DB** (or branch). Get pooled `DATABASE_URL` and direct `DIRECT_URL`.
 2. **Import repo into Vercel**.
 3. **Set env vars** in Vercel: `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `NEXTAUTH_URL` (production URL), `BANK_TIMEZONE`. Do **not** set `TEST_DATABASE_URL` in Vercel.
-4. **Deploy**. Ensure build runs Prisma generation (CI does `npx prisma generate`; Vercel may need `postinstall`/build hook as appropriate).
+   - **Neon/pooling note:** runtime uses `DATABASE_URL`; Prisma migrations use `DIRECT_URL`. This app uses Serializable transactions and `FOR UPDATE` row locks for money flows; verify your Neon pooler mode/connection strategy in production (prefer direct/runtime-compatible settings if you see transaction isolation issues).
+4. **Deploy**. The app build runs `prisma generate && next build` (see `package.json`). Vercel install/build should work without extra hooks.
 5. **Run migrations** against production DB:
    ```bash
    npx prisma migrate deploy
@@ -335,10 +336,9 @@ No committed screenshot assets are included in this repository at the moment. Yo
 - **Deposits/withdrawals are request + approval workflows**, not real bank transfers.
 - **2FA is not fully implemented** (field exists; TOTP enrollment/enforcement not complete).
 - **Session version invalidation is partial** (token has `sessionVersion`; guards do not fully compare it on every request).
-- **No explicit security headers** configured in `next.config.ts` yet.
+- **Baseline security headers** are configured in `next.config.ts`; review CSP/frame/embed needs for your final deployment environment.
 - **Build warning noise:** production build may emit pre-existing `HANGING_PROMISE_REJECTION`/`headers()` prerender warnings for some API routes during static generation; evaluate before deployment.
-- **`/staff/accounts` list/detail UI** may be incomplete depending on current step status; staff can still operate via existing flows where implemented.
-- **Visual verification** should be done manually in browser for responsive/dark-mode final signoff.
+- **Visual verification** should be done manually in browser for responsive/dark-mode final signoff before submission.
 
 ## CI
 
