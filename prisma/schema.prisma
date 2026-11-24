@@ -138,9 +138,10 @@ model User {
   phone            String?
   role             Role
   status           UserStatus @default(ACTIVE)
-  sessionVersion   Int        @default(0)
-  failedLogins     Int        @default(0)
-  lockedUntil      DateTime?
+  sessionVersion     Int        @default(0)
+  mustChangePassword Boolean    @default(false)
+  failedLogins       Int        @default(0)
+  lockedUntil        DateTime?
   pinHash          String?
   pinFailedCount   Int        @default(0)
   pinLockedUntil   DateTime?
