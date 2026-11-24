@@ -17,6 +17,7 @@ export type ErrorCode =
   | "SAME_ACCOUNT"
   | "DUPLICATE_REQUEST"
   | "KYC_NOT_VERIFIED"
+  | "PASSWORD_CHANGE_REQUIRED"
   | "INTERNAL_ERROR";
 
 export class AppError extends Error {
