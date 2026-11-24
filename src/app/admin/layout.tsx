@@ -15,6 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } catch (e) {
     if (e instanceof AppError && e.code === "UNAUTHORIZED") redirect("/login?sessionExpired=1");
     if (e instanceof AppError && e.code === "FORBIDDEN") redirect("/");
+    if (e instanceof AppError && e.code === "PASSWORD_CHANGE_REQUIRED") redirect("/change-password");
     throw e;
   }
 
