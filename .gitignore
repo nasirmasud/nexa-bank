@@ -10,10 +10,6 @@ plan.md
 update-plan.md
 DEPLOYMENT.md
 tsconfig.tsbuildinfo
-screenshots/*
-!screenshots/landing-1280x720-light.png
-!screenshots/customer-dashboard-1280x900-light.png
-!screenshots/staff-dashboard-1280x900-light.png
-!screenshots/admin-dashboard-1280x900-light.png
+screenshots/
 test-results/
 playwright-report/
