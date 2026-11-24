@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Search } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,11 +20,12 @@ import { useLazyLookupAccountQuery, useListAccountsQuery } from "@/store/api/acc
 import { useCreateTransferMutation } from "@/store/api/transfersApi";
 
 export default function CustomerTransferPage() {
-  const { data: accountsData } = useListAccountsQuery({ page: 1, pageSize: 50 });
+  const { data: accountsData, isLoading: accountsLoading } = useListAccountsQuery({ page: 1, pageSize: 50 });
   const [lookup, lookupState] = useLazyLookupAccountQuery();
   const [createTransfer, createState] = useCreateTransferMutation();
 
-  const accounts = (accountsData?.data ?? []).filter((a) => a.status === "ACTIVE");
+  const allAccounts = accountsData?.data ?? [];
+  const accounts = allAccounts.filter((a) => a.status === "ACTIVE");
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountNumber, setToAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
@@ -78,6 +80,18 @@ export default function CustomerTransferPage() {
     } catch {
       // baseApi already toasts
     }
+  }
+
+  if (!accountsLoading && allAccounts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">Transfer</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Send money to another account securely.</p>
+        </div>
+        <EmptyState title="No account yet" description="Your bank staff will open an account for you." className="min-h-[240px]" />
+      </div>
+    );
   }
 
   return (
