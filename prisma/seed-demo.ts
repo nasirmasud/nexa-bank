@@ -297,10 +297,10 @@ async function main() {
     await createRequest(prisma, c7, { type: RequestType.WITHDRAWAL, accountId: a701.id, amount: "15000", description: `${MARKER} Staff pending withdrawal 2` }, { occurredAt: runAt });
   });
 
-  // Staff: 2-3 customers with KYC pending
-  push(monthsAgo(0, 6, 9), "kyc-c3", async (runAt) => { await updateCustomerKyc(prisma, staff1, c3.id, KycStatus.PENDING, { occurredAt: runAt }); });
-  push(monthsAgo(0, 6, 10), "kyc-c6", async (runAt) => { await updateCustomerKyc(prisma, staff1, c6.id, KycStatus.PENDING, { occurredAt: runAt }); });
-  push(monthsAgo(0, 7, 9), "kyc-c8", async (runAt) => { await updateCustomerKyc(prisma, staff2, c8.id, KycStatus.PENDING, { occurredAt: runAt }); });
+  // Customers used for account/loan flows must be KYC verified.
+  push(monthsAgo(0, 6, 9), "kyc-c3", async (runAt) => { await updateCustomerKyc(prisma, staff1, c3.id, KycStatus.VERIFIED, { occurredAt: runAt }); });
+  push(monthsAgo(0, 6, 10), "kyc-c6", async (runAt) => { await updateCustomerKyc(prisma, staff1, c6.id, KycStatus.VERIFIED, { occurredAt: runAt }); });
+  push(monthsAgo(0, 7, 9), "kyc-c8", async (runAt) => { await updateCustomerKyc(prisma, staff2, c8.id, KycStatus.VERIFIED, { occurredAt: runAt }); });
 
   // Loans
   push(monthsAgo(0, 6, 11), "loan-pending", async (runAt) => {
