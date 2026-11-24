@@ -6,7 +6,6 @@ import { accountStatementSchema } from "@/lib/validators/account";
 import { getAccountStatement } from "@/lib/services/accountService";
 import { StatementDocument } from "@/lib/statement-pdf";
 
-export const runtime = "nodejs";
 export const maxDuration = 60;
 
 type Ctx = { params: Promise<{ id: string }> };

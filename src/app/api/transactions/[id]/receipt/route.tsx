@@ -5,7 +5,6 @@ import { requireAuth } from "@/lib/guards";
 import { getTransactionById } from "@/lib/services/transactionService";
 import { TransactionReceiptDocument } from "@/lib/transaction-receipt";
 
-export const runtime = "nodejs";
 export const maxDuration = 60;
 
 type Ctx = { params: Promise<{ id: string }> };
