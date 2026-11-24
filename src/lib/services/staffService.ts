@@ -79,7 +79,7 @@ export async function updateStaffStatus(
   db: PrismaClient,
   actor: StaffActor,
   id: string,
-  status: UserStatus.ACTIVE | UserStatus.INACTIVE,
+  status: "ACTIVE" | "INACTIVE",
   options?: { occurredAt?: Date },
 ) {
   if (actor.role !== Role.ADMIN) throw new AppError("FORBIDDEN", "Not authorized", 403);
