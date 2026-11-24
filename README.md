@@ -352,11 +352,13 @@ erDiagram
 - **Self-approval guard:** `assertNotSelf` prevents approving/rejecting own request and self loan decisions.
 - **PIN security:** bcrypt-hashed PIN, failed-attempt tracking, temporary PIN lockout.
 - **Login lockout:** failed login count + temporary lock.
+- **Temporary passwords:** admin/staff-created temporary passwords set `mustChangePassword`; `requireAuth` blocks normal APIs with `PASSWORD_CHANGE_REQUIRED` until password is changed via the allowed password-change flow, and dashboards redirect to `/change-password`.
+- **Session invalidation:** `sessionVersion` is checked on every `requireAuth` DB read; password changes and staff deactivation/session-sensitive actions bump version to invalidate old sessions.
 - **Atomic money ops:** serializable transactions, deterministic row locks, ledger entries, idempotency keys.
 - **Audit logs:** critical operations recorded.
 - **Input validation:** Zod schemas in API/service boundaries.
 - **Secrets:** no secrets committed; `.env*` ignored; `.env.example` committed.
-- **Known hardening gaps:** no explicit security headers in `next.config.ts`; full sessionVersion enforcement/2FA not complete.
+- **Known hardening gaps:** full 2FA/TOTP enrollment and enforcement not complete.
 
 ## 10. Environment Variables
 
@@ -470,7 +472,7 @@ No committed screenshot assets are included in this repository at the moment. Yo
 - **No real payments/banking rails.** All money movement is simulated in the app database.
 - **Deposits/withdrawals are request + approval workflows**, not real bank transfers.
 - **2FA is not fully implemented** (field exists; TOTP enrollment/enforcement not complete).
-- **Session version invalidation is partial** (token has `sessionVersion`; guards do not fully compare it on every request).
+- **Forced password change UX:** after a forced password change, the current session is re-established by signing in again because password changes bump `sessionVersion`.
 - **Baseline security headers** are configured in `next.config.ts`; review CSP/frame/embed needs for your final deployment environment.
 - **Build warning noise:** production build may emit pre-existing `HANGING_PROMISE_REJECTION`/`headers()` prerender warnings for some API routes during static generation; evaluate before deployment.
 - **Visual verification** should be done manually in browser for responsive/dark-mode final signoff before submission.
