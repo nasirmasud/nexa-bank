@@ -31,6 +31,14 @@ const baseQueryWithErrorHandling: BaseQueryFn<string | FetchArgs, unknown, ApiEr
     if (status === 401 && typeof window !== "undefined") {
       toast.error(message || "Session expired. Please sign in again.");
       await signOut({ callbackUrl: "/login" });
+    } else if (
+      status === 403 &&
+      code === "PASSWORD_CHANGE_REQUIRED" &&
+      typeof window !== "undefined"
+    ) {
+      if (window.location.pathname !== "/change-password") {
+        window.location.assign("/change-password");
+      }
     } else if (status !== 401) {
       toast.error(message);
     }
