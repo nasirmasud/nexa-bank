@@ -16,18 +16,27 @@ export type ErrorCode =
   | "BELOW_MIN_BALANCE"
   | "SAME_ACCOUNT"
   | "DUPLICATE_REQUEST"
+  | "KYC_NOT_VERIFIED"
   | "INTERNAL_ERROR";
 
 export class AppError extends Error {
   code: ErrorCode;
   status: number;
   fields?: Record<string, string[]>;
+  details?: Record<string, unknown>;
 
-  constructor(code: ErrorCode, message: string, status = 400, fields?: Record<string, string[]>) {
+  constructor(
+    code: ErrorCode,
+    message: string,
+    status = 400,
+    fields?: Record<string, string[]>,
+    details?: Record<string, unknown>,
+  ) {
     super(message);
     this.code = code;
     this.status = status;
     this.fields = fields;
+    this.details = details;
   }
 }
 
@@ -60,7 +69,14 @@ export const errorResponse = (err: unknown, requestId?: string) => {
   if (err instanceof AppError) {
     console.warn(prefix, `${err.code}: ${err.message}`);
     return Response.json(
-      { error: { code: err.code, message: err.message, fields: err.fields } },
+      {
+        error: {
+          code: err.code,
+          message: err.message,
+          ...(err.fields ? { fields: err.fields } : {}),
+          ...(err.details ? { details: err.details } : {}),
+        },
+      },
       { status: err.status },
     );
   }
