@@ -157,9 +157,9 @@ Key capabilities include customer onboarding, account management, deposits/withd
 | Action | Who performs | Who approves / resolves | Restriction / note |
 |---|---|---|---|
 | Customer registration | Staff or Admin | N/A (created directly) | Customers cannot self-register; enforced by role/route/service restrictions. |
-| Open account | Staff or Admin | N/A (created directly) | Account number generated on creation; account tied to customer owner. |
+| Open account | Staff or Admin | N/A (created directly) | Customer KYC must be **VERIFIED** before account creation. Account number generated on creation; account tied to customer owner. |
 | Deposit/withdrawal request | Customer creates | Staff or Admin approves/rejects | Requester cannot approve/reject own request (`assertNotSelf`); approval executes money movement atomically with ledger/audit records. |
-| Loan application | Customer applies | Admin only approves/rejects | Staff may add notes/forward; admin cannot approve/reject own loan decision; disbursement creates transaction/ledger entries. |
+| Loan application | Customer applies | Admin only approves/rejects | Customer KYC must be **VERIFIED** before applying. Staff may add notes/forward; admin cannot approve/reject own loan decision; disbursement creates transaction/ledger entries. |
 | Loan installment repayment | Customer repays | N/A (customer action) | Ownership/balance/business rules enforced in service layer. |
 | Suspicious flag | Staff or Admin raises (and system/flow can create flags) | Admin resolves/dismisses/escalates | Staff can flag/view but cannot resolve; enforced in `suspiciousFlagService`. |
 | Account freeze/unfreeze/limits | Admin only | Admin only | Enforced in `accountService` and route guards. |
