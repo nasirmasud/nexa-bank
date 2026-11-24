@@ -29,6 +29,8 @@ import {
   useUpdateCustomerKycMutation,
 } from "@/store/api/customersApi";
 
+type CreatedCustomer = { id: string; name: string; email: string; tempPassword: string | null };
+
 export default function StaffCustomersPage() {
   const [q, setQ] = useState("");
   const { data, isLoading, isError, error, refetch } = useListCustomersQuery({
@@ -39,7 +41,9 @@ export default function StaffCustomersPage() {
   const [createCustomer, createState] = useCreateCustomerMutation();
   const [updateKyc] = useUpdateCustomerKycMutation();
   const [open, setOpen] = useState(false);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [copied, setCopied] = useState(false);
+  const [created, setCreated] = useState<CreatedCustomer | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -57,11 +61,36 @@ export default function StaffCustomersPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  function resetCreateState() {
+    setStep(1);
+    setCopied(false);
+    setCreated(null);
+  }
+
+  function credentialsMessage(c: CreatedCustomer) {
+    const loginUrl = `${window.location.origin}/login`;
+    const pw = c.tempPassword ?? "(provided during creation)";
+    return `Welcome to NexaBank. Email: ${c.email}, Temporary password: ${pw}, Login: ${loginUrl}`;
+  }
+
+  async function copyCredentials() {
+    if (!created) return;
+    await navigator.clipboard.writeText(credentialsMessage(created));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     try {
       const res = await createCustomer(form).unwrap();
-      setTempPassword(res.data.tempPassword);
+      const c = res.data.customer;
+      const tempPassword = res.data.tempPassword ?? null;
+      if (c) {
+        setCreated({ id: c.id, name: c.name, email: c.email, tempPassword });
+        setStep(1);
+        setCopied(false);
+      }
       setForm({
         name: "",
         email: "",
@@ -74,6 +103,14 @@ export default function StaffCustomersPage() {
     } catch {}
   }
 
+  const mailtoHref = created
+    ? `mailto:${encodeURIComponent(created.email)}?subject=${encodeURIComponent(
+        "Your NexaBank account credentials",
+      )}&body=${encodeURIComponent(
+        `${credentialsMessage(created)}\n\nPlease change this password after your first login.`,
+      )}`
+    : "#";
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -84,7 +121,7 @@ export default function StaffCustomersPage() {
         <Button
           onClick={() => {
             setOpen(true);
-            setTempPassword(null);
+            resetCreateState();
           }}
         >
           Create customer
@@ -183,76 +220,83 @@ export default function StaffCustomersPage() {
         open={open}
         onOpenChange={(v) => {
           setOpen(v);
-          if (!v) setTempPassword(null);
+          if (!v) resetCreateState();
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create customer</DialogTitle>
+            <DialogTitle>{created ? "Customer created" : "Create customer"}</DialogTitle>
             <DialogDescription>
-              Create a customer user and profile. A temporary password will be generated if not
-              provided by backend.
+              {created
+                ? `Step ${step} of 3 — ${step === 1 ? "Credentials" : step === 2 ? "Share" : "Open account"}`
+                : "Create a customer user and profile."}
             </DialogDescription>
           </DialogHeader>
-          {tempPassword ? (
-            <div className="space-y-2 text-sm">
-              <p className="font-medium text-green-600">Customer created.</p>
-              <p>
-                Temporary password: <span className="font-mono font-semibold">{tempPassword}</span>
-              </p>
-              <p className="text-muted-foreground">Share it securely with the customer.</p>
+
+          {created ? (
+            <div className="space-y-4 text-sm">
+              {step === 1 && (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground">
+                    These credentials are shown only once. They are not stored or logged in plaintext and will not be returned by later API calls.
+                  </p>
+                  <div className="rounded-md border bg-muted/30 p-3 space-y-1">
+                    <p><span className="text-muted-foreground">Name:</span> <span className="font-medium">{created.name}</span></p>
+                    <p><span className="text-muted-foreground">Email:</span> <span className="font-medium">{created.email}</span></p>
+                    <p><span className="text-muted-foreground">Temporary password:</span> <span className="font-mono font-semibold">{created.tempPassword ?? "—"}</span></p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" onClick={copyCredentials}>{copied ? "Copied" : "Copy credentials"}</Button>
+                    <Button type="button" variant="outline" onClick={() => setStep(2)}>Next: Share</Button>
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground">Share the credentials securely with the customer. The customer should change this password after the first login.</p>
+                  <div className="flex flex-col gap-2">
+                    <Button render={<a href={mailtoHref} />} nativeButton={false} variant="outline">Send by email</Button>
+                    <Button type="button" variant="outline" onClick={copyCredentials}>{copied ? "Copied" : "Copy message"}</Button>
+                    <Button type="button" variant="ghost" onClick={() => setStep(3)}>Skip, I&apos;ll hand it over in person</Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <Button type="button" variant="ghost" onClick={() => setStep(1)}>Back</Button>
+                    <Button type="button" onClick={() => setStep(3)}>Next: Open account</Button>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground">The customer has no account yet. Open an account so they can use banking features.</p>
+                  <div className="flex flex-col gap-2">
+                    <Button render={<Link href={`/staff/accounts/new?ownerId=${created.id}`} />} nativeButton={false}>
+                      Create account for {created.name}
+                    </Button>
+                    <Button render={<Link href={`/staff/customers/${created.id}`} />} nativeButton={false} variant="outline">
+                      Go to customer details
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => { setOpen(false); resetCreateState(); }}>Done</Button>
+                  </div>
+                  <div>
+                    <Button type="button" variant="ghost" onClick={() => setStep(2)}>Back</Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <form className="space-y-3" onSubmit={onCreate}>
-              <Input
-                placeholder="Full name"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Email"
-                type="email"
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Phone"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-              />
-              <Input
-                placeholder="NID"
-                value={form.nid}
-                onChange={(e) => set("nid", e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Date of birth"
-                type="date"
-                value={form.dateOfBirth}
-                onChange={(e) => set("dateOfBirth", e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Present address"
-                value={form.presentAddress}
-                onChange={(e) => set("presentAddress", e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Occupation (optional)"
-                value={form.occupation}
-                onChange={(e) => set("occupation", e.target.value)}
-              />
+              <Input placeholder="Full name" value={form.name} onChange={(e) => set("name", e.target.value)} required />
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required />
+              <Input placeholder="Phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+              <Input placeholder="NID" value={form.nid} onChange={(e) => set("nid", e.target.value)} required />
+              <Input placeholder="Date of birth" type="date" value={form.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} required />
+              <Input placeholder="Present address" value={form.presentAddress} onChange={(e) => set("presentAddress", e.target.value)} required />
+              <Input placeholder="Occupation (optional)" value={form.occupation} onChange={(e) => set("occupation", e.target.value)} />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createState.isLoading}>
-                  {createState.isLoading ? "Creating..." : "Create"}
-                </Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createState.isLoading}>{createState.isLoading ? "Creating..." : "Create"}</Button>
               </DialogFooter>
             </form>
           )}
