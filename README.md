@@ -64,11 +64,12 @@ Key capabilities include customer onboarding, account management, deposits/withd
 | **Customer activate/deactivate/block** | **Yes** | **No** | **No** |
 | **Transaction reverse** | **Yes** | **No** | **No** |
 | **Bank-wide settings / audit logs** | **Yes** | **No** | **No** |
+| **Manage staff accounts** | **Yes** | **No** | **No** |
 | Deposit/withdraw request approve/reject | Yes | Yes (not self) | No |
 | Create deposit/withdraw request | No | No | Yes |
 | Transfer funds / repay loan / apply loan | No | No | Yes (own accounts) |
 
-**Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`) + UI hiding for restricted actions.
+**Enforcement:** route guards (`src/proxy.ts`, `src/lib/guards.ts`) + service-layer checks (e.g. `loanService`, `accountService`, `customerService`, `transactionService`, `suspiciousFlagService`, `requestService`, `staffService`) + UI hiding for restricted actions.
 
 ## Role Responsibilities
 
@@ -79,6 +80,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 **What they can do**
 - **Dashboard & analytics:** View platform KPIs, charts, and work queues (`/admin/dashboard`).
 - **Customer management:** View/search customer list and customer detail, review KYC/profile data, and update customer account status (ACTIVE/INACTIVE/BLOCKED) (`/admin/customers`, `/admin/customers/[id]`).
+- **Staff management:** View/search staff users, create staff accounts with a temporary password, and activate/deactivate staff accounts (`/admin/staff`).
 - **Account management:** View accounts, open new accounts for customers, view account details, freeze/unfreeze accounts, and set account limits (`/admin/accounts`, `/admin/accounts/new`, `/admin/accounts/[id]`).
 - **Requests:** Review deposit/withdrawal requests and approve/reject them (`/admin/requests`). Self-approval is blocked.
 - **Transactions:** View/monitor transactions and perform admin-only reversal where allowed (`/admin/transactions`).
@@ -89,6 +91,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 **What they cannot do (server-enforced, not UI-only)**
 - Cannot approve/reject their own deposit/withdrawal request (`assertNotSelf` / service checks in request flow).
 - Cannot approve/reject their own loan decision (loan service self-decision guard).
+- Cannot deactivate their own account through staff management; cannot create or promote ADMIN users via staff management (role is server-assigned as STAFF; strict Zod rejects `role`).
 - Cannot bypass route/API role guards: `/admin/*` and `/api/admin/*` are restricted by `src/proxy.ts`; APIs also enforce `requireRole`/service checks.
 - Sensitive actions remain enforced in service layer even if UI is manipulated.
 
@@ -118,6 +121,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 - Cannot update customer account status / block-deactivate-activate (`customerService` admin-only check).
 - Cannot reverse transactions (`transactionService` admin-only check).
 - Cannot access bank-wide settings or audit logs (no staff nav; route/API/service guards restrict admin areas).
+- Cannot manage staff accounts (create/activate/deactivate) — ADMIN only (`/api/admin/staff*`, route + service enforced).
 - Cannot approve/reject own request (self-approval guard).
 
 **Dashboard (`/staff/dashboard`)**
@@ -166,7 +170,7 @@ Key capabilities include customer onboarding, account management, deposits/withd
 ## Checks and balances
 
 - **No self-approval / no self-decision:** `assertNotSelf` and service checks prevent approving/rejecting own deposit/withdrawal requests and making own loan approval decisions.
-- **Role separation:** Staff supports operations (onboarding, KYC, requests, flagging, loan notes/forwarding) but cannot perform admin-only sensitive actions (loan approve/reject, suspicious resolution, freeze/limits, customer status, reversal, settings/audit).
+- **Role separation:** Staff supports operations (onboarding, KYC, requests, flagging, loan notes/forwarding) but cannot perform admin-only sensitive actions (loan approve/reject, suspicious resolution, freeze/limits, customer status, reversal, settings/audit, staff management).
 - **Server-side enforcement:** `src/proxy.ts` enforces auth/role areas; `requireAuth`/`requireRole` guard APIs/layouts; service-layer checks enforce ownership, role, and business rules even if UI is bypassed.
 - **Auditability:** Critical actions write audit logs (`AuditLog` / audit service paths), supporting traceability for administrative and money-related operations.
 
