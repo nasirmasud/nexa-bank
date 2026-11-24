@@ -31,7 +31,11 @@ import {
 
 export default function StaffCustomersPage() {
   const [q, setQ] = useState("");
-  const { data, isLoading } = useListCustomersQuery({ page: 1, pageSize: 20, q: q || undefined });
+  const { data, isLoading, isError, error, refetch } = useListCustomersQuery({
+    page: 1,
+    pageSize: 20,
+    q: q || undefined,
+  });
   const [createCustomer, createState] = useCreateCustomerMutation();
   const [updateKyc] = useUpdateCustomerKycMutation();
   const [open, setOpen] = useState(false);
@@ -46,6 +50,8 @@ export default function StaffCustomersPage() {
     occupation: "",
   });
   const items = data?.data ?? [];
+  const errorMessage =
+    (error as { message?: string } | undefined)?.message ?? "Failed to load customers.";
 
   function set<K extends keyof typeof form>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -101,6 +107,15 @@ export default function StaffCustomersPage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
+            </div>
+          ) : isError ? (
+            <div className="space-y-3">
+              <p className="text-sm text-destructive" role="alert">
+                {errorMessage}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Retry
+              </Button>
             </div>
           ) : items.length === 0 ? (
             <p className="text-sm text-muted-foreground">No customers found.</p>
