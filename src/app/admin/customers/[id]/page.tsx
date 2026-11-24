@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatBDT } from "@/lib/money";
+import { useListAccountsQuery } from "@/store/api/accountsApi";
 import {
   useGetCustomerQuery,
   useGetCustomerTransactionsQuery,
@@ -33,6 +34,10 @@ export default function AdminCustomerDetailPage() {
   const [txPage, setTxPage] = useState(1);
   const { data: txData, isLoading: txLoading } = useGetCustomerTransactionsQuery(
     { id, page: txPage, pageSize: 10 },
+    { skip: !id },
+  );
+  const { data: accountsData, isLoading: accountsLoading } = useListAccountsQuery(
+    { ownerId: id, page: 1, pageSize: 50 },
     { skip: !id },
   );
   const [updateStatus, statusState] = useUpdateCustomerStatusMutation();
@@ -67,6 +72,7 @@ export default function AdminCustomerDetailPage() {
 
   const txs = txData?.data ?? [];
   const txPagination = txData?.pagination;
+  const accounts = accountsData?.data ?? [];
 
   async function onStatusUpdate() {
     if (!nextStatus) return;
@@ -144,6 +150,48 @@ export default function AdminCustomerDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle>Accounts</CardTitle>
+          <Button render={<Link href={`/admin/accounts/new?ownerId=${id}`} />} nativeButton={false} size="sm" variant="outline">
+            Open account
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {accountsLoading ? (
+            <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : accounts.length === 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">No accounts found for this customer.</p>
+              <Button render={<Link href={`/admin/accounts/new?ownerId=${id}`} />} nativeButton={false} size="sm">
+                Open account
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Account</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {accounts.map((a) => (
+                  <TableRow key={a.id}>
+                    <TableCell className="font-medium">{a.accountNumber}</TableCell>
+                    <TableCell>{a.type}</TableCell>
+                    <TableCell><StatusBadge variant={a.status === "ACTIVE" ? "success" : a.status === "FROZEN" ? "warning" : "neutral"}>{a.status}</StatusBadge></TableCell>
+                    <TableCell className="text-right">{formatBDT(a.balance)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
