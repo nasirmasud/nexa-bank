@@ -19,7 +19,7 @@ export default auth((req) => {
     pathname.startsWith("/customer") ||
     isApi;
 
-  if (isAuthPage && role) {
+  if (isAuthPage && role && req.nextUrl.searchParams.get("sessionExpired") !== "1") {
     return NextResponse.redirect(new URL(roleHome[role] || "/", req.url));
   }
 
