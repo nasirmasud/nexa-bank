@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { AccountStatus, AccountType, Role, UserStatus } from "@prisma/client";
+import { AccountStatus, AccountType, KycStatus, Role, UserStatus } from "@prisma/client";
 import { createTestPrisma, resetDb } from "../helpers/db";
 import {
   createAccount,
@@ -22,6 +22,19 @@ async function createUser(params: { email: string; role: Role; name?: string }) 
       name: params.name ?? params.email,
       role: params.role,
       status: UserStatus.ACTIVE,
+      ...(params.role === Role.CUSTOMER
+        ? {
+            profile: {
+              create: {
+                customerNo: `CUS-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+                nid: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+                dateOfBirth: new Date("1990-01-01"),
+                presentAddress: "Test Address",
+                kycStatus: KycStatus.VERIFIED,
+              },
+            },
+          }
+        : {}),
     },
   });
 }
