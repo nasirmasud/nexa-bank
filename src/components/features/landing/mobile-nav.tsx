@@ -72,7 +72,7 @@ export function MobileNav() {
                   type="button"
                   onClick={() => {
                     setOpen(false);
-                    void signOut({ callbackUrl: "/login" });
+                    void signOut({ callbackUrl: "/" });
                   }}
                   className="rounded-[8px] border border-landing-border px-3 py-2.5 text-center text-sm font-semibold text-landing-ink hover:bg-landing-surface-low"
                 >
