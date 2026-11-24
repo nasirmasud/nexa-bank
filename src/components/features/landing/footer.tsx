@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { LandingLogo } from "./landing-logo";
-import { ThemeToggle } from "./theme-toggle";
 import { FooterBackground } from "./footer-background";
 
 function GitHubIcon({ className }: { className?: string }) {
@@ -103,7 +102,6 @@ export function Footer() {
             >
               <LinkedInIcon className="size-4" />
             </a>
-            <ThemeToggle className="border-white/15 bg-transparent text-white/80 hover:bg-white/10 hover:text-white" />
           </div>
         </div>
       </div>
