@@ -71,6 +71,7 @@ export async function createCustomer(
         phone: input.phone,
         role: Role.CUSTOMER,
         status: UserStatus.ACTIVE,
+        mustChangePassword: Boolean(tempPassword),
         createdById: actor.id,
         profile: {
           create: {
